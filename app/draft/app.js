@@ -249,13 +249,11 @@
       return { lane, target, pairs, direct, tips, key: lane + "|" + target };
     }).sort((a, b) => nameFor(a.target).localeCompare(nameFor(b.target), "vi"));
   });
-  const reference = window.DRAFT_COUNTER_REFERENCE;
-  const referenceRows = roster.map(({ id }) => {
-    const tips = reference.tactical[id] ?? {};
-    const good = reference.editorial[id] ?? Object.keys(tips);
-    const bad = Object.entries(reference.editorial).filter(([, picks]) => picks.includes(id)).map(([target]) => target);
+  const tactics = window.DRAFT_COUNTER_TACTICS;
+  const referenceRows = roster.filter(({ id }) => Object.hasOwn(tactics, id)).map(({ id }) => {
+    const tips = tactics[id];
     return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
-      pairs: [good, bad], direct: [[], []], tips, editorial: true };
+      pairs: [Object.keys(tips), []], direct: [[], []], tips, tactical: true };
   });
   const counterRows = [...laneCounterRows, ...referenceRows];
 
@@ -292,14 +290,14 @@
     for (const row of rows) {
       for (const [index, ids] of row.pairs.entries()) {
         for (const id of ids) {
-          if (row.editorial && !selectedTarget && rows.some(other =>
-            !other.editorial && other.target === row.target && other.pairs.some(picks => picks.includes(id)))) continue;
+          if (row.tactical && !selectedTarget && rows.some(other =>
+            !other.tactical && other.target === row.target && other.pairs.some(picks => picks.includes(id)))) continue;
           if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map(), verified: new Set(), mixed: new Map() });
-          if (!row.editorial && index === 0) candidates.get(id).verified.add(row.target);
+          if (!row.tactical && index === 0) candidates.get(id).verified.add(row.target);
           const matchups = index === 0 ? candidates.get(id).good : candidates.get(id).bad;
           const lanes = matchups.get(row.target) ?? [];
           const source = row.direct[index].includes(id) ? "Qzadd" :
-            row.tips[id] && index === 0 ? "theo cơ chế" : row.editorial ? "Zathong" : "tra chéo";
+            row.tips[id] && index === 0 ? "theo cơ chế" : "tra chéo";
           lanes.push(row.lane + " · " + source);
           matchups.set(row.target, lanes);
         }
