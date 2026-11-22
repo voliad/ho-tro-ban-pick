@@ -444,6 +444,7 @@
   function renderDraftTools() {
     const container = layout("Ban/Pick", "Chuẩn bị đội hình, tập draft hoặc mở phòng thi đấu.");
     const tools = [
+      ["Rank thường", "Tập cấm chọn một ván xếp hạng từ Kim Cương, với 5 lượt cấm và 5 lượt chọn mỗi bên.", "Vào bàn rank thường", "/draft/?mode=rank"],
       ["Đấu giải", "Điều phối BO1 đến BO7, Global Ban/Pick, đổi bên và ghi lịch sử các ván.", "Vào bàn cấm chọn", "/draft/"],
       ["Cấm chọn tự do", "Thử đội hình và xem điểm cấm chọn của hai bên.", "Mở cấm chọn tự do", legacy("/ban-pick/free")],
       ["Giả lập Solo", "Tạo phòng 1v1 để tập draft với bạn bè.", "Mở phòng Solo", legacy("/ban-pick/solo")],

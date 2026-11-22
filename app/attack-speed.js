@@ -91,7 +91,7 @@
   }
 
   function render(container) {
-    document.title = "Mốc tốc đánh | Hỗ trợ chơi Liên Quân";
+    document.title = "Mốc tốc đánh | Hỗ trợ Ban Pick";
     container.innerHTML = '<div class="wrap subpage attack-page">' +
       '<a class="subtle-link" href="/wiki">Wiki</a>' +
       '<div class="page-head attack-head"><div><h1>Mốc tốc đánh</h1><p>Tra model theo tướng và trạng thái, rồi xem cần thêm bao nhiêu tốc đánh để sang mốc tiếp theo.</p></div></div>' +

@@ -5,7 +5,8 @@
   const roster = (window.DRAFT_HEROES ?? []).sort((a, b) => a.name.localeCompare(b.name, "vi"));
   const heroesById = new Map(roster.map(hero => [hero.id, hero]));
   const $ = id => document.getElementById(id);
-  const storeKey = "aov-draft-desk-v1";
+  const isRank = new URLSearchParams(location.search).get("mode") === "rank";
+  const storeKey = isRank ? "aov-rank-draft-v1" : "aov-draft-desk-v1";
   const sideLabel = { blue: "Xanh", red: "Đỏ" };
   const actionLabel = { ban: "cấm", pick: "chọn" };
   const allowedViews = ["draft", "history", "rules"];
@@ -19,7 +20,7 @@
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
   });
 
-  let state = rules.start();
+  let state = isRank ? rules.start({ ...structuredClone(rules.defaults), format: 1, mode: "rank", alternate: false }) : rules.start();
   let clock = initialClock();
   let selection = [];
   let role = "";
@@ -113,7 +114,7 @@
     const committed = game.turns.filter(row => row.side === side);
     const groups = hiddenDraft ? ["pick"] : ["ban", "pick"];
     const slots = groups.map(kind => {
-      const count = kind === "ban" ? 4 : 5;
+      const count = kind === "ban" && !isRank ? 4 : 5;
       const ids = committed.filter(row => row.kind === kind).flatMap(row => row.ids);
       const concealed = hidePicks && kind === "pick" && ids.length > 0;
       const highlight = active && turn.kind === kind;
@@ -185,7 +186,7 @@
     const blue = game.blue;
     const red = rules.opposite(blue);
     $("format-label").textContent = "BO" + settings.format;
-    $("mode-label").textContent = hidden ? "Chọn Ẩn" : settings.mode === "global" ? "Global Ban/Pick" : "Theo từng ván";
+    $("mode-label").textContent = isRank ? "Rank thường" : hidden ? "Chọn Ẩn" : settings.mode === "global" ? "Global Ban/Pick" : "Theo từng ván";
     $("match-blue").textContent = nameOf(blue);
     $("match-red").textContent = nameOf(red);
     $("score-blue").textContent = score[blue];
@@ -397,7 +398,8 @@
     for (const key of ["teamA", "teamB", "format", "mode", "firstBlue", "alternate", "seconds", "final", "groupFlowborn"]) {
       const value = settings[key];
       input(key).value = typeof value === "boolean" ? (value ? "yes" : "no") : value;
-      input(key).disabled = locked && !["teamA", "teamB", "seconds"].includes(key);
+      input(key).disabled = (isRank && ["format", "mode", "alternate"].includes(key)) ||
+        (locked && !["teamA", "teamB", "seconds"].includes(key));
     }
     input("mirrors").checked = settings.mirrors;
     input("mirrors").disabled = locked;
@@ -528,6 +530,13 @@
   }
 
   restore();
+  if (isRank) {
+    document.title = "Ban Pick rank thường | Hỗ trợ Ban Pick";
+    $("page-title").textContent = "Ban Pick rank thường";
+    $("page-title").nextElementSibling.innerHTML = 'Mô phỏng một ván rank từ Kim Cương. Bàn tập ghi lần lượt 5 lượt cấm mỗi bên, rồi chọn 5 tướng mỗi bên. <a href="https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-ngay-hoi-lien-quan-08-07-2026/">Nguồn Garena</a>';
+    const rankOption = new Option("Rank thường", "rank");
+    input("mode").add(rankOption);
+  }
   $("settings").disabled = false;
   $("export").disabled = false;
   renderRoute();

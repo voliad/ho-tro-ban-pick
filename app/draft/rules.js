@@ -9,6 +9,10 @@
     ["pick", "red", 1], ["pick", "blue", 2], ["pick", "red", 1],
   ];
   const blind = [["pick", "blue", 5], ["pick", "red", 5]];
+  const ranked = [
+    ...Array.from({ length: 5 }, () => [["ban", "blue", 1], ["ban", "red", 1]]).flat(),
+    ...standard.filter(([kind]) => kind === "pick"),
+  ];
   const defaults = {
     teamA: "Đội A", teamB: "Đội B", format: 5, mode: "global", firstBlue: "A",
     alternate: true, seconds: 30, final: "blind", mirrors: true, groupFlowborn: true, restricted: [],
@@ -17,7 +21,7 @@
   const opposite = (team) => team === "A" ? "B" : "A";
   const onSide = (game, side) => side === "blue" ? game.blue : opposite(game.blue);
   const isBlind = (settings, number) => settings.format === 7 && number === 7 && settings.final === "blind";
-  const sequence = (settings, number) => isBlind(settings, number) ? blind : standard;
+  const sequence = (settings, number) => settings.mode === "rank" ? ranked : isBlind(settings, number) ? blind : standard;
   const heroKey = (settings, id) => settings.groupFlowborn && id === "flowborn-2" ? "flowborn" : id;
   const nameOf = (settings, team) => team === "A" ? settings.teamA : settings.teamB;
 

@@ -7,7 +7,7 @@
   const goldFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 });
 
   function page(title, tag, parent, description, body) {
-    document.title = title + " | Hỗ trợ chơi Liên Quân";
+    document.title = title + " | Hỗ trợ Ban Pick";
     return '<div class="wrap subpage knowledge-page"><a class="subtle-link" href="' + parent + '">' + tag +
       '</a><div class="page-head attack-head"><div><h1>' + title + '</h1><p>' + description + '</p></div></div>' + body + '</div>';
   }
