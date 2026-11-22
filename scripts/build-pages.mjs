@@ -33,7 +33,7 @@ for (const folder of ["art", "teams", "draft"]) {
 await cp("app/catalog.json", path.join(output, "catalog.json"));
 const html = prefix(await readFile("app/index.html", "utf8"));
 const routes = ["", "tier-list", "tier-list/all", "guides", "guides/goi-lenh", "wiki", "wiki/toc-danh",
-  "wiki/hieu-qua-vang", "esports", "esports/data", "ban-pick",
+  "wiki/hieu-qua-vang", "wiki/hut-mau-phep", "esports", "esports/data", "ban-pick",
   ...data.community.map(row => "tier-list/" + row.id), ...data.guides.map(row => "guides/" + row.id)];
 for (const route of routes) await write(path.join(route, "index.html"), html);
 for (const name of ["site.css", "strategy.js", "attack-speed.js", "site.js", "draft/index.html"]) {

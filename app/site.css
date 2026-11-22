@@ -259,6 +259,10 @@ dialog::backdrop {background:#050915b8}
   .qz-heroes {grid-template-columns:repeat(auto-fill,minmax(min(3.65rem,100%),1fr))}
 }
 .knowledge-section {margin-top:1rem;scroll-margin-top:1rem}
+.magic-lifesteal > * + * {margin-top:.65rem}
+.magic-lifesteal h2 {font-size:1.16rem}
+.magic-lifesteal ol {padding-inline-start:1.55rem}
+.magic-lifesteal li + li {margin-top:.35rem}
 .knowledge-item {display:flex;align-items:center;gap:.7rem}
 .knowledge-item img {flex:0 0 auto;border-radius:8px}
 .knowledge-item h2 {margin-bottom:.23rem}

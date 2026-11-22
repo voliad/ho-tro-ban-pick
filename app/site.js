@@ -389,7 +389,33 @@
     return heroList;
   }
 
+  function showMagicLifesteal() {
+    document.title = "Hút máu phép | Hỗ trợ Ban Pick";
+    const container = layout("Hút máu phép", "Cơ chế hồi máu theo từng nguồn sát thương phép trong Liên Quân Mobile.",
+      button("Về Wiki", "/wiki"));
+    container.innerHTML = `<article class="panel data-panel knowledge-section magic-lifesteal">
+      <h2>Vì sao cùng sát thương lại hồi máu khác nhau?</h2>
+      <p>Theo AoV Tactics &amp; Guides, từng kỹ năng, nội tại hoặc nguồn sát thương phép có thể có hệ số hút máu riêng. Hai kỹ năng gây cùng lượng sát thương thực tế vẫn có thể hồi lượng máu khác nhau dù chỉ số hút máu và mục tiêu giống nhau.</p>
+      <p>Phạm vi và số lần gây sát thương chưa đủ để suy ra hệ số. Kỹ năng diện rộng vẫn có thể có hiệu lực cao, còn một số nội tại có thể hồi ít hơn.</p>
+      <h2>Cách tính minh họa</h2>
+      <p><strong>Máu hồi = sát thương phép thực tế × tỷ lệ hút máu phép × hệ số hiệu lực.</strong></p>
+      <p>Ví dụ giả định: với 1.000 sát thương thực tế và 20% hút máu phép, hệ số 100% cho 200 máu, còn hệ số 50% cho 100 máu.</p>
+      <h2>Cách kiểm tra một kỹ năng</h2>
+      <ol>
+        <li>Giữ nguyên mục tiêu và chỉ số hút máu phép. Đảm bảo tướng thiếu đủ máu để quan sát toàn bộ lượng hồi.</li>
+        <li>Thử từng kỹ năng hoặc nội tại riêng. Ghi lại sát thương phép thực tế và lượng máu hồi, đồng thời loại trừ hồi máu tự nhiên, giảm hồi phục và các nguồn hồi khác.</li>
+        <li>Chia lượng máu hồi cho tích của sát thương thực tế và tỷ lệ hút máu phép để ước tính hệ số. Ghi lại phiên bản và máy chủ khi thử.</li>
+      </ol>
+      <p>Bảng Qzadd được bài viết dẫn là dữ liệu cộng đồng RoV Thái Lan. Hệ số từng kỹ năng cần được kiểm tra lại trên phiên bản và máy chủ đang chơi.</p>
+      <p><a class="subtle-link" href="https://www.facebook.com/aovtacticsguides/posts/1105836029028621/">Bài gốc và bảng Qzadd</a></p>
+    </article>`;
+  }
+
   async function showWiki() {
+    if (detail === "hut-mau-phep") {
+      showMagicLifesteal();
+      return;
+    }
     if (detail === "toc-danh") {
       window.ATG_ATTACK_SPEED.render(main);
       return;
@@ -404,7 +430,8 @@
     const nav = '<nav class="tabs nav-tabs" aria-label="Danh mục Wiki">' + tabs.map(([id, label]) =>
       '<a href="/wiki' + (id === "heroes" ? "" : "?tab=" + id) + '"' + (id === tab ? ' aria-current="page"' : "") +
       '>' + label + '</a>').join("") +
-      '<a href="/wiki/toc-danh">Mốc tốc đánh</a><a href="/wiki/hieu-qua-vang">Hiệu quả vàng</a></nav>';
+      '<a href="/wiki/toc-danh">Mốc tốc đánh</a><a href="/wiki/hut-mau-phep">Hút máu phép</a>' +
+      '<a href="/wiki/hieu-qua-vang">Hiệu quả vàng</a></nav>';
     try {
       const kind = tab === "hero" || tab === "heroes" ? "heroes" : tab;
       const catalog = ["items", "arcana"].includes(kind);
