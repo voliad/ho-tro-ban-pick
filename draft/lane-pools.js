@@ -14,7 +14,7 @@
     },
     "Đường giữa": {
       main: "raz liliana lauriel tulen iggy bonnie zata krixi lorion ishar yue natalya dieu-thuyen dirak veera goverra heino mganga aleister jinna kahlii ilumia azzenka ignis preyta darcy flowborn-2 evita",
-      extra: "annette gildur rouie erin marja the-flash",
+      extra: "annette gildur rouie erin marja the-flash alice",
     },
     "Trợ thủ": {
       main: "aya helen toro dolia annette arduin alice ybneth gildur lumburr mina zip grakk xeniel dyadia arum rouie cresht baldum teemee krizzix sephera thane chaugnar omega ormarr wiro ming",
