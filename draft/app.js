@@ -281,26 +281,45 @@
       subset(a.mixed, b.mixed) && (a.good.size > b.good.size || a.bad.size < b.bad.size || a.mixed.size < b.mixed.size);
     const dominated = new Set(recommendations.filter(entry =>
       recommendations.some(other => dominates(other, entry))));
-    const matchupScore = entry => 2 * entry.good.size - 3 * entry.bad.size;
-    recommendations.sort((a, b) => matchupScore(b) - matchupScore(a) ||
+    const { board, tierFor } = window.QZADD_TIERS;
+    const evidenceLanes = labels => [...new Set(labels.map(label => label.split(" · ")[0]))]
+      .filter(lane => Object.hasOwn(board, lane));
+    for (const entry of recommendations) {
+      entry.tier = tierFor(entry.id, evidenceLanes([...entry.good.values(), ...entry.mixed.values()].flat()));
+      entry.threats = new Map([...entry.bad].map(([target, labels]) =>
+        [target, tierFor(target, evidenceLanes(labels))]));
+      const risk = [...entry.threats.values()].reduce((total, tier) => total + 3 + (tier?.weight ?? 0), 0);
+      entry.score = 2 * entry.good.size - risk + (entry.tier?.weight ?? 0);
+    }
+    recommendations.sort((a, b) => b.score - a.score ||
       Number(dominated.has(a)) - Number(dominated.has(b)) ||
       a.bad.size - b.bad.size || a.mixed.size - b.mixed.size ||
       b.verified.size - a.verified.size || b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
     const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
+    const tierLabel = tier => tier.tier === "Draft" ? "Theo đội hình" : tier.tier;
+    const riskDetails = ({ bad, threats }) => [...bad].map(([target, labels]) => {
+      const threat = threats.get(target);
+      const level = threat?.weight > 0 ? "counter-threat-high" : threat?.weight < 0 ? "counter-threat-low" : "";
+      return '<span class="' + level + '" title="' + escapeHtml(labels.join(", ")) + '">' +
+        escapeHtml(nameFor(target)) + (threat ? ' · ' + tierLabel(threat) + ' ' + threat.lane : "") + '</span>';
+    }).join(", ");
     featuredHeroes = new Map(active ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
-    const cards = recommendations.map(({ id, good, bad, mixed }, index) => {
+    const cards = recommendations.map((entry, index) => {
+      const { id, good, bad, mixed, tier } = entry;
       const name = escapeHtml(nameFor(id));
       const featured = index < 3;
       const cardClass = "counter-card" + (featured ? " counter-featured" : "");
       const body = '<span class="counter-avatar">' + portrait(heroesById.get(id)) +
         (featured ? '<span class="counter-rank" aria-hidden="true">' + (index + 1) + '</span>' : "") +
         '</span><span class="counter-copy"><strong>' + name +
-        '</strong><span class="counter-balance">' + good.size + ' thuận · ' + bad.size + ' bất lợi' +
+        '</strong>' + (tier ? '<span class="counter-tier" data-tier="' + tier.tier + '">' +
+          tierLabel(tier) + ' · ' + tier.lane + '</span>' : '') +
+        '<span class="counter-balance">' + good.size + ' thuận · ' + bad.size + ' bất lợi' +
         (mixed.size ? ' · ' + mixed.size + ' trái chiều' : '') + '</span>' +
         (good.size ? '<span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' : '') +
         rows.filter(row => good.has(row.target) && row.tips[id]).map(row =>
           '<span>' + escapeHtml(row.tips[id]) + '</span>').join("") +
-        (bad.size ? '<span class="counter-risk">Bất lợi trước ' + escapeHtml(evidence(bad)) + '</span>' : "") +
+        (bad.size ? '<span class="counter-risk">Bất lợi trước ' + riskDetails(entry) + '</span>' : "") +
         (mixed.size ? '<span class="counter-risk">Kèo trái chiều với ' + escapeHtml(evidence(mixed)) + '</span>' : "") + '</span>';
       return active ? '<button type="button" class="' + cardClass + '" data-counter-pick="' + id +
         '" aria-pressed="' + selection.includes(id) + '">' + body +
