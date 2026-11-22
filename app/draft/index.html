@@ -6,14 +6,14 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=skip-bans">
+  <link rel="stylesheet" href="./style.css?v=filter-rows">
   <script src="./heroes.js" defer></script>
-  <script src="./rules.js?v=skip-bans" defer></script>
+  <script src="./rules.js?v=filter-rows" defer></script>
   <script src="./counters.js?v=cross-match" defer></script>
   <script src="./counter-reference.js?v=full-roster" defer></script>
   <script src="./qzadd-tiers.js?v=20261107-board" defer></script>
   <script src="./lane-pools.js?v=2" defer></script>
-  <script src="./app.js?v=skip-bans" defer></script>
+  <script src="./app.js?v=filter-rows" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -69,8 +69,8 @@
           </div>
           <div class="filter-bar">
             <div id="roles" class="role-bar" aria-label="Lọc theo vai trò"></div>
-            <div class="pool-filters">
-              <label class="lane-filter">Vị trí <select id="lane-filter"></select></label>
+            <div class="lane-filter-row">
+              <div id="lane-filter" class="role-bar" role="group" aria-label="Lọc theo đường"></div>
               <label class="available"><input id="available" type="checkbox" name="available"> Khả dụng</label>
             </div>
           </div>
