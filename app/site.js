@@ -105,7 +105,7 @@
     hero.insertAdjacentHTML("afterend", '<div id="home-stats" class="stats-line"></div>' +
       '<div class="home-columns"><section class="panel meta-preview" aria-labelledby="home-meta-title">' +
         '<div class="section-head"><div><h2 id="home-meta-title">Meta theo vị trí</h2><p>Tier List chính thức của ATG</p></div>' +
-        '<a href="/tier-list" class="subtle-link">Xem bảng đầy đủ</a></div><div id="home-meta"></div></section>' +
+        '<a href="/tier-list?source=atg" class="subtle-link">Xem bảng ATG</a></div><div id="home-meta"></div></section>' +
       '<aside class="panel rankings" aria-labelledby="home-esports-title"><div class="section-head"><div><h2 id="home-esports-title">BXH đội tuyển</h2>' +
         '<p>Elo theo dữ liệu ATG</p></div><a href="/esports" class="subtle-link">Xem BXH</a></div><div id="home-teams"></div></aside></div>' +
       '<section class="content-block" aria-label="Tier List cộng đồng" id="home-community"></section>' +
@@ -194,10 +194,41 @@
   }
 
   async function showTier() {
+    if (!detail && new URLSearchParams(location.search).get("source") !== "atg") {
+      const post = "https://www.facebook.com/Qzaddroaming/posts/1186579177209121/";
+      const drive = "https://drive.google.com/file/d/18DPpFTLIPmVZbOJ2yrsvbvWdafxnYsX9";
+      const updates = [
+        ["Tà Thần", "Triệu Vân", "Theo đội hình", "S"],
+        ["Tà Thần", "Airi", "A+", "S"],
+        ["Tà Thần", "Yena", "S", "A+"],
+        ["Đi rừng", "Edras", "S", "SS"],
+        ["Đi rừng", "Butterfly", "S", "A+"],
+        ["Đường giữa", "Evita", "Mới", "SS"],
+        ["Đường giữa", "Erin", "B+", "S"],
+        ["Đường giữa", "Preyta", "B+", "A+"],
+        ["Xạ thủ", "Flowborn Xạ thủ", "SS", "S"],
+      ];
+      document.title = "Tier List Qzadd | Hỗ trợ Ban Pick";
+      const container = layout("Tier List Qzadd", "Bảng RoV Thái Lan ngày 07/11/2026, tổng hợp ý kiến người chơi rank cao.",
+        '<div class="knowledge-actions">' + button("Bảng ATG", "/tier-list?source=atg") +
+        button("Tier List cộng đồng", "/tier-list/all") + '</div>');
+      container.innerHTML = '<section class="panel data-panel qz-board">' +
+        sectionHead("Bảng xếp hạng đủ 5 vị trí", "Qzadd đánh giá theo khả năng chơi tướng ở trình độ cao. Bảng thuộc máy chủ Thái Lan.",
+          button("Mở ảnh gốc", drive + "/view")) +
+        '<iframe src="' + drive + '/preview" title="Bảng Tier List Qzadd theo 5 vị trí" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>' +
+        '<div class="attack-sources"><a class="subtle-link" href="' + post + '">Bài đăng ngày 07/11/2026</a>' +
+        '<a class="subtle-link" href="https://www.facebook.com/Qzaddroaming">Trang Qzadd</a></div></section>' +
+        '<section class="panel data-panel knowledge-section">' +
+        sectionHead("Thay đổi được Qzadd ghi chú", "Tra nhanh tên tướng Việt Nam và bậc mới theo từng vị trí.") +
+        '<div class="table-scroll"><table><thead><tr><th scope="col">Vị trí</th><th scope="col">Tướng</th><th scope="col">Bậc cũ</th><th scope="col">Bậc mới</th></tr></thead><tbody>' +
+        updates.map(row => '<tr>' + row.map((cell, i) => '<td>' + (i === 3 ? '<span class="rank-badge">' + escape(cell) + '</span>' : escape(cell)) +
+          '</td>').join("") + '</tr>').join("") + '</tbody></table></div></section>';
+      return;
+    }
     const boardId = /^\d+$/.test(detail || "") ? detail : null;
     const isCommunity = detail === "all";
     const container = layout(isCommunity ? "Tier List cộng đồng" : "Tier List", "Tra cứu và so sánh xếp hạng tướng theo vị trí.",
-      button(isCommunity ? "Tier List Meta" : "Tier List cộng đồng", isCommunity ? "/tier-list" : "/tier-list/all"));
+      button("Tier List Qzadd", "/tier-list"));
     if (isCommunity) {
       try {
         const response = await load("community");

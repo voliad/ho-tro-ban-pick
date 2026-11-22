@@ -225,6 +225,7 @@ dialog::backdrop {background:#050915b8}
 .attack-summary a:not(.attack-sources a) {display:inline-block;margin-top:.8rem}
 .attack-sources {display:flex;flex-wrap:wrap;gap:.4rem .9rem;margin-top:.8rem}
 .knowledge-actions {display:flex;flex-wrap:wrap;gap:.55rem}
+.qz-board iframe {display:block;width:100%;height:clamp(28rem,74vh,55rem);border:1px solid var(--line);border-radius:8px;background:var(--surface-low)}
 .knowledge-section {margin-top:1rem;scroll-margin-top:1rem}
 .knowledge-item {display:flex;align-items:center;gap:.7rem}
 .knowledge-item img {flex:0 0 auto;border-radius:8px}
