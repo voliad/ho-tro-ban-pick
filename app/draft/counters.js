@@ -6,6 +6,15 @@ window.DRAFT_COUNTERS = {
     "Xạ thủ": "1127902569743449",
     "Trợ thủ": "1161261193074253"
   },
+  mechanics: {
+    ata: {
+      maloch: "Dùng Luyện Ngục để vượt địa hình do thuyền của Ata tạo ra hoặc hỗ trợ đồng đội thoát kèo.",
+    },
+    aya: {
+      aleister: "Dùng chiêu cuối khóa tướng đang chở Aya để ngắt pha lao vào.",
+      arum: "Giữ Thú Khốn để bắt tướng đang chở Aya khi đối thủ áp sát.",
+    },
+  },
   // Each row reads from the perspective of the player facing the center hero.
   lanes: {
     "Tà Thần": {
