@@ -399,9 +399,9 @@
       isRank && turn.kind === "ban" && turn.count > 1 ? "Chốt " + turn.count + " tướng cấm" :
         "Xác nhận " + actionLabel[turn.kind]) : "Ghi kết quả";
     $("commit").disabled = winner !== null || Boolean(turn && selection.length !== turn.count);
-    $("skip-draft").hidden = !turn;
-    $("undo").disabled = !(selection.length || number > 1 || game.turns.length || game.winner || game.draftSkipped);
-    $("undo").textContent = selection.length ? "Bỏ chọn" : game.winner || !game.draftSkipped && !game.turns.length && number > 1 ? "Hoàn tác kết quả" : "Hoàn tác";
+    $("skip-draft").hidden = turn?.kind !== "ban";
+    $("undo").disabled = !(selection.length || number > 1 || game.turns.length || game.winner || game.draftSkipped || game.skipBansFrom !== undefined);
+    $("undo").textContent = selection.length ? "Bỏ chọn" : game.winner || !game.draftSkipped && game.skipBansFrom === undefined && !game.turns.length && number > 1 ? "Hoàn tác kết quả" : "Hoàn tác";
     $("timer-toggle").disabled = !turn;
     positionControl();
     renderClock();
@@ -511,14 +511,15 @@
   }
 
   function skipDraft() {
-    if (!rules.activeTurn(state)) return;
-    state.games.at(-1).draftSkipped = true;
+    if (rules.activeTurn(state)?.kind !== "ban") return;
+    const game = state.games.at(-1);
+    game.skipBansFrom = game.turns.length;
     selection = [];
     clock = initialClock();
     save();
-    tell("Đã bỏ qua các lượt cấm/chọn còn lại. Bạn có thể hoàn tác để tiếp tục.");
+    tell("Đã bỏ qua các lượt cấm còn lại. Tiếp tục chọn tướng.");
     renderDraft();
-    $("commit").focus();
+    $("search").focus({ preventScroll: true });
   }
 
   function undo() {
@@ -530,20 +531,20 @@
       if (!action) return;
       clock = initialClock();
       save();
-      tell(action === "result" ? "Đã mở lại kết quả của ván trước." : action === "skip" ? "Đã mở lại lượt cấm/chọn." : "Đã hoàn tác lượt vừa chốt.");
+      tell(action === "result" ? "Đã mở lại kết quả của ván trước." : action === "skip" ? "Đã mở lại các lượt cấm." : "Đã hoàn tác lượt vừa chốt.");
     }
     renderDraft();
   }
 
   function positionControl() {
     const game = state.games.at(-1);
-    const enabled = !game.winner && !game.draftSkipped && !game.turns.length && !selection.length;
+    const enabled = !game.winner && !game.draftSkipped && game.skipBansFrom === undefined && !game.turns.length && !selection.length;
     $("swap").disabled = !enabled;
   }
 
   function swap() {
     const game = state.games.at(-1);
-    if (game.winner || game.draftSkipped || game.turns.length || selection.length) return;
+    if (game.winner || game.draftSkipped || game.skipBansFrom !== undefined || game.turns.length || selection.length) return;
     game.blue = rules.opposite(game.blue);
     if (state.games.length === 1) state.settings.firstBlue = game.blue;
     save();
