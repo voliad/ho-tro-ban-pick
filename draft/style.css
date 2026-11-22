@@ -258,9 +258,16 @@ dialog::backdrop { background: var(--color-blackout); }
   .pool { grid-column: 1 / -1; grid-row: 1; }
   .pool-head { padding: .55rem .65rem .45rem; }
   .hero-grid { height: clamp(15rem, 36vh, 20rem); min-height: 15rem; }
-  .slot-group { padding: .5rem .55rem 0; }
+  .slot-group { padding: .5rem .45rem 0; }
+  .slot-list { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .2rem; }
+  .slot { position: relative; min-height: 0; aspect-ratio: 1; }
+  .slot-art, .slot-index { width: 100%; flex: 1 1 auto; min-width: 0; }
+  .slot-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .team-head { min-height: 3.5rem; }
-  .controlbar { position: sticky; bottom: 0; z-index: 2; grid-template-columns: minmax(0, 1fr) auto; gap: .4rem; margin-top: .45rem; border-top: 1px solid var(--color-rule); padding: .4rem; }
+  .controlbar { position: sticky; bottom: 0; z-index: 2; grid-template-columns: minmax(0, 1fr); gap: .4rem; margin-top: .45rem; border-top: 1px solid var(--color-rule); padding: .4rem; padding-bottom: max(.4rem, env(safe-area-inset-bottom)); }
+  .timer { flex-wrap: wrap; }
+  .control-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr); gap: .3rem; }
+  .control-actions button { min-width: 0; min-height: 44px; padding-inline: .25rem; white-space: normal; line-height: 1.2; }
   .selection { grid-column: 1 / -1; grid-row: 1; text-align: left; padding-inline: .35rem; }
   .timer-value { min-width: 2.7rem; font-size: 1rem; }
   .quiet, .primary { min-height: 2.7rem; padding-inline: .52rem; }
@@ -276,9 +283,4 @@ dialog::backdrop { background: var(--color-blackout); }
   .top-actions .quiet { font-size: .8rem; padding-inline: .43rem; }
   .history-sides { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .history-team + .history-team { border-top: 1px solid var(--color-rule); }
-}
-
-@media (max-width: 25rem) {
-  .controlbar { grid-template-columns: minmax(0, 1fr); }
-  .control-actions { justify-content: flex-end; flex-wrap: wrap; }
 }
