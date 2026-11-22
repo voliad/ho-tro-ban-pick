@@ -128,7 +128,7 @@
     }
     const hero = heroesById.get(id);
     const name = escapeHtml(nameFor(id));
-    return '<li class="slot filled' + (current ? " current" : "") + '"><span class="slot-art">' +
+    return '<li class="slot filled' + (current ? " current" : "") + '" title="' + name + '"><span class="slot-art">' +
       (hero ? portrait(hero, "eager") : "") + '</span><span class="slot-label">' + name + '</span></li>';
   }
 
