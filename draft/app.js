@@ -161,6 +161,8 @@
       '<p class="team-foot">' + (settings.mode === "global" ? used + " tướng đã dùng" : "Kho tướng theo từng ván") + '</p>';
   }
 
+  let featuredHeroes = new Map();
+
   function renderRoster(turn = rules.activeTurn(state)) {
     const keyword = norm($("search").value.trim());
     const onlyAvailable = $("available").checked;
@@ -188,10 +190,14 @@
       grid.innerHTML = rosterFiltered.map(hero => {
         const reason = reasonFor(hero.id);
         const selected = selection.includes(hero.id);
-        const status = reason && turn ? '<span class="hero-status" aria-hidden="true">×</span>' : "";
+        const recommendation = !reason && featuredHeroes.get(hero.id);
+        const status = reason && turn ? '<span class="hero-status" aria-hidden="true">×</span>' :
+          recommendation ? '<span class="hero-recommendation" aria-hidden="true">' + recommendation + '</span>' : "";
         const roles = hero.roles.map(id => rules.roles.get(id)).filter(Boolean).join(", ");
-        const label = [heroLabel(hero), hero.variant ? "" : roles, turn && reason].filter(Boolean).join(", ");
+        const label = [heroLabel(hero), hero.variant ? "" : roles, turn && reason,
+          recommendation && "Gợi ý " + recommendation].filter(Boolean).join(", ");
         return '<button type="button" class="hero-tile' + (reason && turn ? " unavailable" : "") +
+          (recommendation ? " recommended" : "") +
           '" data-hero="' + escapeHtml(hero.id) + '" aria-label="' + escapeHtml(label) +
           '" title="' + escapeHtml(label) + '" aria-pressed="' + selected + '" aria-disabled="' + Boolean(reason) +
           '"><span class="hero-art">' + portrait(hero) + status + '</span><span class="hero-name">' +
@@ -263,15 +269,22 @@
     recommendations.sort((a, b) => (b.good.size - b.bad.size) - (a.good.size - a.bad.size) ||
       b.verified.size - a.verified.size || b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
     const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
-    const cards = recommendations.map(({ id, good, bad }) => {
+    featuredHeroes = new Map(active ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
+    const cards = recommendations.map(({ id, good, bad }, index) => {
       const name = escapeHtml(nameFor(id));
-      const body = '<span class="counter-avatar">' + portrait(heroesById.get(id)) + '</span><span class="counter-copy"><strong>' + name +
+      const featured = index < 3;
+      const cardClass = "counter-card" + (featured ? " counter-featured" : "");
+      const body = '<span class="counter-avatar">' + portrait(heroesById.get(id)) +
+        (featured ? '<span class="counter-rank" aria-hidden="true">' + (index + 1) + '</span>' : "") +
+        '</span><span class="counter-copy"><strong>' + name +
         '</strong><span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' +
         rows.filter(row => good.has(row.target) && row.tips[id]).map(row =>
           '<span>' + escapeHtml(row.tips[id]) + '</span>').join("") +
         (bad.size ? '<span class="counter-risk">Bất lợi trước ' + escapeHtml(evidence(bad)) + '</span>' : "") + '</span>';
-      return active ? '<button type="button" class="counter-card" data-counter-pick="' + id +
-        '" aria-pressed="' + selection.includes(id) + '">' + body + '</button>' : '<div class="counter-card">' + body + '</div>';
+      return active ? '<button type="button" class="' + cardClass + '" data-counter-pick="' + id +
+        '" aria-pressed="' + selection.includes(id) + '">' + body +
+        '<span class="counter-action">' + (selection.includes(id) ? "Đã chọn" : "Chọn") + '</span></button>' :
+        '<div class="' + cardClass + '">' + body + '</div>';
     });
     const status = selectedTarget ? "Tra cứu kèo đã chọn" : turn && opponents.size ?
       "Gợi ý cho bên " + sideLabel[turn.side].toLowerCase() + " đang thao tác" : "Chờ đối thủ chốt tướng để gợi ý tự động";
@@ -316,8 +329,8 @@
     }).join("");
     renderTeam(game, "blue", turn, hidden);
     renderTeam(game, "red", turn, hidden);
-    renderRoster(turn);
     renderCounters(game, turn, hidden);
+    renderRoster(turn);
 
     $("pool-note").textContent = turn
       ? (hidden ? "Chọn đủ 5 tướng. Đội hình được mở khi hai bên đã chốt." :
