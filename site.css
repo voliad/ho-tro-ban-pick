@@ -240,6 +240,10 @@ dialog::backdrop {background:#050915b8}
 .qz-heroes .thumb {display:flex;min-width:0;flex-direction:column;align-items:center;gap:.28rem;text-align:center;font-size:.76rem;line-height:1.25}
 .qz-heroes .portrait {width:min(100%,3.45rem);height:auto;aspect-ratio:1;border-radius:7px}
 .qz-heroes .thumb > span:not(.portrait) {padding:0}
+.qz-supplement {margin-top:1rem;border:1px solid var(--line);border-radius:10px;background:var(--surface-low)}
+.qz-supplement h2 {display:flex;justify-content:space-between;gap:.5rem;padding:.6rem .75rem;border-bottom:1px solid var(--line);font-size:1rem}
+.qz-supplement h2 span,.qz-supplement small {color:var(--muted)}
+.qz-supplement small {display:block;text-align:center;line-height:1.2;margin-top:.25rem}
 .qz-changes {margin-top:1rem;padding:.75rem;border:1px solid var(--line);border-radius:8px}
 .qz-changes summary {cursor:pointer;font-weight:700}
 .qz-changes ul {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(13rem,100%),1fr));gap:.65rem;list-style:none;margin:.75rem 0 0;padding:0}
