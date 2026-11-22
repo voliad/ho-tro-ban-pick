@@ -254,7 +254,7 @@
         for (const id of ids) {
           if (row.editorial && !selectedTarget && rows.some(other =>
             !other.editorial && other.target === row.target && other.pairs.some(picks => picks.includes(id)))) continue;
-          if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map(), verified: new Set() });
+          if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map(), verified: new Set(), mixed: new Map() });
           if (!row.editorial && index === 0) candidates.get(id).verified.add(row.target);
           const matchups = index === 0 ? candidates.get(id).good : candidates.get(id).bad;
           const lanes = matchups.get(row.target) ?? [];
@@ -265,22 +265,43 @@
         }
       }
     }
-    const recommendations = [...candidates.values()].filter(entry => entry.good.size && (!turn || !reason(entry.id)));
-    recommendations.sort((a, b) => (b.good.size - b.bad.size) - (a.good.size - a.bad.size) ||
+    for (const entry of candidates.values()) {
+      for (const [target, lanes] of entry.good) {
+        if (!entry.bad.has(target)) continue;
+        entry.mixed.set(target, [...new Set([...lanes, ...entry.bad.get(target)])]);
+        entry.good.delete(target);
+        entry.bad.delete(target);
+        entry.verified.delete(target);
+      }
+    }
+    const recommendations = [...candidates.values()].filter(entry =>
+      (entry.good.size || entry.mixed.size) && (!turn || !reason(entry.id)));
+    const subset = (left, right) => [...left.keys()].every(id => right.has(id));
+    const dominates = (a, b) => subset(b.good, a.good) && subset(a.bad, b.bad) &&
+      subset(a.mixed, b.mixed) && (a.good.size > b.good.size || a.bad.size < b.bad.size || a.mixed.size < b.mixed.size);
+    const dominated = new Set(recommendations.filter(entry =>
+      recommendations.some(other => dominates(other, entry))));
+    const matchupScore = entry => 2 * entry.good.size - 3 * entry.bad.size;
+    recommendations.sort((a, b) => matchupScore(b) - matchupScore(a) ||
+      Number(dominated.has(a)) - Number(dominated.has(b)) ||
+      a.bad.size - b.bad.size || a.mixed.size - b.mixed.size ||
       b.verified.size - a.verified.size || b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
     const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
     featuredHeroes = new Map(active ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
-    const cards = recommendations.map(({ id, good, bad }, index) => {
+    const cards = recommendations.map(({ id, good, bad, mixed }, index) => {
       const name = escapeHtml(nameFor(id));
       const featured = index < 3;
       const cardClass = "counter-card" + (featured ? " counter-featured" : "");
       const body = '<span class="counter-avatar">' + portrait(heroesById.get(id)) +
         (featured ? '<span class="counter-rank" aria-hidden="true">' + (index + 1) + '</span>' : "") +
         '</span><span class="counter-copy"><strong>' + name +
-        '</strong><span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' +
+        '</strong><span class="counter-balance">' + good.size + ' thuận · ' + bad.size + ' bất lợi' +
+        (mixed.size ? ' · ' + mixed.size + ' trái chiều' : '') + '</span>' +
+        (good.size ? '<span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' : '') +
         rows.filter(row => good.has(row.target) && row.tips[id]).map(row =>
           '<span>' + escapeHtml(row.tips[id]) + '</span>').join("") +
-        (bad.size ? '<span class="counter-risk">Bất lợi trước ' + escapeHtml(evidence(bad)) + '</span>' : "") + '</span>';
+        (bad.size ? '<span class="counter-risk">Bất lợi trước ' + escapeHtml(evidence(bad)) + '</span>' : "") +
+        (mixed.size ? '<span class="counter-risk">Kèo trái chiều với ' + escapeHtml(evidence(mixed)) + '</span>' : "") + '</span>';
       return active ? '<button type="button" class="' + cardClass + '" data-counter-pick="' + id +
         '" aria-pressed="' + selection.includes(id) + '">' + body +
         '<span class="counter-action">' + (selection.includes(id) ? "Đã chọn" : "Chọn") + '</span></button>' :
