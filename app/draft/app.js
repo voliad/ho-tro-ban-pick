@@ -175,6 +175,33 @@
     if (hadFocus) grid.querySelector('[data-hero="' + CSS.escape(hadFocus) + '"]')?.focus({ preventScroll: true });
   }
 
+  const counterRows = Object.entries(window.DRAFT_COUNTERS.lanes).flatMap(([lane, heroes]) =>
+    Object.entries(heroes).map(([target, pairs]) => ({ lane, target, pairs, key: lane + "|" + target })));
+
+  function renderCounters(game, turn, hidden) {
+    const chosen = $("counter-target").value;
+    const opponents = turn?.kind === "pick" && !hidden ? game.turns
+      .filter(entry => entry.kind === "pick" && entry.side !== turn.side).flatMap(entry => entry.ids) : [];
+    const rows = chosen ? counterRows.filter(row => row.key === chosen) :
+      counterRows.filter(row => opponents.includes(row.target));
+    const reason = rules.eligibility(state, turn, true);
+    const active = turn?.kind === "pick";
+    const buttonList = ids => ids.map(id => {
+      const blocked = active ? reason(id) : "";
+      const caption = escapeHtml(nameFor(id));
+      return active && !blocked
+        ? '<button type="button" class="quiet" data-counter-pick="' + id + '">' + caption + '</button>'
+        : '<span class="counter-chip">' + caption + (blocked ? ' (' + escapeHtml(blocked) + ')' : '') + '</span>';
+    }).join("");
+    $("counter-results").innerHTML = rows.length ? rows.map(({ lane, target, pairs }) =>
+      '<section class="counter-row"><h3>' + escapeHtml(nameFor(target) + " / " + lane) +
+      '</h3><p>Khắc chế tướng này</p><div class="counter-chips">' + buttonList(pairs[0]) +
+      '</div><p>Bất lợi khi gặp tướng này</p><div class="counter-chips">' +
+      pairs[1].map(id => '<span class="counter-chip">' + escapeHtml(nameFor(id)) + '</span>').join("") + '</div></section>').join("") :
+      '<p class="counter-note">' + (opponents.length ? "Chưa có dữ liệu đã đối chiếu cho các tướng địch đã chọn." :
+        "Chọn một tướng để tra cứu, hoặc chờ đối thủ chốt tướng để nhận gợi ý.") + '</p>';
+  }
+
   function renderDraft() {
     const game = state.games.at(-1);
     const number = state.games.length;
@@ -206,6 +233,7 @@
     renderTeam(game, "blue", turn, hidden);
     renderTeam(game, "red", turn, hidden);
     renderRoster(turn);
+    renderCounters(game, turn, hidden);
 
     $("pool-note").textContent = turn
       ? (hidden ? "Chọn đủ 5 tướng. Đội hình được mở khi hai bên đã chốt." :
@@ -529,6 +557,21 @@
     button.addEventListener("click", () => $(button.dataset.close).close());
   }
 
+  $("counter-target").innerHTML = '<option value="">Tự động theo lượt chọn của đối thủ</option>' +
+    Object.keys(window.DRAFT_COUNTERS.lanes).map(lane => '<optgroup label="' + escapeHtml(lane) + '">' +
+      counterRows.filter(row => row.lane === lane).map(row => '<option value="' + escapeHtml(row.key) + '">' +
+        escapeHtml(nameFor(row.target)) + '</option>').join("") + '</optgroup>').join("");
+  $("counter-sources").innerHTML = Object.entries(window.DRAFT_COUNTERS.sources).map(([lane, post]) =>
+    '<a href="https://www.facebook.com/Qzaddroaming/posts/' + post + '/">' + escapeHtml(lane) + '</a>').join("");
+  $("counter-target").addEventListener("change", renderDraft);
+  $("counter-results").addEventListener("click", event => {
+    const choice = event.target.closest("[data-counter-pick]");
+    if (choice && rules.activeTurn(state)?.kind === "pick") {
+      const hero = choice.dataset.counterPick;
+      chooseHero(hero);
+      $("counter-results").querySelector('[data-counter-pick="' + hero + '"]')?.focus({ preventScroll: true });
+    }
+  });
   restore();
   if (isRank) {
     document.title = "Ban Pick rank thường | Hỗ trợ Ban Pick";

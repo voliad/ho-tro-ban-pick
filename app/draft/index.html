@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./style.css">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js" defer></script>
+  <script src="./counters.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -84,6 +85,14 @@
         </div>
       </div>
       <p id="notice" class="notice" role="status"></p>
+      <details class="counter-panel" open>
+        <summary>Khắc chế theo vị trí</summary>
+        <label for="counter-target">Tướng đối thủ</label>
+        <select id="counter-target"></select>
+        <div id="counter-results" aria-live="polite"></div>
+        <p class="counter-note">Tham khảo kèo RoV Thái Lan từ Qzadd. Kết quả còn tùy phiên bản, người chơi và đội hình.</p>
+        <div id="counter-sources" class="counter-sources"></div>
+      </details>
       <noscript><p>Bật JavaScript để sử dụng bàn cấm chọn.</p></noscript>
     </section>
 
