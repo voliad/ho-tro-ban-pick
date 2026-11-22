@@ -202,7 +202,7 @@
     if (hadFocus) grid.querySelector('[data-hero="' + CSS.escape(hadFocus) + '"]')?.focus({ preventScroll: true });
   }
 
-  const counterRows = Object.entries(window.DRAFT_COUNTERS.lanes).flatMap(([lane, heroes]) => {
+  const laneCounterRows = Object.entries(window.DRAFT_COUNTERS.lanes).flatMap(([lane, heroes]) => {
     const targets = new Set(Object.keys(heroes));
     for (const pairs of Object.values(heroes)) for (const id of pairs.flat()) targets.add(id);
     if (lane === "Trợ thủ") for (const id of Object.keys(window.DRAFT_COUNTERS.mechanics)) targets.add(id);
@@ -224,6 +224,15 @@
       return { lane, target, pairs, direct, tips, key: lane + "|" + target };
     }).sort((a, b) => nameFor(a.target).localeCompare(nameFor(b.target), "vi"));
   });
+  const reference = window.DRAFT_COUNTER_REFERENCE;
+  const referenceRows = roster.map(({ id }) => {
+    const tips = reference.tactical[id] ?? {};
+    const good = reference.editorial[id] ?? Object.keys(tips);
+    const bad = Object.entries(reference.editorial).filter(([, picks]) => picks.includes(id)).map(([target]) => target);
+    return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
+      pairs: [good, bad], direct: [[], []], tips, editorial: true };
+  });
+  const counterRows = [...laneCounterRows, ...referenceRows];
 
   function renderCounters(game, turn, hidden) {
     const expanded = $("counter-results").querySelector("details")?.open;
@@ -237,11 +246,14 @@
     for (const row of rows) {
       for (const [index, ids] of row.pairs.entries()) {
         for (const id of ids) {
-          if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map() });
+          if (row.editorial && !selectedTarget && rows.some(other =>
+            !other.editorial && other.target === row.target && other.pairs.some(picks => picks.includes(id)))) continue;
+          if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map(), verified: new Set() });
+          if (!row.editorial && index === 0) candidates.get(id).verified.add(row.target);
           const matchups = index === 0 ? candidates.get(id).good : candidates.get(id).bad;
           const lanes = matchups.get(row.target) ?? [];
           const source = row.direct[index].includes(id) ? "Qzadd" :
-            row.tips[id] && index === 0 ? "theo cơ chế" : "tra chéo";
+            row.tips[id] && index === 0 ? "theo cơ chế" : row.editorial ? "Zathong" : "tra chéo";
           lanes.push(row.lane + " · " + source);
           matchups.set(row.target, lanes);
         }
@@ -249,7 +261,7 @@
     }
     const recommendations = [...candidates.values()].filter(entry => entry.good.size && (!turn || !reason(entry.id)));
     recommendations.sort((a, b) => (b.good.size - b.bad.size) - (a.good.size - a.bad.size) ||
-      b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
+      b.verified.size - a.verified.size || b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
     const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
     const cards = recommendations.map(({ id, good, bad }) => {
       const name = escapeHtml(nameFor(id));
@@ -633,7 +645,7 @@
   }
 
   $("counter-target").innerHTML = '<option value="">Tự động theo lượt chọn của đối thủ</option>' +
-    Object.keys(window.DRAFT_COUNTERS.lanes).map(lane => '<optgroup label="' + escapeHtml(lane) + '">' +
+    [...Object.keys(window.DRAFT_COUNTERS.lanes), "Tham khảo chung"].map(lane => '<optgroup label="' + escapeHtml(lane) + '">' +
       counterRows.filter(row => row.lane === lane).map(row => '<option value="' + escapeHtml(row.key) + '">' +
         escapeHtml(nameFor(row.target)) + '</option>').join("") + '</optgroup>').join("");
   $("counter-sources").innerHTML = Object.entries(window.DRAFT_COUNTERS.sources).map(([lane, post]) =>
