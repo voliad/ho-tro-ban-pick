@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  // Qzadd, RoV Thailand high-rank tier list, 2026-11-07. Unconfirmed portraits are omitted.
+  // Qzadd, RoV Thailand high-rank tier list, 2026-11-07.
   const source = {
     date: "07/11/2026",
     post: "https://www.facebook.com/Qzaddroaming/posts/1186579177209121/",
@@ -25,7 +25,7 @@
       SS: "marja taara",
       S: "biron omen airi trieu-van",
       "A+": "florentino qi ryoma maloch skud murad richter veres yena",
-      A: "tamyn 11596 bolt-baron amily bijan roxie charlotte mina toro",
+      A: "tamyn 11596 bolt-baron amily bijan volkath roxie charlotte mina toro",
       "B+": "max arthur yan allain kilgroth tachi lu-bo errol wiro ata",
       B: "zuka ngo-khong kaine bright superman",
       "B-": "dextra",
@@ -35,7 +35,7 @@
       SS: "tamyn 11596",
       S: "sinestrea astrid billow zephys nakroth",
       "A+": "tachi butterfly elandorr keera trieu-van zuka aoi ryoma murad",
-      A: "marja bolt-baron kilgroth amily airi darcy taara ngo-khong veres zill yan enzo florentino",
+      A: "marja bolt-baron kilgroth amily airi volkath darcy taara ngo-khong veres zill yan enzo florentino",
       "B+": "wonder-woman errol fennik kriknak paine lu-bo bright",
       B: "quillen rourke kaine",
       "B-": "the-flash",
@@ -63,7 +63,7 @@
     "Xạ thủ": {
       S: "flowborn violet elandorr hayate",
       "A+": "capheny wisp erin elsu stuart valhein yorn",
-      A: "moren slimz thorne laville teeri fennik",
+      A: "telannas moren slimz thorne laville teeri fennik",
       "B+": "lindis celica",
       Draft: "11596 bright marja murad taara heino",
     },

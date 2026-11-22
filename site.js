@@ -218,7 +218,7 @@
       changes.map(([lane, id, before, after]) => '<li><strong>' + escape(heroName(byId.get(id))) +
         '</strong><span>' + lane + ' · ' + tierTitle(before) + ' → ' + after + '</span></li>').join("") +
       '</ul></details>' +
-      '<div class="qz-source"><p>Qzadd tổng hợp ý kiến người chơi rank cao Thái Lan. Các ô chưa xác định được tên tướng Việt Nam có thể tra trong bảng gốc.</p>' +
+      '<div class="qz-source"><p>Qzadd tổng hợp ý kiến người chơi rank cao Thái Lan. Tên và ảnh tướng hiển thị theo danh mục Garena Việt Nam.</p>' +
       '<div class="attack-sources"><a class="subtle-link" href="' + source.post + '">Bài đăng Qzadd</a>' +
       '<a class="subtle-link" href="' + source.image + '">Xem bảng gốc</a></div></div></section>';
     function renderGroups() {
