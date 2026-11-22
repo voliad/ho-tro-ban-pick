@@ -6,12 +6,12 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=highlight-picks">
+  <link rel="stylesheet" href="./style.css?v=matchup-sets">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=side-perspective" defer></script>
   <script src="./counters.js?v=cross-match" defer></script>
   <script src="./counter-reference.js?v=full-roster" defer></script>
-  <script src="./app.js?v=highlight-picks" defer></script>
+  <script src="./app.js?v=matchup-sets" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -73,6 +73,7 @@
             <h3 id="counter-title">Gợi ý tướng</h3>
             <div id="counter-results" aria-live="polite"></div>
             <details class="counter-more"><summary>Tra kèo và nguồn dữ liệu</summary>
+            <p class="counter-note">Mỗi đối thủ được tính một lần. Kèo thuận cộng 2 điểm, kèo bất lợi trừ 3 điểm. Khi các vị trí cho kết quả trái chiều, kèo được đánh dấu và không tính điểm.</p>
             <label for="counter-target">Tướng đối thủ</label>
             <select id="counter-target"></select>
             <p class="counter-note">Tra chéo đọc kèo theo chiều ngược từ bảng Qzadd. Gợi ý theo cơ chế dựa trên kỹ năng và tình huống trong trận.</p>
