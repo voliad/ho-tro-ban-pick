@@ -28,7 +28,7 @@
   const $ = id => document.getElementById(id);
 
   function safeAsset(source) {
-    if (typeof source === "string" && /^\/(?:draft\/portraits|teams)\/[-\w]+\.(?:jpe?g|png|webp)$/.test(source)) return source;
+    if (typeof source === "string" && /^\/(?:draft\/portraits|teams|art)\/[-\w]+\.(?:jpe?g|png|webp)$/.test(source)) return source;
     try {
       const url = new URL(source || "", original + "/");
       return source && url.protocol === "https:" && url.origin === original && url.pathname.startsWith("/images/")
@@ -251,8 +251,14 @@
   }
 
   async function showGuides() {
+    if (detail === "goi-lenh") {
+      window.AOV_STRATEGY.renderCalls(main);
+      return;
+    }
     const id = /^\d+$/.test(detail || "") ? detail : "";
-    const container = layout("Giáo án", "Tìm build và hướng dẫn thực chiến theo tướng hoặc vị trí.", button("Đóng góp giáo án", legacy("/guides")));
+    const actions = '<div class="knowledge-actions">' +
+      (id ? "" : button("Gọi lệnh trong đội", "/guides/goi-lenh")) + button("Đóng góp giáo án", legacy("/guides")) + '</div>';
+    const container = layout("Giáo án", "Tìm build và hướng dẫn thực chiến theo tướng hoặc vị trí.", actions);
     try {
       if (id) {
         const response = await load("guide/" + id);
@@ -303,12 +309,21 @@
   }
 
   async function showWiki() {
+    if (detail === "toc-danh") {
+      window.ATG_ATTACK_SPEED.render(main);
+      return;
+    }
+    if (detail === "hieu-qua-vang") {
+      window.AOV_STRATEGY.renderGold(main);
+      return;
+    }
     const tab = new URLSearchParams(location.search).get("tab") ?? "heroes";
     const container = layout("Wiki", "Tìm tướng, vai trò, phép bổ trợ, phù hiệu và tài nguyên trong game.");
     const tabs = [["heroes", "Tướng"], ["spells", "Phép bổ trợ"], ["enchantments", "Phù hiệu"], ["items", "Trang bị"], ["arcana", "Ngọc"]];
     const nav = '<nav class="tabs nav-tabs" aria-label="Danh mục Wiki">' + tabs.map(([id, label]) =>
       '<a href="/wiki' + (id === "heroes" ? "" : "?tab=" + id) + '"' + (id === tab ? ' aria-current="page"' : "") +
-      '>' + label + '</a>').join("") + '</nav>';
+      '>' + label + '</a>').join("") +
+      '<a href="/wiki/toc-danh">Mốc tốc đánh</a><a href="/wiki/hieu-qua-vang">Hiệu quả vàng</a></nav>';
     try {
       const kind = tab === "hero" || tab === "heroes" ? "heroes" : tab;
       const catalog = ["items", "arcana"].includes(kind);
@@ -338,6 +353,7 @@
           escape(item.name) + '</h2>' + (typeof item.description === "string" ? '<p>' + escape(item.description) + '</p>' : "") +
           ([item.category, item.type, item.level].filter(Boolean).length ?
             '<p>' + [item.category, item.type, item.level].filter(Boolean).map(escape).join(" / ") + '</p>' : "") +
+          (item.name === "Khiên Thánh Quang" ? '<a class="subtle-link" href="/wiki/hieu-qua-vang#khien-thanh-quang">Xem chỉ số và nội tại</a>' : "") +
           '</div></article>').join("") || empty("Không tìm thấy mục phù hợp.");
       }
       $("wiki-search").addEventListener("input", render);
@@ -358,7 +374,8 @@
         const teams = response.data.slice().sort((a, b) => b.score - a.score);
         const regions = [...new Set(teams.map(team => team.region).filter(Boolean))];
         let active = "";
-        container.innerHTML = sourceNote(response) + '<div id="regions"></div><div class="panel data-panel" id="team-data"></div>';
+        container.innerHTML = sourceNote(response) + '<div id="regions"></div><div class="panel data-panel" id="team-data"></div>' +
+          window.AOV_STRATEGY.esportsRecap();
         function renderRegions() {
           $("regions").innerHTML = toggleGroup([["", "Tất cả"], ...regions.map(x => [x, x])], active, "Khu vực");
           $("team-data").innerHTML = '<div class="table-scroll"><table><thead><tr><th>#</th><th>Đội tuyển</th><th>Khu vực</th>' +

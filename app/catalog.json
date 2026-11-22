@@ -393,6 +393,14 @@
       "level": "Cấp 3"
     },
     {
+      "name": "Khiên Thánh Quang",
+      "iconUrl": "/art/khien-thanh-quang.webp",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3",
+      "description": "+1.000 máu tối đa, +180 giáp vật lý và +10% giảm hồi chiêu."
+    },
+    {
       "name": "Khiên Thất Truyền",
       "iconUrl": "/images/items/khien that truyen.png",
       "category": "THỦ",
