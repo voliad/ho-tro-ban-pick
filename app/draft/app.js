@@ -55,7 +55,7 @@
       if (!saved) return;
       if (!saved.state?.games?.length || !saved.state.settings) throw Error("invalid state");
       state = saved.state;
-      if (isRank && state.games[0].turns[0]?.ids.length === 1) {
+      if (isRank && state.games[0].skipBansFrom === undefined && state.games[0].turns[0]?.ids.length === 1) {
         const game = state.games[0];
         const bans = game.turns.filter(entry => entry.kind === "ban");
         if (bans.length === 10) {
@@ -259,6 +259,27 @@
   });
   const counterRows = [...laneCounterRows, ...referenceRows];
 
+  function missingLanes(ids) {
+    const positions = Object.entries(lanePools);
+    // Keep the best assignment for each set of occupied lanes.
+    let assignments = new Map([[0, 0]]);
+    for (const id of ids) {
+      const next = new Map(assignments);
+      for (const [mask, score] of assignments) {
+        for (const [index, [, pool]] of positions.entries()) {
+          const bit = 1 << index;
+          if (mask & bit || !(pool.main.has(id) || pool.extra.has(id))) continue;
+          const value = score + (pool.main.has(id) ? 7 : 6);
+          next.set(mask | bit, Math.max(next.get(mask | bit) ?? 0, value));
+        }
+      }
+      assignments = next;
+    }
+    const best = Math.max(...assignments.values());
+    return positions.filter((_, index) => [...assignments].some(([mask, score]) =>
+      score === best && !(mask & (1 << index)))).map(([key]) => key);
+  }
+
   function renderCounters(game, turn, hidden) {
     const expanded = $("counter-results").querySelector("details")?.open;
     const selectedTarget = $("counter-target").value;
@@ -293,8 +314,14 @@
         entry.verified.delete(target);
       }
     }
-    const recommendations = [...candidates.values()].filter(entry =>
-      (entry.good.size || entry.mixed.size) && (!turn || !reason(entry.id)));
+    const picks = active ? game.turns.filter(row => row.kind === "pick" && row.side === turn.side)
+      .flatMap(row => row.ids) : [];
+    const needed = active ? (lane ? [lane] : picks.length ? missingLanes(picks) : []) : [];
+    const fits = (id, position) => lanePools[position].main.has(id) || lanePools[position].extra.has(id);
+    const recommendations = needed.length ? roster.filter(({ id }) =>
+      !reason(id) && needed.some(position => fits(id, position))).map(({ id }) =>
+      candidates.get(id) ?? { id, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() }) :
+      [...candidates.values()].filter(entry => (entry.good.size || entry.mixed.size) && (!turn || !reason(entry.id)));
     const subset = (left, right) => [...left.keys()].every(id => right.has(id));
     const dominates = (a, b) => subset(b.good, a.good) && subset(a.bad, b.bad) &&
       subset(a.mixed, b.mixed) && (a.good.size > b.good.size || a.bad.size < b.bad.size || a.mixed.size < b.mixed.size);
@@ -304,7 +331,10 @@
     const evidenceLanes = labels => [...new Set(labels.map(label => label.split(" · ")[0]))]
       .filter(lane => Object.hasOwn(board, lane));
     for (const entry of recommendations) {
-      entry.tier = tierFor(entry.id, evidenceLanes([...entry.good.values(), ...entry.mixed.values()].flat()));
+      const fitLanes = needed.filter(position => fits(entry.id, position));
+      entry.tier = tierFor(entry.id, fitLanes.length ? fitLanes :
+        evidenceLanes([...entry.good.values(), ...entry.mixed.values()].flat()));
+      entry.fitLanes = fitLanes;
       entry.threats = new Map([...entry.bad].map(([target, labels]) =>
         [target, tierFor(target, evidenceLanes(labels))]));
       const risk = [...entry.threats.values()].reduce((total, tier) => total + 3 + (tier?.weight ?? 0), 0);
@@ -324,7 +354,7 @@
     }).join(", ");
     featuredHeroes = new Map(active ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
     const cards = recommendations.map((entry, index) => {
-      const { id, good, bad, mixed, tier } = entry;
+      const { id, good, bad, mixed, tier, fitLanes } = entry;
       const name = escapeHtml(nameFor(id));
       const featured = index < 3;
       const cardClass = "counter-card" + (featured ? " counter-featured" : "");
@@ -333,7 +363,8 @@
         '</span><span class="counter-copy"><strong>' + name +
         '</strong>' + (tier ? '<span class="counter-tier" data-tier="' + tier.tier + '">' +
           tierLabel(tier) + ' · ' + tier.lane + '</span>' : '') +
-        '<span class="counter-balance">' + good.size + ' thuận · ' + bad.size + ' bất lợi' +
+        (fitLanes.length ? '<span class="counter-balance">' + fitLanes.map(position => lanePools[position].label).join(" / ") + '</span>' : '') +
+        '<span class="counter-balance">' + (good.size || bad.size || mixed.size ? good.size + ' thuận · ' + bad.size + ' bất lợi' : 'Chưa có dữ liệu kèo với đối thủ') +
         (mixed.size ? ' · ' + mixed.size + ' trái chiều' : '') + '</span>' +
         (good.size ? '<span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' : '') +
         rows.filter(row => good.has(row.target) && row.tips[id]).map(row =>
@@ -345,9 +376,10 @@
         '<span class="counter-action">' + (selection.includes(id) ? "Đã chọn" : "Chọn") + '</span></button>' :
         '<div class="' + cardClass + '">' + body + '</div>';
     });
-    const status = selectedTarget ? "Tra cứu kèo đã chọn" : turn && opponents.size ?
+    const status = needed.length ? (lane ? "Đang lọc theo " : "Vị trí đội hình có thể còn thiếu: ") +
+      needed.map(position => lanePools[position].label).join(", ") : selectedTarget ? "Tra cứu kèo đã chọn" : turn && opponents.size ?
       "Gợi ý cho bên " + sideLabel[turn.side].toLowerCase() + " đang thao tác" : "Chờ đối thủ chốt tướng để gợi ý tự động";
-    const unavailable = rows.length ? "Hiện không có tướng khắc chế khả dụng." : opponents.size ?
+    const unavailable = needed.length ? "Hiện không có tướng khả dụng cho vị trí này." : rows.length ? "Hiện không có tướng khắc chế khả dụng." : opponents.size ?
       "Chưa có dữ liệu cho các tướng đối thủ đã chốt." : "Bạn cũng có thể tra kèo thủ công bên dưới.";
     $("counter-results").innerHTML = '<p class="counter-status">' + escapeHtml(status) + '</p>' +
       (cards.length ? '<div class="counter-cards">' + cards.slice(0, 3).join("") + '</div>' :
@@ -709,7 +741,7 @@
     lane = button.dataset.lane;
     saveFilters();
     $("heroes").scrollTop = 0;
-    renderRoster();
+    renderDraft();
   });
   for (const id of ["search", "available"]) {
     $(id).addEventListener("input", () => {
@@ -780,3 +812,4 @@
   tell("");
   setInterval(tick, 200);
 })();
+
