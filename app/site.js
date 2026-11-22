@@ -104,21 +104,22 @@
     const hero = main.querySelector(".hero");
     hero.insertAdjacentHTML("afterend", '<div id="home-stats" class="stats-line"></div>' +
       '<div class="home-columns"><section class="panel meta-preview" aria-labelledby="home-meta-title">' +
-        '<div class="section-head"><div><h2 id="home-meta-title">Meta theo vị trí</h2><p>Tier List chính thức của ATG</p></div>' +
-        '<a href="/tier-list?source=atg" class="subtle-link">Xem bảng ATG</a></div><div id="home-meta"></div></section>' +
+        '<div class="section-head"><div><h2 id="home-meta-title">Meta theo vị trí</h2><p>Tier List RoV của Qzadd</p></div>' +
+        '<a href="/tier-list" class="subtle-link">Xem bảng Qzadd</a></div><div id="home-meta"></div></section>' +
       '<aside class="panel rankings" aria-labelledby="home-esports-title"><div class="section-head"><div><h2 id="home-esports-title">BXH đội tuyển</h2>' +
         '<p>Elo theo dữ liệu ATG</p></div><a href="/esports" class="subtle-link">Xem BXH</a></div><div id="home-teams"></div></aside></div>' +
       '<section class="content-block" aria-label="Tier List cộng đồng" id="home-community"></section>' +
       '<section class="content-block" aria-label="Giáo án nổi bật"><div id="home-guides"></div></section>');
-    let activeLane = "JGL";
-    let meta = boot.meta;
+    let activeLane = "Đi rừng";
+    const { board, order, source } = window.QZADD_TIERS;
+    const byId = new Map(boot.roster.map(hero => [hero.id, hero]));
     let esports = boot.esports;
     let teams = boot.teams;
     let guides = boot.guides;
 
     function stats() {
       const cells = [
-        ["Tướng trong Tier List", meta?.heroCount],
+        ["Tướng trong Tier List", new Set(Object.values(board).flatMap(groups => Object.values(groups).flat())).size],
         ["Ván đấu esports", esports?.summary?.totalGames],
         ["Đội tuyển theo dõi", teams?.length],
       ];
@@ -127,13 +128,13 @@
     }
 
     function preview() {
-      const index = meta?.columns.indexOf(activeLane) ?? -1;
-      const available = meta?.rows?.flatMap(row => (row.cells[index] ?? []).map(hero => ({ ...hero, tier: row.label }))) ?? [];
-      $("home-meta").innerHTML = toggleGroup(Object.entries(lanes), activeLane, "Vị trí") +
+      const available = order.flatMap(tier => (board[activeLane][tier] ?? []).map(id => ({ ...byId.get(id), tier })));
+      const positions = Object.keys(board).map(key => [key, window.AOV_LANE_POOLS[key].label]);
+      $("home-meta").innerHTML = toggleGroup(positions, activeLane, "Vị trí") +
         '<div class="featured-heroes">' + (available.slice(0, 5).map(hero => '<div class="featured-tile">' +
           '<span class="rank-badge" data-rank="' + escape(hero.tier) + '">' + escape(hero.tier) + '</span>' +
-          heroButton(hero) + '</div>').join("") || empty("Chưa có tướng ở vị trí này.")) + '</div>' +
-        '<p class="mini-note">Bảng meta cập nhật ' + date(meta?.updatedAt) + '</p>';
+          thumb({ name: [hero.name, hero.variant].filter(Boolean).join(" ") }) + '</div>').join("") || empty("Chưa có tướng ở vị trí này.")) + '</div>' +
+        '<p class="mini-note">Bảng meta cập nhật ' + source.date + '</p>';
       $("home-meta").querySelector(".tabs").addEventListener("click", event => {
         const field = event.target.closest("[data-filter]");
         if (!field) return;
@@ -167,7 +168,6 @@
     rankings();
     guideList();
     communityList(boot.community);
-    load("meta").then(response => { meta = response.data; stats(); preview(); }).catch(() => {});
     load("esports").then(response => { esports = response.data; stats(); }).catch(() => {});
     load("teams").then(response => { teams = response.data; stats(); rankings(); }).catch(() => {});
     load("guides").then(response => { guides = response.data; guideList(); }).catch(() => {});
@@ -210,8 +210,7 @@
     document.title = "Tier List Qzadd | Hỗ trợ Ban Pick";
     const container = layout("Tier List Qzadd",
       "Xếp hạng theo vị trí tại RoV Thái Lan · " + source.date,
-      '<div class="knowledge-actions">' + button("Bảng ATG", "/tier-list?source=atg") +
-      button("Tier List cộng đồng", "/tier-list/all") + '</div>');
+      '<div class="knowledge-actions">' + button("Tier List cộng đồng", "/tier-list/all") + '</div>');
     container.innerHTML = '<section class="panel data-panel qz-board" aria-label="Bảng xếp hạng theo vị trí">' +
       '<div class="qz-tools"><div id="qz-lanes"></div>' + search("qz-search", "Tìm tướng ở vị trí này…") +
       '</div><p class="qz-count" id="qz-count"></p><div class="qz-groups" id="qz-groups"></div>' +
@@ -268,7 +267,7 @@
   }
 
   async function showTier() {
-    if (!detail && new URLSearchParams(location.search).get("source") !== "atg") {
+    if (!detail) {
       renderQzaddTier();
       return;
     }
@@ -291,12 +290,16 @@
       return;
     }
     try {
-      const response = await load(boardId ? "tier/" + boardId : "meta");
+      if (!boardId) {
+        container.innerHTML = empty("Không tìm thấy Tier List này.");
+        return;
+      }
+      const response = await load("tier/" + boardId);
       const board = response.data;
       container.innerHTML = '<div class="panel data-panel">' + sectionHead(escape(board.title),
         (board.creatorName ? escape(board.creatorName) + ' / ' : "") + date(board.updatedAt ?? board.createdAt) +
         ' / ' + number(board.heroCount) + ' tướng',
-        boardId ? button("Bình luận, đánh giá", legacy("/tier-list/" + boardId)) : button("Tạo Tier List", legacy("/tier-list/create"))) +
+        button("Bình luận, đánh giá", legacy("/tier-list/" + boardId))) +
         sourceNote(response) + '<div class="toolbar">' + search("tier-search", "Tìm trong bảng…") +
         '<div id="tier-lanes"></div></div><div id="tier-board"></div></div>';
       let position = "";
