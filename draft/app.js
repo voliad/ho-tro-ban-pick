@@ -104,7 +104,7 @@
       $("available").checked = params.get("available") === "1";
       role = rules.roles.has(Number(params.get("role"))) ? params.get("role") : "";
       lane = Object.hasOwn(lanePools, params.get("lane")) ? params.get("lane") : "";
-      $("lane-filter").value = lane;
+
     }
     render();
   }
@@ -179,6 +179,9 @@
         && (!onlyAvailable || !turn || !reasonFor(hero.id));
     });
     const roleOptions = [["", "Tất cả"], ...rules.roles];
+    for (const button of $("lane-filter").children) {
+      button.setAttribute("aria-pressed", button.dataset.lane === lane);
+    }
     $("roles").innerHTML = roleOptions.map(([id, label]) => {
       return '<button type="button" data-role="' + id + '" aria-pressed="' + (String(id) === role) +
         '">' + label + '</button>';
@@ -697,10 +700,13 @@
     $("roles").querySelector('[data-role="' + role + '"]')?.focus({ preventScroll: true });
   });
   const laneFilter = $("lane-filter");
-  laneFilter.innerHTML = '<option value="">Tất cả</option>' + Object.entries(lanePools).map(([key, { label }]) =>
-    '<option value="' + escapeHtml(key) + '">' + escapeHtml(label) + '</option>').join("");
-  laneFilter.addEventListener("change", () => {
-    lane = laneFilter.value;
+  const laneOptions = [["", "Mọi đường"], ...Object.entries(lanePools).map(([key, { label }]) => [key, label])];
+  laneFilter.innerHTML = laneOptions.map(([key, label]) =>
+    '<button type="button" data-lane="' + escapeHtml(key) + '" aria-pressed="false">' + escapeHtml(label) + '</button>').join("");
+  laneFilter.addEventListener("click", event => {
+    const button = event.target.closest("[data-lane]");
+    if (!button) return;
+    lane = button.dataset.lane;
     saveFilters();
     $("heroes").scrollTop = 0;
     renderRoster();
