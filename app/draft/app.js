@@ -165,10 +165,14 @@
     const keyword = norm($("search").value.trim());
     const onlyAvailable = $("available").checked;
     const reasonFor = rules.eligibility(state, turn, true);
+    const banned = new Set(state.games.at(-1).turns.filter(entry => entry.kind === "ban")
+      .flatMap(entry => entry.ids.map(id => rules.heroKey(state.settings, id))));
+    const isBanned = hero => banned.has(rules.heroKey(state.settings, hero.id));
     const rosterFiltered = roster.filter(hero => {
       return (!role || hero.roles.includes(Number(role))) && norm(heroLabel(hero)).includes(keyword)
         && (!onlyAvailable || !turn || !reasonFor(hero.id));
     });
+    rosterFiltered.sort((a, b) => Number(isBanned(a)) - Number(isBanned(b)));
     const roleOptions = [["", "Tất cả"], ...rules.roles];
     $("roles").innerHTML = roleOptions.map(([id, label]) => {
       return '<button type="button" data-role="' + id + '" aria-pressed="' + (String(id) === role) +
@@ -206,27 +210,48 @@
     Object.entries(heroes).map(([target, pairs]) => ({ lane, target, pairs, key: lane + "|" + target })));
 
   function renderCounters(game, turn, hidden) {
-    const chosen = $("counter-target").value;
-    const opponents = turn?.kind === "pick" && !hidden ? game.turns
-      .filter(entry => entry.kind === "pick" && entry.side !== turn.side).flatMap(entry => entry.ids) : [];
-    const rows = chosen ? counterRows.filter(row => row.key === chosen) :
-      counterRows.filter(row => opponents.includes(row.target));
-    const reason = rules.eligibility(state, turn, true);
+    const expanded = $("counter-results").querySelector("details")?.open;
+    const selectedTarget = $("counter-target").value;
     const active = turn?.kind === "pick";
-    const buttonList = ids => ids.map(id => {
-      const blocked = active ? reason(id) : "";
-      const caption = escapeHtml(nameFor(id));
-      return active && !blocked
-        ? '<button type="button" class="quiet" data-counter-pick="' + id + '">' + caption + '</button>'
-        : '<span class="counter-chip">' + caption + (blocked ? ' (' + escapeHtml(blocked) + ')' : '') + '</span>';
-    }).join("");
-    $("counter-results").innerHTML = rows.length ? rows.map(({ lane, target, pairs }) =>
-      '<section class="counter-row"><h3>' + escapeHtml(nameFor(target) + " / " + lane) +
-      '</h3><p>Khắc chế tướng này</p><div class="counter-chips">' + buttonList(pairs[0]) +
-      '</div><p>Bất lợi khi gặp tướng này</p><div class="counter-chips">' +
-      pairs[1].map(id => '<span class="counter-chip">' + escapeHtml(nameFor(id)) + '</span>').join("") + '</div></section>').join("") :
-      '<p class="counter-note">' + (opponents.length ? "Chưa có dữ liệu đã đối chiếu cho các tướng địch đã chọn." :
-        "Chọn một tướng để tra cứu, hoặc chờ đối thủ chốt tướng để nhận gợi ý.") + '</p>';
+    const opponents = new Set(!turn || hidden ? [] : game.turns
+      .filter(entry => entry.kind === "pick" && entry.side !== turn.side).flatMap(entry => entry.ids));
+    const rows = counterRows.filter(row => selectedTarget ? row.key === selectedTarget : opponents.has(row.target));
+    const reason = rules.eligibility(state, turn, true);
+    const candidates = new Map();
+    for (const row of rows) {
+      for (const [index, ids] of row.pairs.entries()) {
+        for (const id of ids) {
+          if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map() });
+          const matchups = index === 0 ? candidates.get(id).good : candidates.get(id).bad;
+          const lanes = matchups.get(row.target) ?? [];
+          lanes.push(row.lane);
+          matchups.set(row.target, lanes);
+        }
+      }
+    }
+    const recommendations = [...candidates.values()].filter(entry => entry.good.size && (!turn || !reason(entry.id)));
+    recommendations.sort((a, b) => (b.good.size - b.bad.size) - (a.good.size - a.bad.size) ||
+      b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
+    const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
+    const cards = recommendations.map(({ id, good, bad }) => {
+      const name = escapeHtml(nameFor(id));
+      const body = '<span class="counter-avatar">' + portrait(heroesById.get(id)) + '</span><span class="counter-copy"><strong>' + name +
+        '</strong><span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' +
+        (bad.size ? '<span class="counter-risk">Bất lợi trước ' + escapeHtml(evidence(bad)) + '</span>' : "") + '</span>';
+      return active ? '<button type="button" class="counter-card" data-counter-pick="' + id +
+        '" aria-pressed="' + selection.includes(id) + '">' + body + '</button>' : '<div class="counter-card">' + body + '</div>';
+    });
+    const status = selectedTarget ? "Tra cứu kèo đã chọn" : turn && opponents.size ?
+      "Gợi ý cho bên " + sideLabel[turn.side].toLowerCase() + " đang thao tác" : "Chờ đối thủ chốt tướng để gợi ý tự động";
+    const unavailable = rows.length ? "Hiện không có tướng khắc chế khả dụng." : opponents.size ?
+      "Chưa có dữ liệu cho các tướng đối thủ đã chốt." : "Bạn cũng có thể tra kèo thủ công bên dưới.";
+    $("counter-results").innerHTML = '<p class="counter-status">' + escapeHtml(status) + '</p>' +
+      (cards.length ? '<div class="counter-cards">' + cards.slice(0, 3).join("") + '</div>' :
+        '<p class="counter-note">' + unavailable + '</p>') +
+      (cards.length > 3 ? '<details class="counter-more"' + (expanded ? ' open' : '') + '><summary>Xem thêm ' + (cards.length - 3) +
+        ' gợi ý</summary><div class="counter-cards">' + cards.slice(3).join("") + '</div></details>' : "") +
+      (selectedTarget && rows.length ? '<p class="counter-note">Bất lợi khi gặp tướng này: ' +
+        escapeHtml(rows[0].pairs[1].map(nameFor).join(", ") || "Chưa có dữ liệu") + '.</p>' : "");
   }
 
   function renderDraft() {

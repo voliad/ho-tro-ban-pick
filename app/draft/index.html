@@ -6,11 +6,11 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=mobile-draft">
+  <link rel="stylesheet" href="./style.css?v=draft-coach">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=side-perspective" defer></script>
   <script src="./counters.js" defer></script>
-  <script src="./app.js?v=mobile-draft" defer></script>
+  <script src="./app.js?v=draft-coach" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -68,14 +68,16 @@
             <div id="roles" class="role-bar" aria-label="Lọc theo vai trò"></div>
             <label class="available"><input id="available" type="checkbox" name="available"> Khả dụng</label>
           </div>
-          <details class="counter-panel" open>
-            <summary>Gợi ý khắc chế theo vị trí</summary>
+          <section class="counter-panel" aria-labelledby="counter-title">
+            <h3 id="counter-title">Gợi ý tướng</h3>
+            <div id="counter-results" aria-live="polite"></div>
+            <details class="counter-more"><summary>Tra kèo và nguồn dữ liệu</summary>
             <label for="counter-target">Tướng đối thủ</label>
             <select id="counter-target"></select>
-            <div id="counter-results" aria-live="polite"></div>
             <p class="counter-note">Tham khảo kèo RoV Thái Lan từ Qzadd. Kết quả còn tùy phiên bản, người chơi và đội hình.</p>
             <div id="counter-sources" class="counter-sources"></div>
-          </details>
+            </details>
+          </section>
           <div class="hero-grid" id="heroes" aria-label="Danh sách tướng"></div>
           <div class="pool-foot"><span id="pool-note">Chọn tướng trong kho, rồi xác nhận lượt.</span></div>
         </section>
