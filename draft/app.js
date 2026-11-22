@@ -165,14 +165,10 @@
     const keyword = norm($("search").value.trim());
     const onlyAvailable = $("available").checked;
     const reasonFor = rules.eligibility(state, turn, true);
-    const banned = new Set(state.games.at(-1).turns.filter(entry => entry.kind === "ban")
-      .flatMap(entry => entry.ids.map(id => rules.heroKey(state.settings, id))));
-    const isBanned = hero => banned.has(rules.heroKey(state.settings, hero.id));
     const rosterFiltered = roster.filter(hero => {
       return (!role || hero.roles.includes(Number(role))) && norm(heroLabel(hero)).includes(keyword)
         && (!onlyAvailable || !turn || !reasonFor(hero.id));
     });
-    rosterFiltered.sort((a, b) => Number(isBanned(a)) - Number(isBanned(b)));
     const roleOptions = [["", "Tất cả"], ...rules.roles];
     $("roles").innerHTML = roleOptions.map(([id, label]) => {
       return '<button type="button" data-role="' + id + '" aria-pressed="' + (String(id) === role) +
