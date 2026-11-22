@@ -324,11 +324,16 @@
       const missing = ids.filter(id => !allies.has(id));
       const joined = ids.length - missing.length;
       if (!joined || missing.some(id => reason(id)) || missing.length > 5 - picks.length) continue;
+      const threats = (combo.threats ?? []).filter(id => opponents.has(id));
       if (!missing.length) completeCombos.push(combo);
       for (const id of missing) {
         if (needed.length && !needed.includes(combo.heroes[id])) continue;
-        const points = missing.length === 1 ? 2 : 1;
-        if ((combosByHero.get(id)?.points ?? 0) < points) combosByHero.set(id, { combo, points });
+        const complete = missing.length === 1;
+        const points = (complete ? 2 : 1) - (threats.length ? 1 : 0);
+        const current = combosByHero.get(id);
+        if (!current || current.points < points || current.points === points && complete && !current.complete) {
+          combosByHero.set(id, { combo, points, complete });
+        }
         if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() });
       }
     }
@@ -361,6 +366,11 @@
       b.verified.size - a.verified.size || b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
     const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
     const comboName = combo => Object.keys(combo.heroes).map(nameFor).join(" + ");
+    const comboWarning = combo => {
+      const threats = (combo.threats ?? []).filter(id => opponents.has(id)).map(nameFor);
+      return threats.length ? '<br><span class="counter-risk">Đối thủ có ' +
+        escapeHtml(threats.join(", ")) + ' · Giảm ưu tiên bài này.</span>' : "";
+    };
     const tierLabel = tier => tier.tier === "Draft" ? "Theo đội hình" : tier.tier;
     const riskDetails = ({ bad, threats }) => [...bad].map(([target, labels]) => {
       const threat = threats.get(target);
@@ -381,8 +391,8 @@
         '</strong>' + (tier ? '<span class="counter-tier" data-tier="' + tier.tier + '">' +
           tierLabel(tier) + ' · ' + tier.lane + '</span>' : '') +
         (fitLanes.length ? '<span class="counter-balance">' + fitLanes.map(position => lanePools[position].label).join(" / ") + '</span>' : '') +
-        (synergy ? '<span class="counter-synergy"><b>' + (synergy.points === 2 ? "Hoàn thiện bài " : "Ghép bài ") +
-          escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + '</span>' : '') +
+        (synergy ? '<span class="counter-synergy"><b>' + (synergy.complete ? "Hoàn thiện bài " : "Ghép bài ") +
+          escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + comboWarning(synergy.combo) + '</span>' : '') +
         '<span class="counter-balance">' + (good.size || bad.size || mixed.size ? good.size + ' thuận · ' + bad.size + ' bất lợi' : 'Chưa có dữ liệu kèo với đối thủ') +
         (mixed.size ? ' · ' + mixed.size + ' trái chiều' : '') + '</span>' +
         (good.size ? '<span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' : '') +
@@ -403,7 +413,7 @@
       "Chưa có dữ liệu cho các tướng đối thủ đã chốt." : "Bạn cũng có thể tra kèo thủ công bên dưới.";
     $("counter-results").innerHTML = '<p class="counter-status">' + escapeHtml(status) + '</p>' +
       completeCombos.map(combo => '<p class="counter-note counter-synergy"><strong>Đã ghép ' +
-        escapeHtml(comboName(combo)) + '</strong>. ' + escapeHtml(combo.plan) + '</p>').join("") +
+        escapeHtml(comboName(combo)) + '</strong>. ' + escapeHtml(combo.plan) + comboWarning(combo) + '</p>').join("") +
       (cards.length ? '<div class="counter-cards">' + cards.slice(0, 3).join("") + '</div>' :
         '<p class="counter-note">' + unavailable + '</p>') +
       (cards.length > 3 ? '<details class="counter-more"' + (expanded ? ' open' : '') + '><summary>Xem thêm ' + (cards.length - 3) +
