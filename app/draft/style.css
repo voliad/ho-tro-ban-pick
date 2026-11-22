@@ -190,6 +190,15 @@ button.counter-card:hover, .counter-card[aria-pressed="true"] { border-color: va
 .counter-copy span { color: var(--color-muted); }
 .counter-copy .counter-risk { color: var(--color-red); }
 .counter-copy .counter-balance { color: var(--color-ink-2); font-weight: 650; }
+.counter-copy .counter-tier {
+  width: fit-content; padding: .16rem .38rem; border-radius: .25rem;
+  background: #33404c; color: #f1f5fa; font-weight: 700;
+}
+.counter-copy .counter-tier:is([data-tier="SSS"], [data-tier="SS"], [data-tier="S"]) {
+  background: #564522; color: #ffe2a1;
+}
+.counter-copy .counter-threat-high { color: #ffada1; font-weight: 750; }
+.counter-copy .counter-threat-low { color: var(--color-ink-2); }
 .counter-more { margin-top: .35rem; }
 .counter-sources a { font-size: .8rem; }
 .counter-panel summary { cursor: pointer; color: var(--color-accent); font-weight: 700; }

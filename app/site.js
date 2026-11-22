@@ -28,7 +28,7 @@
   const $ = id => document.getElementById(id);
 
   function safeAsset(source) {
-    if (typeof source === "string" && /^\/(?:draft\/portraits|teams|art)\/[-\w]+\.(?:jpe?g|png|webp)$/.test(source)) return source;
+    if (typeof source === "string" && /^\/(?:draft\/portraits|teams|art)\/[-\w]+\.(?:jpe?g|png|webp|gif)$/.test(source)) return source;
     try {
       const url = new URL(source || "", original + "/");
       return source && url.protocol === "https:" && url.origin === original && url.pathname.startsWith("/images/")
@@ -193,36 +193,70 @@
       (board.preview?.[0]?.heroes ?? []).map(hero => thumb(hero, "", false)).join("") + '</div></a>';
   }
 
+  function renderQzaddTier() {
+    const { board, order, source, changes } = window.QZADD_TIERS;
+    const byId = new Map(boot.roster.map(hero => [hero.id, hero]));
+    const heroName = hero => [hero.name, hero.variant].filter(Boolean).join(" ");
+    const descriptions = {
+      SSS: "Ưu tiên cao nhất", SS: "Ưu tiên hàng đầu", S: "Lựa chọn mạnh",
+      "A+": "Mạnh khi hợp đội hình", A: "Tùy đội hình và kèo đấu",
+      "B+": "Lựa chọn tình huống", B: "Dễ bị khai thác", "B-": "Ít được ưu tiên",
+      Draft: "Cần phối hợp đội hình",
+    };
+    const positions = Object.keys(board);
+    const tierTitle = tier => tier === "Draft" ? "Theo đội hình" : tier;
+    let position = positions[0];
+    document.title = "Tier List Qzadd | Hỗ trợ Ban Pick";
+    const container = layout("Tier List Qzadd",
+      "Xếp hạng theo vị trí tại RoV Thái Lan · " + source.date,
+      '<div class="knowledge-actions">' + button("Bảng ATG", "/tier-list?source=atg") +
+      button("Tier List cộng đồng", "/tier-list/all") + '</div>');
+    container.innerHTML = '<section class="panel data-panel qz-board" aria-label="Bảng xếp hạng theo vị trí">' +
+      '<div class="qz-tools"><div id="qz-lanes"></div>' + search("qz-search", "Tìm tướng ở vị trí này…") +
+      '</div><p class="qz-count" id="qz-count"></p><div class="qz-groups" id="qz-groups"></div>' +
+      '<details class="qz-changes"><summary>Thay đổi so với bảng trước</summary><ul>' +
+      changes.map(([lane, id, before, after]) => '<li><strong>' + escape(heroName(byId.get(id))) +
+        '</strong><span>' + lane + ' · ' + tierTitle(before) + ' → ' + after + '</span></li>').join("") +
+      '</ul></details>' +
+      '<div class="qz-source"><p>Qzadd tổng hợp ý kiến người chơi rank cao Thái Lan. Các ô chưa xác định được tên tướng Việt Nam có thể tra trong bảng gốc.</p>' +
+      '<div class="attack-sources"><a class="subtle-link" href="' + source.post + '">Bài đăng Qzadd</a>' +
+      '<a class="subtle-link" href="' + source.image + '">Xem bảng gốc</a></div></div></section>';
+    function renderGroups() {
+      const query = norm($("qz-search").value.trim());
+      let total = 0;
+      const groups = order.map(tier => {
+        const heroes = (board[position][tier] ?? []).map(id => byId.get(id))
+          .filter(hero => hero && norm(heroName(hero)).includes(query));
+        if (!heroes.length) return "";
+        total += heroes.length;
+        const label = tierTitle(tier);
+        return '<section class="qz-group" aria-label="' + label + '"><div class="qz-tier" data-rank="' + tier +
+          '"><h2>' + label + '</h2><span>' + descriptions[tier] + '</span></div><ul class="qz-heroes">' +
+          heroes.map(hero => '<li>' + thumb({ name: heroName(hero) }) + '</li>').join("") + '</ul></section>';
+      }).join("");
+      $("qz-count").textContent = position + " · " + total + " tướng";
+      $("qz-groups").innerHTML = groups || empty("Không tìm thấy tướng ở vị trí này.");
+    }
+    const tabs = $("qz-lanes");
+    const renderTabs = () => {
+      tabs.innerHTML = toggleGroup(positions.map(lane => [lane, lane]), position, "Vị trí");
+    };
+    tabs.addEventListener("click", event => {
+      const field = event.target.closest("[data-filter]");
+      if (!field || position === field.dataset.filter) return;
+      position = field.dataset.filter;
+      renderTabs();
+      renderGroups();
+      tabs.querySelector('[aria-pressed="true"]').focus({ preventScroll: true });
+    });
+    $("qz-search").addEventListener("input", renderGroups);
+    renderTabs();
+    renderGroups();
+  }
+
   async function showTier() {
     if (!detail && new URLSearchParams(location.search).get("source") !== "atg") {
-      const post = "https://www.facebook.com/Qzaddroaming/posts/1186579177209121/";
-      const drive = "https://drive.google.com/file/d/18DPpFTLIPmVZbOJ2yrsvbvWdafxnYsX9";
-      const updates = [
-        ["Tà Thần", "Triệu Vân", "Theo đội hình", "S"],
-        ["Tà Thần", "Airi", "A+", "S"],
-        ["Tà Thần", "Yena", "S", "A+"],
-        ["Đi rừng", "Edras", "S", "SS"],
-        ["Đi rừng", "Butterfly", "S", "A+"],
-        ["Đường giữa", "Evita", "Mới", "SS"],
-        ["Đường giữa", "Erin", "B+", "S"],
-        ["Đường giữa", "Preyta", "B+", "A+"],
-        ["Xạ thủ", "Flowborn Xạ thủ", "SS", "S"],
-      ];
-      document.title = "Tier List Qzadd | Hỗ trợ Ban Pick";
-      const container = layout("Tier List Qzadd", "Bảng RoV Thái Lan ngày 07/11/2026, tổng hợp ý kiến người chơi rank cao.",
-        '<div class="knowledge-actions">' + button("Bảng ATG", "/tier-list?source=atg") +
-        button("Tier List cộng đồng", "/tier-list/all") + '</div>');
-      container.innerHTML = '<section class="panel data-panel qz-board">' +
-        sectionHead("Bảng xếp hạng đủ 5 vị trí", "Qzadd đánh giá theo khả năng chơi tướng ở trình độ cao. Bảng thuộc máy chủ Thái Lan.",
-          button("Mở ảnh gốc", drive + "/view")) +
-        '<iframe src="' + drive + '/preview" title="Bảng Tier List Qzadd theo 5 vị trí" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>' +
-        '<div class="attack-sources"><a class="subtle-link" href="' + post + '">Bài đăng ngày 07/11/2026</a>' +
-        '<a class="subtle-link" href="https://www.facebook.com/Qzaddroaming">Trang Qzadd</a></div></section>' +
-        '<section class="panel data-panel knowledge-section">' +
-        sectionHead("Thay đổi được Qzadd ghi chú", "Tra nhanh tên tướng Việt Nam và bậc mới theo từng vị trí.") +
-        '<div class="table-scroll"><table><thead><tr><th scope="col">Vị trí</th><th scope="col">Tướng</th><th scope="col">Bậc cũ</th><th scope="col">Bậc mới</th></tr></thead><tbody>' +
-        updates.map(row => '<tr>' + row.map((cell, i) => '<td>' + (i === 3 ? '<span class="rank-badge">' + escape(cell) + '</span>' : escape(cell)) +
-          '</td>').join("") + '</tr>').join("") + '</tbody></table></div></section>';
+      renderQzaddTier();
       return;
     }
     const boardId = /^\d+$/.test(detail || "") ? detail : null;

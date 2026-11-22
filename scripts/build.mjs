@@ -33,7 +33,7 @@ portraits.flowbornmarksman = portraits.flowbornxathu;
 assets["boot.js"] = "window.ATG_BOOT = " + JSON.stringify({
   meta: snapshot.data.meta, guides: snapshot.data.guides, teams: snapshot.data.teams,
   esports: { summary: snapshot.data.esports.summary }, community: snapshot.data.community, portraits,
-  roster: draftHeroes.map(({ name, variant }) => ({ name, variant })),
+  roster: draftHeroes.map(({ id, name, variant }) => ({ id, name, variant })),
   teamLogos: Object.keys(assets).filter(file => file.startsWith("teams/")),
 }) + ";";
 await mkdir("dist/server", { recursive: true });
