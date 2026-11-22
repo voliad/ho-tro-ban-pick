@@ -196,6 +196,7 @@ button.counter-card:hover, .counter-card[aria-pressed="true"] { border-color: va
 .counter-copy span { color: var(--color-muted); }
 .counter-copy .counter-risk { color: var(--color-red); }
 .counter-copy .counter-balance { color: var(--color-ink-2); font-weight: 650; }
+.counter-copy .counter-synergy, .counter-synergy { color: #b7e0c3; }
 .counter-copy .counter-tier {
   width: fit-content; padding: .16rem .38rem; border-radius: .25rem;
   background: #33404c; color: #f1f5fa; font-weight: 700;
