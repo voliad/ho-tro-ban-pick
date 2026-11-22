@@ -1,0 +1,57 @@
+window.DRAFT_COUNTERS = {
+  sources: {
+    "Tà Thần": "1079347884598918",
+    "Đi rừng": "1087508920449481",
+    "Đường giữa": "1120083460525360",
+    "Xạ thủ": "1127902569743449",
+    "Trợ thủ": "1161261193074253"
+  },
+  // Each row reads from the perspective of the player facing the center hero.
+  lanes: {
+    "Tà Thần": {
+      florentino: [["marja", "murad", "ryoma", "airi"], ["qi", "yena"]],
+      marja: [["murad", "qi", "ryoma", "biron"], ["florentino", "volkath", "airi"]],
+      qi: [["florentino", "airi"], ["murad", "marja", "yena"]],
+      yena: [["florentino", "qi"], ["ryoma", "airi"]],
+      murad: [["qi", "ryoma"], ["marja", "florentino", "airi", "allain"]],
+      airi: [["marja", "murad"], ["florentino", "qi"]]
+    },
+    "Đi rừng": {
+      sinestrea: [["astrid", "zephys", "elandorr"], ["marja", "keera"]],
+      nakroth: [["astrid", "zephys", "zuka"], ["murad", "keera", "elandorr"]],
+      billow: [["elandorr", "butterfly", "zuka"], ["keera", "sinestrea", "aoi"]],
+      elandorr: [["butterfly", "nakroth", "ryoma"], ["marja", "billow"]],
+      astrid: [["volkath", "billow", "butterfly"], ["sinestrea", "nakroth", "elandorr"]],
+      butterfly: [["volkath", "nakroth"], ["elandorr", "billow"]]
+    },
+    "Đường giữa": {
+      alice: [["liliana", "lorion"], ["zata", "iggy"]],
+      rouie: [["lorion", "liliana", "annette"], ["iggy", "yue"]],
+      zata: [["annette", "liliana"], ["lorion", "iggy"]],
+      annette: [["yue", "liliana"], ["zata"]],
+      yue: [["iggy"], ["ilumia"]],
+      iggy: [["zata", "liliana"], ["dieu-thuyen"]],
+      lorion: [["zata", "liliana"], ["rouie"]],
+      liliana: [["yue"], ["dieu-thuyen", "rouie", "annette"]],
+      "flowborn-2": [["lorion"], ["rouie", "annette"]]
+    },
+    "Xạ thủ": {
+      flowborn: [["violet", "stuart", "elsu"], ["capheny", "hayate", "wisp"]],
+      violet: [["stuart", "elsu"], ["slimz", "flowborn", "elandorr"]],
+      elandorr: [["stuart", "violet"], ["hayate", "slimz", "flowborn"]],
+      hayate: [["elandorr", "capheny", "flowborn"], ["slimz", "yorn"]],
+      capheny: [["stuart", "wisp", "flowborn", "elsu"], ["slimz", "hayate"]],
+      stuart: [["elsu", "hayate"], ["slimz", "elandorr"]]
+    },
+    "Trợ thủ": {
+      dolia: [["krizzix", "zip", "grakk"], ["teemee", "thane"]],
+      ybneth: [["baldum"], ["teemee", "dyadia", "krizzix", "arum"]],
+      maloch: [["krizzix"], ["cresht", "toro", "arduin"]],
+      dyadia: [["krizzix", "zip", "grakk"], ["annette", "arthur"]],
+      cresht: [["maloch", "ybneth", "baldum"], ["teemee", "alice", "annette"]],
+      grakk: [["toro", "zip"], ["dyadia", "helen"]],
+      arthur: [["maloch", "ybneth", "toro"], ["alice", "annette"]],
+      helen: [["krizzix", "maloch", "ybneth", "toro"], ["annette", "alice"]]
+    }
+  }
+};

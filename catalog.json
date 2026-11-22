@@ -1,0 +1,938 @@
+{
+  "items": [
+    {
+      "name": "Áo Choàng Băng Giá",
+      "iconUrl": "/images/items/ao choang bang gia.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Áo Choàng Thần Ra",
+      "iconUrl": "/images/items/ao choang than ra.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Băng Nhẫn Skadi",
+      "iconUrl": "/images/items/bang nhan skadi.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Búa Sức Mạnh",
+      "iconUrl": "/images/items/bua suc manh.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Cầu Chiêm Tinh",
+      "iconUrl": "/images/items/cau chiem tinh.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Chùy Băng Sương",
+      "iconUrl": "/images/items/chuy bang suong.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Chùy Cổ",
+      "iconUrl": "/images/items/chuy co.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Chùy Máu",
+      "iconUrl": "/images/items/chuy mau.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Chùy Xích",
+      "iconUrl": "/images/items/chuy xich.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Cung Bão Tố",
+      "iconUrl": "/images/items/cung bao to.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Cung Gió Lốc",
+      "iconUrl": "/images/items/cung gio loc.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Cung Tà Ma",
+      "iconUrl": "/images/items/cung ta ma.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Đại Địa Hồi Huyết",
+      "iconUrl": "/images/items/dai dia hoi huyet.png",
+      "category": "TRỢ THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Đại Địa Ma Nhẫn",
+      "iconUrl": "/images/items/dai dia ma nhan.png",
+      "category": "TRỢ THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Đại Địa Mở Trời",
+      "iconUrl": "/images/items/dai dia mo troi.png",
+      "category": "TRỢ THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Đại Địa Thần Khiên",
+      "iconUrl": "/images/items/dai dia than khien.png",
+      "category": "TRỢ THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Đại Địa Thần Tốc",
+      "iconUrl": "/images/items/dai dia than toc.png",
+      "category": "TRỢ THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Đại Kháng Phép",
+      "iconUrl": "/images/items/dai khang phep.png",
+      "category": "THỦ",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Dao Găm",
+      "iconUrl": "/images/items/dao gam.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Dao Truy Hồn",
+      "iconUrl": "/images/items/dao truy hon.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Dao Truy Kích",
+      "iconUrl": "/images/items/dao truy kich.png",
+      "category": "ĐI RỪNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Dây Chuyền Hồng Ngọc",
+      "iconUrl": "/images/items/day chuyen hong ngoc.png",
+      "category": "THỦ",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Dây Chuyền Lục Bảo",
+      "iconUrl": "/images/items/day chuyen luc bao.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Dây Chuyền Ma Thuật",
+      "iconUrl": "/images/items/day chuyen ma thuat.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Diệt Thần Cung",
+      "iconUrl": "/images/items/diet-than-cung.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Găng Bạch Kim",
+      "iconUrl": "/images/items/gang bach kim.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Găng Giác Đấu",
+      "iconUrl": "/images/items/gang giac dau.png",
+      "category": "TỐC ĐỘ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Găng Tay",
+      "iconUrl": "/images/items/gang tay.png",
+      "category": "TỐC ĐỘ",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Giáp Chắn",
+      "iconUrl": "/images/items/giap chan.png",
+      "category": "THỦ",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Giáp Cuồng Nộ",
+      "iconUrl": "/images/items/giap cuong no.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Giáp Gaia",
+      "iconUrl": "/images/items/giap gaia.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Giáp Hiệp Sĩ",
+      "iconUrl": "/images/items/giap hiep si.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Giáp Hộ Mệnh",
+      "iconUrl": "/images/items/giap ho menh.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Giáp Nhẹ",
+      "iconUrl": "/images/items/giap nhe.png",
+      "category": "THỦ",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Giáp Thống Khổ",
+      "iconUrl": "/images/items/giap thong kho.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Giày Du Mục",
+      "iconUrl": "/images/items/giay du muc.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Giày Hermes",
+      "iconUrl": "/images/items/giay hermes.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Giày Hộ Vệ",
+      "iconUrl": "/images/items/giay ho ve.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Giày Kiên Cường",
+      "iconUrl": "/images/items/giay kien cuong.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Giày Phù Thủy",
+      "iconUrl": "/images/items/giay phu thuy.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Giày Thép",
+      "iconUrl": "/images/items/giay thep.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Giày Thuật Sĩ",
+      "iconUrl": "/images/items/giay thuat si.png",
+      "category": "TỐC ĐỘ",
+      "type": "Giày",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Gươm Hiến Tế",
+      "iconUrl": "/images/items/guom hien te.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Gươm Hiền Triết",
+      "iconUrl": "/images/items/guom hien triet.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Gươm Loki",
+      "iconUrl": "/images/items/guom loki.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Gươm Nguyên Tố",
+      "iconUrl": "/images/items/guom nguyen to.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Gươm Sấm Sét",
+      "iconUrl": "/images/items/guom sam set.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Gươm Tận Thế",
+      "iconUrl": "/images/items/guom tan the.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Gươm Uriel",
+      "iconUrl": "/images/items/guom uriel.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Hercule Thịnh Nộ",
+      "iconUrl": "/images/items/hercule thinh no.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Hỏa Hệ Bảo Thạch",
+      "iconUrl": "/images/items/hoa he bao thach.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Huân Chương Troy",
+      "iconUrl": "/images/items/huan chuong troy.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Huyết Cung",
+      "iconUrl": "/images/items/huyet cung.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Huyết Đao",
+      "iconUrl": "/images/items/huyet dao.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Huyết Trượng",
+      "iconUrl": "/images/items/huyet truong.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Khiên Huyền Thoại",
+      "iconUrl": "/images/items/khien huyen thoai.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Khiên Thánh Quang",
+      "iconUrl": "/art/khien-thanh-quang.webp",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3",
+      "description": "+1.000 máu tối đa, +180 giáp vật lý và +10% giảm hồi chiêu."
+    },
+    {
+      "name": "Khiên Thất Truyền",
+      "iconUrl": "/images/items/khien that truyen.png",
+      "category": "THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Kiếm Dài",
+      "iconUrl": "/images/items/kiem dai.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Kiếm Fafnir",
+      "iconUrl": "/images/items/kiem fafnir.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Kiếm Muramasa",
+      "iconUrl": "/images/items/kiem muramasa.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Kiếm Ngắn",
+      "iconUrl": "/images/items/kiem ngan.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Kiếm Truy Hồn",
+      "iconUrl": "/images/items/kiem truy hon.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Liềm Đoạt Mệnh",
+      "iconUrl": "/images/items/liem doat menh.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Liệt Hỏa Hồi Huyết",
+      "iconUrl": "/images/items/liet hoa hoi huyet.png",
+      "category": "ĐI RỪNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Liệt Hỏa Ma Nhẫn",
+      "iconUrl": "/images/items/liet hoa ma nhan.png",
+      "category": "ĐI RỪNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Liệt Hỏa Mở Trời",
+      "iconUrl": "/images/items/liet hoa mo troi.png",
+      "category": "ĐI RỪNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Liệt Hỏa Thần Khiên",
+      "iconUrl": "/images/items/liet hoa than khien.png",
+      "category": "ĐI RỪNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Liệt Hỏa Thần Tốc",
+      "iconUrl": "/images/items/liet hoa than toc.png",
+      "category": "ĐI RỪNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Ma Pháp Trượng Bão",
+      "iconUrl": "/images/items/ma phap truong bao.jpg",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Mặt Nạ Berith",
+      "iconUrl": "/images/items/mat na berith.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Mặt Nạ Ma Quái",
+      "iconUrl": "/images/items/mat na ma quai.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Nanh Fenrir",
+      "iconUrl": "/images/items/nanh fenrir.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Ngọc Đại Pháp Sư",
+      "iconUrl": "/images/items/ngoc dai phap su.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Nguyên Tố Bảo Thạch",
+      "iconUrl": "/images/items/nguyen to bao thach.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Nhẫm Thuẫn",
+      "iconUrl": "/images/items/nham thuan.png",
+      "category": "THỦ",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Nhẫn Hồng Ngọc",
+      "iconUrl": "/images/items/nhan hong ngoc.png",
+      "category": "THỦ",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Nhẫn Lapis",
+      "iconUrl": "/images/items/nhan lapis.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Nhẫn Ma Pháp",
+      "iconUrl": "/images/items/nhan ma phap.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Phi Tiêu",
+      "iconUrl": "/images/items/phi tieu.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Phù Chú Trường Sinh",
+      "iconUrl": "/images/items/phu chu truong sinh.png",
+      "category": "TRỢ THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Phức Hợp Kiếm",
+      "iconUrl": "/images/items/phuc hop kiem.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Phượng Hoàng Lệ",
+      "iconUrl": "/images/items/phuong hoang le.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Quả Cầu Băng Sương",
+      "iconUrl": "/images/items/qua cau bang suong.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Quỷ Kiếm",
+      "iconUrl": "/images/items/quy kiem.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Quyền Trượng Rhea",
+      "iconUrl": "/images/items/quyen truong rhea.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Rìu Gnoll",
+      "iconUrl": "/images/items/riu gnoll.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Rìu Leviathan",
+      "iconUrl": "/images/items/riu leviathan.png",
+      "category": "ĐI RỪNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Rùa Thợ Săn",
+      "iconUrl": "/images/items/rua tho san.jpg",
+      "category": "ĐI RỪNG",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Sách Cổ",
+      "iconUrl": "/images/items/sach co.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 1"
+    },
+    {
+      "name": "Sách Phép",
+      "iconUrl": "/images/items/sach phep.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Sách Thánh",
+      "iconUrl": "/images/items/sach thanh.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Sách Truy Hồn",
+      "iconUrl": "/images/items/sach truy hon.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Sổ Ma Thuật",
+      "iconUrl": "/images/items/so ma thuat.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Song Đao Bão Táp",
+      "iconUrl": "/images/items/song dao bao tap.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Song Đao",
+      "iconUrl": "/images/items/song dao.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Thanh Kiếm",
+      "iconUrl": "/images/items/thanh kiem.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Thập Tự Kiếm",
+      "iconUrl": "/images/items/thap tu kiem.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Thẻ Ước Carano",
+      "iconUrl": "/images/items/the uoc carano.jpg",
+      "category": "TRỢ THỦ",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Thổ Hệ Bảo Thạch",
+      "iconUrl": "/images/items/tho he bao thach.png",
+      "category": "THỦ",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Thương Đấu Sĩ",
+      "iconUrl": "/images/items/thuong dau si.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Thương Khung Kiếm",
+      "iconUrl": "/images/items/thuong khung kiem.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Thương Longinus",
+      "iconUrl": "/images/items/thuong longinus.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Thương Xuyên Phá",
+      "iconUrl": "/images/items/thuong xuyen pha.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Tim Incubus",
+      "iconUrl": "/images/items/tim incubus.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Trượng Băng",
+      "iconUrl": "/images/items/truong bang.png",
+      "category": "PHÉP",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Trượng Bùng Nổ",
+      "iconUrl": "/images/items/truong bung no.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Trượng Hồn Mang",
+      "iconUrl": "/images/items/truong hon mang.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Vòng Đức Hạnh",
+      "iconUrl": "/images/items/vong duc hanh.png",
+      "category": "TRỢ THỦ",
+      "type": "Khác",
+      "level": "Cấp 2"
+    },
+    {
+      "name": "Vương Miện Hecate",
+      "iconUrl": "/images/items/vuong mien hecate.png",
+      "category": "PHÉP",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Vuốt Hung Tàn",
+      "iconUrl": "/images/items/vuot hung tan.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Xạ Nhật Cung",
+      "iconUrl": "/images/items/xa nhat cung.png",
+      "category": "CÔNG",
+      "type": "Trang bị lớn",
+      "level": "Cấp 3"
+    },
+    {
+      "name": "Xuyên Tâm Lệnh",
+      "iconUrl": "/images/items/xuyen tam lenh.png",
+      "category": "CÔNG",
+      "type": "Khác",
+      "level": "Cấp 2"
+    }
+  ],
+  "arcana": [
+    {
+      "name": "Đỏ - Công phép, tốc đánh",
+      "iconUrl": "/images/arcana/do cong phep toc danh.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Công phép, xuyên thủ phép",
+      "iconUrl": "/images/arcana/do cong phep xuyen thu phep.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Công phép",
+      "iconUrl": "/images/arcana/do cong phep.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Công vật lý, hút máu",
+      "iconUrl": "/images/arcana/do cong vat ly hut mau.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Công vật lý, xuyên giáp",
+      "iconUrl": "/images/arcana/do cong vat ly xuyen giap.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Công vật lý",
+      "iconUrl": "/images/arcana/do cong vat ly.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Tỉ lệ chí mạng, sát thương chí mạng",
+      "iconUrl": "/images/arcana/do ti le chi mang sat thuong chi mang.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Tỉ lệ chí mạng",
+      "iconUrl": "/images/arcana/do ti le chi mang.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Tốc đánh, máu, giáp",
+      "iconUrl": "/images/arcana/do toc danh mau giap.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Đỏ - Tốc đánh, tỉ lệ chí mạng",
+      "iconUrl": "/images/arcana/do toc danh ti le chi mang.png",
+      "category": "Đỏ"
+    },
+    {
+      "name": "Tím - Công phép, hút máu phép",
+      "iconUrl": "/images/arcana/tim cong phep hut mau phep.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Tím - Công vật lý, tốc chạy",
+      "iconUrl": "/images/arcana/tim cong vat ly toc chay.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Tím - Hút máu phép",
+      "iconUrl": "/images/arcana/tim hut mau phep.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Tím - Hút máu, thủ phép",
+      "iconUrl": "/images/arcana/tim hut mau thu phep.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Tím - Máu, hồi máu, tốc chạy",
+      "iconUrl": "/images/arcana/tim mau hoi mau toc chay.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Tím - Máu tối đa, hồi máu",
+      "iconUrl": "/images/arcana/tim mau toi da hoi mau.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Tím - Máu tối đa",
+      "iconUrl": "/images/arcana/tim mau toi da.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Tím - Tốc đánh, tốc chạy",
+      "iconUrl": "/images/arcana/tim toc danh toc chay.png",
+      "category": "Tím"
+    },
+    {
+      "name": "Xanh - Công phép, giảm hồi chiêu",
+      "iconUrl": "/images/arcana/xanh cong phep giam hoi chieu.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Công vật lý, xuyên giáp",
+      "iconUrl": "/images/arcana/xanh cong vat ly xuyen giap.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Giảm hồi chiêu",
+      "iconUrl": "/images/arcana/xanh giam hoi chieu.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Giáp, giáp phép, hồi chiêu",
+      "iconUrl": "/images/arcana/xanh giap  giap phep hoi chieu.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Giáp, giáp phép",
+      "iconUrl": "/images/arcana/xanh giap giap phep.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Giáp phép",
+      "iconUrl": "/images/arcana/xanh giap phep.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Giáp",
+      "iconUrl": "/images/arcana/xanh giap.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Hút máu phép, giáp",
+      "iconUrl": "/images/arcana/xanh hut mau phep giap.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Máu tối đa, giảm hồi chiêu",
+      "iconUrl": "/images/arcana/xanh mau toi da giam hoi chieu.png",
+      "category": "Xanh"
+    },
+    {
+      "name": "Xanh - Tốc đánh, xuyên giáp phép",
+      "iconUrl": "/images/arcana/xanh toc danh  xuyen giap phep.png",
+      "category": "Xanh"
+    }
+  ]
+}

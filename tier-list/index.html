@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e111b">
+  <meta name="description" content="Tra cứu meta Liên Quân Mobile, mốc tốc đánh, dữ liệu esports và công cụ ban/pick.">
+  <title>Hỗ trợ Ban Pick</title>
+  <link rel="icon" href="/ho-tro-ban-pick/art/aov-logo.webp">
+  <link rel="stylesheet" href="/ho-tro-ban-pick/site.css">
+  <script src="/ho-tro-ban-pick/boot.js" defer></script>
+  <script src="/ho-tro-ban-pick/attack-speed.js" defer></script>
+  <script src="/ho-tro-ban-pick/strategy.js" defer></script>
+  <script src="/ho-tro-ban-pick/site.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Đến nội dung</a>
+  <header class="top">
+    <div class="wrap top-row">
+      <a href="/ho-tro-ban-pick/" class="brand" aria-label="Hỗ trợ Ban Pick, trang chủ">
+        <img src="/ho-tro-ban-pick/art/aov-logo.webp" width="44" height="42" alt="">
+        <span>Hỗ trợ <b>Ban Pick</b></span>
+      </a>
+      <nav class="nav" aria-label="Điều hướng chính">
+        <a href="/ho-tro-ban-pick/">Trang chủ</a><a href="/ho-tro-ban-pick/tier-list">Tier List</a><a href="/ho-tro-ban-pick/ban-pick">Ban/Pick</a>
+        <a href="/ho-tro-ban-pick/guides">Giáo án</a><a href="/ho-tro-ban-pick/esports">Esports</a><a href="/ho-tro-ban-pick/wiki">Wiki</a>
+      </nav>
+      <button class="search-open button secondary" type="button" data-search aria-label="Tìm tướng nhanh"><span class="search-icon" aria-hidden="true"></span><span>Tìm tướng</span><kbd>/</kbd></button>
+    </div>
+  </header>
+  <main id="main" tabindex="-1">
+    <div class="wrap">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="hero-tag"><span></span> Liên Quân Mobile</p>
+          <h1>Đọc meta.<br><em>Thắng từ draft.</em></h1>
+          <p>Tier List theo đường, giáo án thực chiến và dữ liệu thi đấu trên cùng một bàn chiến thuật.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="/ho-tro-ban-pick/draft/?mode=rank">Ban Pick rank thường</a>
+            <a class="button secondary" href="/ho-tro-ban-pick/draft/">Ban Pick đấu giải</a>
+          </div>
+        </div>
+        <span class="hero-credit">Billow · Liên Quân Mobile</span>
+      </section>
+    </div>
+  </main>
+  <dialog id="overlay" aria-labelledby="dialog-title">
+    <div class="dialog-toolbar"><h2 id="dialog-title"></h2><button type="button" class="icon-button" data-close aria-label="Đóng">×</button></div>
+    <div id="dialog-body"></div>
+  </dialog>
+</body>
+</html>
