@@ -7,6 +7,7 @@
   const $ = id => document.getElementById(id);
   const isRank = new URLSearchParams(location.search).get("mode") === "rank";
   const storeKey = isRank ? "aov-rank-draft-v1" : "aov-draft-desk-v1";
+  const perspectiveKey = storeKey + "-perspective";
   const sideLabel = { blue: "Xanh", red: "Đỏ" };
   const actionLabel = { ban: "cấm", pick: "chọn" };
   const allowedViews = ["draft", "history", "rules"];
@@ -32,12 +33,38 @@
     return { remaining: state.settings.seconds * 1000, deadline: null };
   }
 
+  function applyPerspective(side) {
+    const left = side === "red" ? "red" : "blue";
+    const right = left === "red" ? "blue" : "red";
+    const view = $("view-draft");
+    view.dataset.perspective = left;
+    $("draft-perspective").value = left;
+    const pool = view.querySelector(".pool");
+    pool.before($("team-" + left));
+    pool.after($("team-" + right));
+    const status = view.querySelector(".turn-status");
+    status.before($("match-" + left).parentElement);
+    status.after($("match-" + right).parentElement);
+  }
+
   function restore() {
     try {
       const saved = JSON.parse(localStorage.getItem(storeKey) || "null");
       if (!saved) return;
       if (!saved.state?.games?.length || !saved.state.settings) throw Error("invalid state");
       state = saved.state;
+      if (isRank && state.games[0].turns[0]?.ids.length === 1) {
+        const game = state.games[0];
+        const bans = game.turns.filter(entry => entry.kind === "ban");
+        if (bans.length === 10) {
+          game.turns = ["blue", "red"].map(side => ({
+            kind: "ban", side, ids: bans.filter(entry => entry.side === side).flatMap(entry => entry.ids),
+          })).concat(game.turns.filter(entry => entry.kind === "pick"));
+          delete state.settings.legacyRankBans;
+        } else {
+          state.settings.legacyRankBans = true;
+        }
+      }
       clock = saved.clock ?? initialClock();
     } catch {
       storageIssue = "Không thể đọc dữ liệu lưu trên trình duyệt. Bàn draft đã mở ở trạng thái mặc định.";
@@ -242,7 +269,9 @@
     $("selection").textContent = selection.length
       ? selection.map(nameFor).join(", ")
       : turn ? "Chọn " + turn.count + " tướng từ kho" : winner ? "Series đã kết thúc" : "Chờ ghi kết quả ván";
-    $("commit").textContent = turn ? (hidden ? "Chốt đội hình" : "Xác nhận " + actionLabel[turn.kind]) : "Ghi kết quả";
+    $("commit").textContent = turn ? (hidden ? "Chốt đội hình" :
+      isRank && turn.kind === "ban" && turn.count > 1 ? "Chốt " + turn.count + " tướng cấm" :
+        "Xác nhận " + actionLabel[turn.kind]) : "Ghi kết quả";
     $("commit").disabled = winner !== null || Boolean(turn && selection.length !== turn.count);
     $("undo").disabled = !(selection.length || number > 1 || game.turns.length || game.winner);
     $("undo").textContent = selection.length ? "Bỏ chọn" : !game.turns.length && number > 1 || game.winner ? "Hoàn tác kết quả" : "Hoàn tác";
@@ -484,6 +513,7 @@
       return;
     }
     state = rules.start(structuredClone(state.settings));
+    delete state.settings.legacyRankBans;
     selection = [];
     clock = initialClock();
     save();
@@ -572,11 +602,21 @@
       $("counter-results").querySelector('[data-counter-pick="' + hero + '"]')?.focus({ preventScroll: true });
     }
   });
+  const perspective = $("draft-perspective");
+  try {
+    applyPerspective(localStorage.getItem(perspectiveKey));
+  } catch {
+    applyPerspective("blue");
+  }
+  perspective.addEventListener("change", () => {
+    applyPerspective(perspective.value);
+    try { localStorage.setItem(perspectiveKey, perspective.value); } catch {}
+  });
   restore();
   if (isRank) {
     document.title = "Ban Pick rank thường | Hỗ trợ Ban Pick";
     $("page-title").textContent = "Ban Pick rank thường";
-    $("page-title").nextElementSibling.innerHTML = 'Mô phỏng một ván rank từ Kim Cương. Bàn tập ghi lần lượt 5 lượt cấm mỗi bên, rồi chọn 5 tướng mỗi bên. <a href="https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-ngay-hoi-lien-quan-08-07-2026/">Nguồn Garena</a>';
+    $("page-title").nextElementSibling.innerHTML = 'Mô phỏng rank từ Kim Cương. Chọn đủ 5 tướng rồi chốt cấm một lần cho mỗi bên. <a href="https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-ngay-hoi-lien-quan-08-07-2026/">Nguồn Garena</a>';
     const rankOption = new Option("Rank thường", "rank");
     input("mode").add(rankOption);
   }

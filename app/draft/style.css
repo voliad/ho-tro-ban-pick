@@ -93,6 +93,11 @@ h1 { font-size: 2.1rem; line-height: 1.15; font-weight: 750; letter-spacing: -.0
 .match-team span { overflow-wrap: anywhere; }
 .match-team strong { flex: 0 0 auto; font: 650 2rem/1 var(--font-score); font-variant-numeric: tabular-nums; }
 .match-team.red { text-align: right; }
+.perspective-control { display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; color: var(--color-ink-2); font-size: .875rem; }
+.perspective-control select { min-height: 2.55rem; padding: .2rem .4rem; color: var(--color-ink); background: var(--color-paper-2); border: 1px solid var(--color-input-edge); }
+[data-perspective="red"] .match-team { flex-direction: row-reverse; }
+[data-perspective="red"] .match-team.blue { text-align: right; }
+[data-perspective="red"] .match-team.red { text-align: left; }
 .turn-status { display: flex; flex-direction: column; text-align: center; align-items: center; justify-content: center; padding: .3rem .5rem; }
 .turn-status span { color: var(--color-muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
 .turn-status strong { color: var(--color-accent); font-size: 1.03rem; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
@@ -160,7 +165,9 @@ h1 { font-size: 2.1rem; line-height: 1.15; font-weight: 750; letter-spacing: -.0
 .timer-value.urgent { color: var(--color-error); }
 .selection { text-align: center; font-size: .88rem; color: var(--color-ink-2); overflow-wrap: anywhere; }
 .notice { min-height: 1.7rem; color: var(--color-accent); font-size: .85rem; padding: .4rem 0 .65rem; max-width: none; }
-.counter-panel { padding: .85rem; margin-block-end: 1rem; border: 1px solid var(--color-rule); background: var(--color-paper-2); }
+.counter-panel { padding: .45rem .7rem; border-bottom: 1px solid var(--color-rule); background: var(--color-paper-2); }
+#counter-results { max-height: 8rem; overflow-y: auto; }
+.counter-sources a { font-size: .8rem; }
 .counter-panel summary { cursor: pointer; color: var(--color-accent); font-weight: 700; }
 .counter-panel label { display: block; margin-top: .5rem; }
 .counter-panel select { color: var(--color-ink); background: var(--color-paper); border: 1px solid var(--color-input-edge); min-height: 2.5rem; max-width: 100%; padding-inline: .35rem; }

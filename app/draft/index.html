@@ -6,11 +6,11 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=side-perspective">
   <script src="./heroes.js" defer></script>
-  <script src="./rules.js" defer></script>
+  <script src="./rules.js?v=side-perspective" defer></script>
   <script src="./counters.js" defer></script>
-  <script src="./app.js" defer></script>
+  <script src="./app.js?v=side-perspective" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -40,6 +40,9 @@
           <p>Điều phối ban/pick và theo dõi tướng đã dùng trong series.</p>
         </div>
         <div class="series-strip">
+          <label class="perspective-control" for="draft-perspective">Tôi ở bên
+            <select id="draft-perspective"><option value="blue">Xanh</option><option value="red">Đỏ</option></select>
+          </label>
           <div class="series-info"><strong id="format-label">BO5</strong><span id="mode-label">Global Ban/Pick</span></div>
           <div id="games" class="game-strip" aria-label="Tiến độ series"></div>
         </div>
@@ -65,6 +68,14 @@
             <div id="roles" class="role-bar" aria-label="Lọc theo vai trò"></div>
             <label class="available"><input id="available" type="checkbox" name="available"> Khả dụng</label>
           </div>
+          <details class="counter-panel" open>
+            <summary>Gợi ý khắc chế theo vị trí</summary>
+            <label for="counter-target">Tướng đối thủ</label>
+            <select id="counter-target"></select>
+            <div id="counter-results" aria-live="polite"></div>
+            <p class="counter-note">Tham khảo kèo RoV Thái Lan từ Qzadd. Kết quả còn tùy phiên bản, người chơi và đội hình.</p>
+            <div id="counter-sources" class="counter-sources"></div>
+          </details>
           <div class="hero-grid" id="heroes" aria-label="Danh sách tướng"></div>
           <div class="pool-foot"><span id="pool-note">Chọn tướng trong kho, rồi xác nhận lượt.</span></div>
         </section>
@@ -85,14 +96,6 @@
         </div>
       </div>
       <p id="notice" class="notice" role="status"></p>
-      <details class="counter-panel" open>
-        <summary>Khắc chế theo vị trí</summary>
-        <label for="counter-target">Tướng đối thủ</label>
-        <select id="counter-target"></select>
-        <div id="counter-results" aria-live="polite"></div>
-        <p class="counter-note">Tham khảo kèo RoV Thái Lan từ Qzadd. Kết quả còn tùy phiên bản, người chơi và đội hình.</p>
-        <div id="counter-sources" class="counter-sources"></div>
-      </details>
       <noscript><p>Bật JavaScript để sử dụng bàn cấm chọn.</p></noscript>
     </section>
 
