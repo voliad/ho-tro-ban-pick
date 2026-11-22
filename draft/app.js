@@ -316,10 +316,27 @@
       .flatMap(row => row.ids) : [];
     const needed = active ? (lane ? [lane] : picks.length ? missingLanes(picks) : []) : [];
     const fits = (id, position) => lanePools[position].main.has(id) || lanePools[position].extra.has(id);
+    const allies = new Set(picks);
+    const combosByHero = new Map();
+    const completeCombos = [];
+    for (const combo of window.DRAFT_TEAM_COMBOS) {
+      const ids = Object.keys(combo.heroes);
+      const missing = ids.filter(id => !allies.has(id));
+      const joined = ids.length - missing.length;
+      if (!joined || missing.some(id => reason(id)) || missing.length > 5 - picks.length) continue;
+      if (!missing.length) completeCombos.push(combo);
+      for (const id of missing) {
+        if (needed.length && !needed.includes(combo.heroes[id])) continue;
+        const points = missing.length === 1 ? 2 : 1;
+        if ((combosByHero.get(id)?.points ?? 0) < points) combosByHero.set(id, { combo, points });
+        if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() });
+      }
+    }
     const recommendations = needed.length ? roster.filter(({ id }) =>
       !reason(id) && needed.some(position => fits(id, position))).map(({ id }) =>
       candidates.get(id) ?? { id, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() }) :
-      [...candidates.values()].filter(entry => (entry.good.size || entry.mixed.size) && (!turn || !reason(entry.id)));
+      [...candidates.values()].filter(entry => (entry.good.size || entry.mixed.size || combosByHero.has(entry.id)) &&
+        (!turn || !reason(entry.id)));
     const subset = (left, right) => [...left.keys()].every(id => right.has(id));
     const dominates = (a, b) => subset(b.good, a.good) && subset(a.bad, b.bad) &&
       subset(a.mixed, b.mixed) && (a.good.size > b.good.size || a.bad.size < b.bad.size || a.mixed.size < b.mixed.size);
@@ -336,13 +353,14 @@
       entry.threats = new Map([...entry.bad].map(([target, labels]) =>
         [target, tierFor(target, evidenceLanes(labels))]));
       const risk = [...entry.threats.values()].reduce((total, tier) => total + 3 + (tier?.weight ?? 0), 0);
-      entry.score = 2 * entry.good.size - risk + (entry.tier?.weight ?? 0);
+      entry.score = 2 * entry.good.size - risk + (entry.tier?.weight ?? 0) + (combosByHero.get(entry.id)?.points ?? 0);
     }
     recommendations.sort((a, b) => b.score - a.score ||
       Number(dominated.has(a)) - Number(dominated.has(b)) ||
       a.bad.size - b.bad.size || a.mixed.size - b.mixed.size ||
       b.verified.size - a.verified.size || b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
     const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
+    const comboName = combo => Object.keys(combo.heroes).map(nameFor).join(" + ");
     const tierLabel = tier => tier.tier === "Draft" ? "Theo đội hình" : tier.tier;
     const riskDetails = ({ bad, threats }) => [...bad].map(([target, labels]) => {
       const threat = threats.get(target);
@@ -353,6 +371,7 @@
     featuredHeroes = new Map(active ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
     const cards = recommendations.map((entry, index) => {
       const { id, good, bad, mixed, tier, fitLanes } = entry;
+      const synergy = combosByHero.get(id);
       const name = escapeHtml(nameFor(id));
       const featured = index < 3;
       const cardClass = "counter-card" + (featured ? " counter-featured" : "");
@@ -362,6 +381,8 @@
         '</strong>' + (tier ? '<span class="counter-tier" data-tier="' + tier.tier + '">' +
           tierLabel(tier) + ' · ' + tier.lane + '</span>' : '') +
         (fitLanes.length ? '<span class="counter-balance">' + fitLanes.map(position => lanePools[position].label).join(" / ") + '</span>' : '') +
+        (synergy ? '<span class="counter-synergy"><b>' + (synergy.points === 2 ? "Hoàn thiện bài " : "Ghép bài ") +
+          escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + '</span>' : '') +
         '<span class="counter-balance">' + (good.size || bad.size || mixed.size ? good.size + ' thuận · ' + bad.size + ' bất lợi' : 'Chưa có dữ liệu kèo với đối thủ') +
         (mixed.size ? ' · ' + mixed.size + ' trái chiều' : '') + '</span>' +
         (good.size ? '<span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' : '') +
@@ -375,11 +396,14 @@
         '<div class="' + cardClass + '">' + body + '</div>';
     });
     const status = needed.length ? (lane ? "Đang lọc theo " : "Vị trí đội hình có thể còn thiếu: ") +
-      needed.map(position => lanePools[position].label).join(", ") : selectedTarget ? "Tra cứu kèo đã chọn" : turn && opponents.size ?
+      needed.map(position => lanePools[position].label).join(", ") : selectedTarget ? "Tra cứu kèo đã chọn" :
+      combosByHero.size && !opponents.size ? "Gợi ý phối hợp với tướng đồng đội đã chốt" : turn && opponents.size ?
       "Gợi ý cho bên " + sideLabel[turn.side].toLowerCase() + " đang thao tác" : "Chờ đối thủ chốt tướng để gợi ý tự động";
     const unavailable = needed.length ? "Hiện không có tướng khả dụng cho vị trí này." : rows.length ? "Hiện không có tướng khắc chế khả dụng." : opponents.size ?
       "Chưa có dữ liệu cho các tướng đối thủ đã chốt." : "Bạn cũng có thể tra kèo thủ công bên dưới.";
     $("counter-results").innerHTML = '<p class="counter-status">' + escapeHtml(status) + '</p>' +
+      completeCombos.map(combo => '<p class="counter-note counter-synergy"><strong>Đã ghép ' +
+        escapeHtml(comboName(combo)) + '</strong>. ' + escapeHtml(combo.plan) + '</p>').join("") +
       (cards.length ? '<div class="counter-cards">' + cards.slice(0, 3).join("") + '</div>' :
         '<p class="counter-note">' + unavailable + '</p>') +
       (cards.length > 3 ? '<details class="counter-more"' + (expanded ? ' open' : '') + '><summary>Xem thêm ' + (cards.length - 3) +

@@ -6,14 +6,15 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=filter-rows">
+  <link rel="stylesheet" href="./style.css?v=team-combos">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=filter-rows" defer></script>
   <script src="./counters.js?v=cross-match" defer></script>
   <script src="./counter-tactics.js" defer></script>
+  <script src="./team-combos.js?v=1" defer></script>
   <script src="./qzadd-tiers.js?v=20261107-board" defer></script>
   <script src="./lane-pools.js?v=2" defer></script>
-  <script src="./app.js?v=qzadd-counters" defer></script>
+  <script src="./app.js?v=team-combos" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -78,6 +79,7 @@
             <h3 id="counter-title">Gợi ý tướng</h3>
             <div id="counter-results" aria-live="polite"></div>
             <details class="counter-more"><summary>Tra kèo và nguồn dữ liệu</summary>
+            <p class="counter-note">Phối hợp đội hình dựa trên 4 ảnh của @laihungtv. Tướng giúp ghép bài được cộng 1 điểm, tướng hoàn thiện bài được cộng 2 điểm. Mỗi tướng chỉ nhận điểm từ một bài phù hợp nhất.</p>
             <p class="counter-note">Mỗi đối thủ được tính một lần. Kèo thuận cộng 2 điểm. Kèo bất lợi trừ từ 1,5 điểm (B−) đến 4,5 điểm (SSS), mặc định trừ 3 điểm. Tier của tướng gợi ý điều chỉnh tối đa 1,5 điểm. Kèo trái chiều không cộng hoặc trừ điểm kèo.</p>
             <p class="counter-note">Tier được tra theo vị trí của kèo. Với kèo tham khảo chung, công cụ lấy bậc cao nhất đã ghi nhận. Nhóm Theo đội hình và tướng chưa có tier dùng mức mặc định. <a href="/ho-tro-ban-pick/tier-list">Xem bảng Qzadd</a></p>
             <label for="counter-target">Tướng đối thủ</label>
