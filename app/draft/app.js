@@ -4,6 +4,7 @@
   const rules = window.DRAFT_RULES;
   const roster = (window.DRAFT_HEROES ?? []).sort((a, b) => a.name.localeCompare(b.name, "vi"));
   const heroesById = new Map(roster.map(hero => [hero.id, hero]));
+  const lanePools = window.AOV_LANE_POOLS;
   const $ = id => document.getElementById(id);
   const isRank = new URLSearchParams(location.search).get("mode") === "rank";
   const storeKey = isRank ? "aov-rank-draft-v1" : "aov-draft-desk-v1";
@@ -25,6 +26,7 @@
   let clock = initialClock();
   let selection = [];
   let role = "";
+  let lane = "";
   let restrictions = new Set();
   let dialogReturn;
   let storageIssue = "";
@@ -101,6 +103,8 @@
       $("search").value = params.get("q") || "";
       $("available").checked = params.get("available") === "1";
       role = rules.roles.has(Number(params.get("role"))) ? params.get("role") : "";
+      lane = Object.hasOwn(lanePools, params.get("lane")) ? params.get("lane") : "";
+      $("lane-filter").value = lane;
     }
     render();
   }
@@ -109,6 +113,7 @@
     const params = new URLSearchParams();
     if ($("search").value) params.set("q", $("search").value);
     if (role) params.set("role", role);
+    if (lane) params.set("lane", lane);
     if ($("available").checked) params.set("available", "1");
     const query = params.toString();
     history.replaceState(null, "", "#draft" + (query ? "?" + query : ""));
@@ -167,8 +172,10 @@
     const keyword = norm($("search").value.trim());
     const onlyAvailable = $("available").checked;
     const reasonFor = rules.eligibility(state, turn, true);
+    const pool = lanePools[lane];
     const rosterFiltered = roster.filter(hero => {
       return (!role || hero.roles.includes(Number(role))) && norm(heroLabel(hero)).includes(keyword)
+        && (!pool || pool.main.has(hero.id) || pool.extra.has(hero.id))
         && (!onlyAvailable || !turn || !reasonFor(hero.id));
     });
     const roleOptions = [["", "Tất cả"], ...rules.roles];
@@ -187,7 +194,7 @@
     } else if (!rosterFiltered.length) {
       grid.innerHTML = '<p class="pool-empty">Không có tướng phù hợp. Thử đổi bộ lọc hoặc từ khóa.</p>';
     } else {
-      grid.innerHTML = rosterFiltered.map(hero => {
+      const tile = hero => {
         const reason = reasonFor(hero.id);
         const selected = selection.includes(hero.id);
         const recommendation = !reason && featuredHeroes.get(hero.id);
@@ -202,7 +209,16 @@
           '" title="' + escapeHtml(label) + '" aria-pressed="' + selected + '" aria-disabled="' + Boolean(reason) +
           '"><span class="hero-art">' + portrait(hero) + status + '</span><span class="hero-name">' +
           escapeHtml(heroLabel(hero)) + '</span></button>';
-      }).join("");
+      };
+      if (pool) {
+        grid.innerHTML = [[pool.main, "Tướng chính"], [pool.extra, "Tướng bổ sung cho đường"]].map(([ids, title]) => {
+          const heroes = rosterFiltered.filter(hero => ids.has(hero.id));
+          return heroes.length ? '<h3 class="hero-group-heading">' + title + ' <span>' + heroes.length +
+            '</span></h3>' + heroes.map(tile).join("") : "";
+        }).join("");
+      } else {
+        grid.innerHTML = rosterFiltered.map(tile).join("");
+      }
     }
     grid.scrollTop = scrollTop;
     if (hadFocus) grid.querySelector('[data-hero="' + CSS.escape(hadFocus) + '"]')?.focus({ preventScroll: true });
@@ -666,6 +682,15 @@
     $("heroes").scrollTop = 0;
     renderRoster();
     $("roles").querySelector('[data-role="' + role + '"]')?.focus({ preventScroll: true });
+  });
+  const laneFilter = $("lane-filter");
+  laneFilter.innerHTML = '<option value="">Tất cả</option>' + Object.entries(lanePools).map(([key, { label }]) =>
+    '<option value="' + escapeHtml(key) + '">' + escapeHtml(label) + '</option>').join("");
+  laneFilter.addEventListener("change", () => {
+    lane = laneFilter.value;
+    saveFilters();
+    $("heroes").scrollTop = 0;
+    renderRoster();
   });
   for (const id of ["search", "available"]) {
     $(id).addEventListener("input", () => {

@@ -194,7 +194,8 @@
   }
 
   function renderQzaddTier() {
-    const { board, order, source, changes } = window.QZADD_TIERS;
+    const { board, order, source, changes, tierFor } = window.QZADD_TIERS;
+    const pools = window.AOV_LANE_POOLS;
     const byId = new Map(boot.roster.map(hero => [hero.id, hero]));
     const heroName = hero => [hero.name, hero.variant].filter(Boolean).join(" ");
     const descriptions = {
@@ -214,6 +215,7 @@
     container.innerHTML = '<section class="panel data-panel qz-board" aria-label="Bảng xếp hạng theo vị trí">' +
       '<div class="qz-tools"><div id="qz-lanes"></div>' + search("qz-search", "Tìm tướng ở vị trí này…") +
       '</div><p class="qz-count" id="qz-count"></p><div class="qz-groups" id="qz-groups"></div>' +
+      '<section id="qz-supplement" class="qz-supplement" aria-labelledby="qz-supplement-title" hidden></section>' +
       '<details class="qz-changes"><summary>Thay đổi so với bảng trước</summary><ul>' +
       changes.map(([lane, id, before, after]) => '<li><strong>' + escape(heroName(byId.get(id))) +
         '</strong><span>' + lane + ' · ' + tierTitle(before) + ' → ' + after + '</span></li>').join("") +
@@ -223,10 +225,13 @@
       '<a class="subtle-link" href="' + source.image + '">Xem bảng gốc</a></div></div></section>';
     function renderGroups() {
       const query = norm($("qz-search").value.trim());
+      const matchingHeroes = ids => [...ids].map(id => byId.get(id))
+        .filter(hero => hero && norm(heroName(hero)).includes(query));
+      const pool = pools[position];
+      const extras = matchingHeroes(pool.extra);
       let total = 0;
       const groups = order.map(tier => {
-        const heroes = (board[position][tier] ?? []).map(id => byId.get(id))
-          .filter(hero => hero && norm(heroName(hero)).includes(query));
+        const heroes = matchingHeroes(board[position][tier] ?? []);
         if (!heroes.length) return "";
         total += heroes.length;
         const label = tierTitle(tier);
@@ -234,12 +239,20 @@
           '"><h2>' + label + '</h2><span>' + descriptions[tier] + '</span></div><ul class="qz-heroes">' +
           heroes.map(hero => '<li>' + thumb({ name: heroName(hero) }) + '</li>').join("") + '</ul></section>';
       }).join("");
-      $("qz-count").textContent = position + " · " + total + " tướng";
-      $("qz-groups").innerHTML = groups || empty("Không tìm thấy tướng ở vị trí này.");
+      $("qz-count").textContent = pool.label + " · " + total + " tướng trong bảng Qzadd";
+      $("qz-groups").innerHTML = groups || (extras.length ? "" : empty("Không tìm thấy tướng ở vị trí này."));
+      const supplement = $("qz-supplement");
+      supplement.hidden = !extras.length;
+      supplement.innerHTML = extras.length ? '<h2 id="qz-supplement-title">Tướng bổ sung cho đường <span>' +
+        extras.length + '</span></h2><ul class="qz-heroes">' + extras.map(hero => {
+          const tier = tierFor(hero.id, [position]);
+          return '<li>' + thumb({ name: heroName(hero) }) + '<small>' +
+            (tier ? tierTitle(tier.tier) : 'Chưa có tier') + '</small></li>';
+        }).join("") + '</ul>' : "";
     }
     const tabs = $("qz-lanes");
     const renderTabs = () => {
-      tabs.innerHTML = toggleGroup(positions.map(lane => [lane, lane]), position, "Vị trí");
+      tabs.innerHTML = toggleGroup(positions.map(lane => [lane, pools[lane].label]), position, "Vị trí");
     };
     tabs.addEventListener("click", event => {
       const field = event.target.closest("[data-filter]");

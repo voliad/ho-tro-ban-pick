@@ -6,13 +6,14 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=qzadd-tiers">
+  <link rel="stylesheet" href="./style.css?v=lane-pools">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=side-perspective" defer></script>
   <script src="./counters.js?v=cross-match" defer></script>
   <script src="./counter-reference.js?v=full-roster" defer></script>
   <script src="./qzadd-tiers.js?v=20261107-board" defer></script>
-  <script src="./app.js?v=qzadd-tiers" defer></script>
+  <script src="./lane-pools.js?v=1" defer></script>
+  <script src="./app.js?v=lane-pools" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -68,7 +69,10 @@
           </div>
           <div class="filter-bar">
             <div id="roles" class="role-bar" aria-label="Lọc theo vai trò"></div>
-            <label class="available"><input id="available" type="checkbox" name="available"> Khả dụng</label>
+            <div class="pool-filters">
+              <label class="lane-filter">Vị trí <select id="lane-filter"></select></label>
+              <label class="available"><input id="available" type="checkbox" name="available"> Khả dụng</label>
+            </div>
           </div>
           <section class="counter-panel" aria-labelledby="counter-title">
             <h3 id="counter-title">Gợi ý tướng</h3>
