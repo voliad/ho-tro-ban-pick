@@ -79,6 +79,7 @@
         <div id="selection" class="selection" aria-live="polite">Chưa chọn tướng</div>
         <div class="control-actions">
           <button type="button" id="undo" class="quiet" disabled>Hoàn tác</button>
+          <button type="button" id="reset-draft" class="quiet">Làm mới từ đầu</button>
           <button type="button" id="commit" class="primary" disabled>Xác nhận cấm</button>
         </div>
       </div>
@@ -151,8 +152,8 @@
 
   <dialog id="confirm-dialog" aria-labelledby="confirm-title">
     <form method="dialog">
-      <h2 id="confirm-title">Tạo series mới?</h2>
-      <p>Bàn draft hiện tại và lịch sử các ván sẽ được xóa khỏi trình duyệt.</p>
+      <h2 id="confirm-title">Làm mới từ đầu?</h2>
+      <p>Toàn bộ lượt cấm, lượt chọn và kết quả trên bàn này sẽ bị xóa. Tên đội và thiết lập được giữ lại.</p>
       <div class="dialog-actions">
         <button type="submit" value="cancel" class="quiet">Quay lại</button>
         <button type="submit" value="confirm" class="primary">Tạo series mới</button>

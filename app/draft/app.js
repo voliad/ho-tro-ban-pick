@@ -461,7 +461,7 @@
     save();
     $("settings-dialog").close();
     location.hash = "draft";
-    tell("Đã tạo series mới.");
+    tell("Đã làm mới bàn cấm chọn.");
     renderRoute();
   }
 
@@ -508,7 +508,7 @@
   }
   for (const [id, run] of Object.entries({
     "timer-toggle": toggleClock, commit, undo, swap, settings: openSettings,
-    export: exportSeries, restart: openRestart,
+    export: exportSeries, restart: openRestart, "reset-draft": openRestart,
     "result-blue": () => result("blue"), "result-red": () => result("red"),
   })) {
     $(id).addEventListener("click", run);

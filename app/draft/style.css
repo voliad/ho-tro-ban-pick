@@ -265,5 +265,5 @@ dialog::backdrop { background: var(--color-blackout); }
 
 @media (max-width: 25rem) {
   .controlbar { grid-template-columns: minmax(0, 1fr); }
-  .control-actions { justify-content: flex-end; }
+  .control-actions { justify-content: flex-end; flex-wrap: wrap; }
 }
