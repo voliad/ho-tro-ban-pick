@@ -171,6 +171,7 @@ h1 { font-size: 2.1rem; line-height: 1.15; font-weight: 750; letter-spacing: -.0
 .pool-empty { grid-column: 1 / -1; color: var(--color-muted); padding: var(--space-md) .3rem; }
 .pool-foot { border-top: 1px solid var(--color-rule-soft); padding: .5rem .85rem; margin-top: auto; font-size: .77rem; color: var(--color-muted); }
 .controlbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .85rem; padding: .55rem .7rem; min-height: 3.7rem; border: 1px solid var(--color-rule); border-top: 0; background: var(--color-paper-2); }
+.control-actions { flex-wrap: wrap; justify-content: flex-end; }
 .timer, .control-actions { display: flex; align-items: center; gap: .5rem; }
 .timer-value { display: block; min-width: 3.5rem; text-align: center; font: 650 1.23rem/1 var(--font-score); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
 .timer-value.urgent { color: var(--color-error); }
@@ -304,6 +305,7 @@ dialog::backdrop { background: var(--color-blackout); }
   .controlbar { position: sticky; bottom: 0; z-index: 2; grid-template-columns: minmax(0, 1fr); gap: .4rem; margin-top: .45rem; border-top: 1px solid var(--color-rule); padding: .4rem; padding-bottom: max(.4rem, env(safe-area-inset-bottom)); }
   .timer { flex-wrap: wrap; }
   .control-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr); gap: .3rem; }
+  .control-actions:has(#skip-draft:not([hidden])) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .control-actions button { min-width: 0; min-height: 44px; padding-inline: .25rem; white-space: normal; line-height: 1.2; }
   .selection { grid-column: 1 / -1; grid-row: 1; text-align: left; padding-inline: .35rem; }
   .timer-value { min-width: 2.7rem; font-size: 1rem; }

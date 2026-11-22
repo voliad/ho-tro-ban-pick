@@ -399,8 +399,9 @@
       isRank && turn.kind === "ban" && turn.count > 1 ? "Chốt " + turn.count + " tướng cấm" :
         "Xác nhận " + actionLabel[turn.kind]) : "Ghi kết quả";
     $("commit").disabled = winner !== null || Boolean(turn && selection.length !== turn.count);
-    $("undo").disabled = !(selection.length || number > 1 || game.turns.length || game.winner);
-    $("undo").textContent = selection.length ? "Bỏ chọn" : !game.turns.length && number > 1 || game.winner ? "Hoàn tác kết quả" : "Hoàn tác";
+    $("skip-draft").hidden = !turn;
+    $("undo").disabled = !(selection.length || number > 1 || game.turns.length || game.winner || game.draftSkipped);
+    $("undo").textContent = selection.length ? "Bỏ chọn" : game.winner || !game.draftSkipped && !game.turns.length && number > 1 ? "Hoàn tác kết quả" : "Hoàn tác";
     $("timer-toggle").disabled = !turn;
     positionControl();
     renderClock();
@@ -414,7 +415,7 @@
     $("history-games").innerHTML = state.games.map((game, i) => {
       const number = i + 1;
       const blind = rules.isBlind(state.settings, number);
-      const concealed = blind && game.turns.length < 2;
+      const concealed = blind && !game.draftSkipped && game.turns.length < 2;
       const sides = ["blue", "red"].map(side => {
         const team = rules.onSide(game, side);
         const format = kind => game.turns.filter(turn => turn.side === side && turn.kind === kind)
@@ -425,7 +426,7 @@
         return '<section class="history-team ' + side + '"><h3>' + escapeHtml(nameOf(team)) + ' / ' +
           sideLabel[side] + '</h3>' + list + '</section>';
       });
-      const status = game.winner ? nameOf(game.winner) + " thắng" : game.turns.length ? "Chưa ghi kết quả" : "Chưa cấm chọn";
+      const status = game.winner ? nameOf(game.winner) + " thắng" : game.draftSkipped ? "Đã bỏ qua cấm/chọn" : game.turns.length ? "Chưa ghi kết quả" : "Chưa cấm chọn";
       return '<article class="history-game"><div class="history-head"><h2>Ván ' + number + '</h2><span>' +
         escapeHtml(status) + '</span></div><div class="history-sides">' + sides.join("") + '</div></article>';
     }).join("");
@@ -509,6 +510,17 @@
     renderDraft();
   }
 
+  function skipDraft() {
+    if (!rules.activeTurn(state)) return;
+    state.games.at(-1).draftSkipped = true;
+    selection = [];
+    clock = initialClock();
+    save();
+    tell("Đã bỏ qua các lượt cấm/chọn còn lại. Bạn có thể hoàn tác để tiếp tục.");
+    renderDraft();
+    $("commit").focus();
+  }
+
   function undo() {
     if (selection.length) {
       selection = [];
@@ -518,20 +530,20 @@
       if (!action) return;
       clock = initialClock();
       save();
-      tell(action === "result" ? "Đã mở lại kết quả của ván trước." : "Đã hoàn tác lượt vừa chốt.");
+      tell(action === "result" ? "Đã mở lại kết quả của ván trước." : action === "skip" ? "Đã mở lại lượt cấm/chọn." : "Đã hoàn tác lượt vừa chốt.");
     }
     renderDraft();
   }
 
   function positionControl() {
     const game = state.games.at(-1);
-    const enabled = !game.winner && !game.turns.length && !selection.length;
+    const enabled = !game.winner && !game.draftSkipped && !game.turns.length && !selection.length;
     $("swap").disabled = !enabled;
   }
 
   function swap() {
     const game = state.games.at(-1);
-    if (game.winner || game.turns.length || selection.length) return;
+    if (game.winner || game.draftSkipped || game.turns.length || selection.length) return;
     game.blue = rules.opposite(game.blue);
     if (state.games.length === 1) state.settings.firstBlue = game.blue;
     save();
@@ -652,7 +664,7 @@
   function exportSeries() {
     const copy = structuredClone(state);
     const game = copy.games.at(-1);
-    if (rules.isBlind(copy.settings, copy.games.length) && game.turns.length < 2) {
+    if (rules.isBlind(copy.settings, copy.games.length) && !game.draftSkipped && game.turns.length < 2) {
       game.turns = [];
       game.hiddenDraftInProgress = true;
     }
@@ -701,7 +713,7 @@
   }
   for (const [id, run] of Object.entries({
     "timer-toggle": toggleClock, commit, undo, swap, settings: openSettings,
-    export: exportSeries, restart: openRestart, "reset-draft": openRestart,
+    export: exportSeries, "skip-draft": skipDraft, restart: openRestart, "reset-draft": openRestart,
     "result-blue": () => result("blue"), "result-red": () => result("red"),
   })) {
     $(id).addEventListener("click", run);
