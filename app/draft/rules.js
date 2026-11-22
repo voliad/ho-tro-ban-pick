@@ -54,7 +54,10 @@
   function activeTurn(state) {
     const game = state.games.at(-1);
     if (game.winner || game.draftSkipped) return null;
-    const row = sequence(state.settings, state.games.length)[game.turns.length];
+    const turns = sequence(state.settings, state.games.length);
+    const remaining = turns.filter(([kind], index) =>
+      game.skipBansFrom === undefined || index < game.skipBansFrom || kind !== "ban");
+    const row = remaining[game.turns.length];
     if (!row) return null;
     const [kind, side, count] = row;
     return { kind, side, count, team: onSide(game, side) };
@@ -123,6 +126,10 @@
     if (game.winner) {
       game.winner = null;
       return "result";
+    }
+    if (game.turns.length === game.skipBansFrom) {
+      delete game.skipBansFrom;
+      return "skip";
     }
     if (game.draftSkipped) {
       delete game.draftSkipped;
