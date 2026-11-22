@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
+  <meta name="theme-color" content="#101213">
+  <title>Draft Desk | Liên Quân Mobile</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./heroes.js" defer></script>
+  <script src="./rules.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell top-inner">
+      <a class="brand" href="#draft" aria-label="Draft Desk, về bàn cấm chọn">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span><strong>Draft Desk</strong><small>Liên Quân Mobile</small></span>
+      </a>
+      <nav aria-label="Điều hướng chính">
+        <a href="#draft" data-view="draft" aria-current="page">Bàn cấm chọn</a>
+        <a href="#history" data-view="history">Lịch sử</a>
+        <a href="#rules" data-view="rules">Luật &amp; nguồn</a>
+      </nav>
+      <div class="top-actions">
+        <a class="quiet academy-link" href="/ban-pick">ATG Academy</a>
+        <button type="button" id="export" class="quiet" disabled>Xuất JSON</button>
+        <button type="button" id="settings" class="quiet" disabled>Thiết lập</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section id="view-draft" aria-labelledby="page-title">
+      <div class="intro">
+        <div>
+          <h1 id="page-title">Bàn cấm chọn</h1>
+          <p>Điều phối ban/pick và theo dõi tướng đã dùng trong series.</p>
+        </div>
+        <div class="series-strip">
+          <div class="series-info"><strong id="format-label">BO5</strong><span id="mode-label">Global Ban/Pick</span></div>
+          <div id="games" class="game-strip" aria-label="Tiến độ series"></div>
+        </div>
+      </div>
+
+      <div class="matchbar" aria-label="Tỉ số và lượt hiện tại">
+        <div class="match-team blue"><span id="match-blue">Đội A</span><strong id="score-blue">0</strong></div>
+        <div class="turn-status" aria-live="polite">
+          <span id="game-label">Ván 1</span>
+          <strong id="turn-label">Xanh cấm tướng</strong>
+        </div>
+        <div class="match-team red"><strong id="score-red">0</strong><span id="match-red">Đội B</span></div>
+      </div>
+
+      <div class="board">
+        <section id="team-blue" class="team blue" aria-label="Bên xanh"></section>
+        <section class="pool" aria-labelledby="pool-title">
+          <div class="pool-head">
+            <div><h2 id="pool-title">Kho tướng</h2><p id="pool-count">Đang tải danh mục</p></div>
+            <label class="search"><span class="search-icon" aria-hidden="true"></span><span class="visually-hidden">Tìm tướng</span><input id="search" name="hero-search" type="search" autocomplete="off" placeholder="Tìm tướng…"></label>
+          </div>
+          <div class="filter-bar">
+            <div id="roles" class="role-bar" aria-label="Lọc theo vai trò"></div>
+            <label class="available"><input id="available" type="checkbox" name="available"> Khả dụng</label>
+          </div>
+          <div class="hero-grid" id="heroes" aria-label="Danh sách tướng"></div>
+          <div class="pool-foot"><span id="pool-note">Chọn tướng trong kho, rồi xác nhận lượt.</span></div>
+        </section>
+        <section id="team-red" class="team red" aria-label="Bên đỏ"></section>
+      </div>
+
+      <div class="controlbar">
+        <div class="timer">
+          <span id="timer-display" class="timer-value" aria-label="Thời gian còn lại">00:30</span>
+          <button type="button" id="timer-toggle" class="quiet" disabled>Bắt đầu</button>
+          <button type="button" id="swap" class="quiet" disabled>Đổi bên</button>
+        </div>
+        <div id="selection" class="selection" aria-live="polite">Chưa chọn tướng</div>
+        <div class="control-actions">
+          <button type="button" id="undo" class="quiet" disabled>Hoàn tác</button>
+          <button type="button" id="commit" class="primary" disabled>Xác nhận cấm</button>
+        </div>
+      </div>
+      <p id="notice" class="notice" role="status"></p>
+      <noscript><p>Bật JavaScript để sử dụng bàn cấm chọn.</p></noscript>
+    </section>
+
+    <section id="view-history" class="secondary-view" aria-labelledby="history-title" hidden>
+      <h1 id="history-title">Lịch sử series</h1>
+      <p id="history-summary"></p>
+      <div id="history-games" class="history-games"></div>
+    </section>
+
+    <section id="view-rules" class="secondary-view" aria-labelledby="rules-title" hidden>
+      <h1 id="rules-title">Luật &amp; nguồn</h1>
+      <p>Đối chiếu ngày 22/11/2026.</p>
+      <div class="rules-layout">
+        <section aria-labelledby="profiles-title">
+          <h2 id="profiles-title">Cách cấm chọn</h2>
+          <dl class="reference-list">
+            <div><dt>Global Ban/Pick</dt><dd>Mỗi đội có thể chọn tướng đối thủ từng dùng nếu đội mình chưa chọn. Tướng đội mình đã chọn sẽ bị khóa ở các lượt chọn sau, kể cả khi đổi bên. Lượt cấm chỉ có hiệu lực trong ván.</dd></div>
+            <div><dt>Thứ tự 4 cấm / 5 chọn mỗi bên</dt><dd>Đợt 1 cấm theo thứ tự X, Đ, X, Đ rồi chọn X, ĐĐ, XX, Đ. Đợt 2 cấm theo thứ tự Đ, X, Đ, X rồi chọn Đ, XX, Đ. X là Xanh và Đ là Đỏ. Thứ tự theo điều lệ ĐTDV Series B.</dd></div>
+            <div><dt>Chọn Ẩn ở ván 7</dt><dd>Mỗi đội nhập riêng 5 tướng. Công cụ mở cả hai đội hình khi hai bên đã chốt. Công cụ mặc định cho phép hai đội trùng tướng và mở lại kho Global. Trọng tài có thể đổi các thiết lập này theo điều lệ giải.</dd></div>
+            <div><dt>Đổi bên và tướng bị hạn chế</dt><dd>Mặc định đổi bên sau mỗi ván. Có thể đổi thủ công trước khi cấm. Tướng cấm của ban tổ chức bị loại khỏi kho khả dụng. Hai biến thể Flowborn dùng chung một khóa theo mặc định và có thể tách trong thiết lập.</dd></div>
+          </dl>
+        </section>
+        <section aria-labelledby="sources-title">
+          <h2 id="sources-title">Nguồn đối chiếu</h2>
+          <dl class="reference-list">
+            <div><dt>Việt Nam</dt><dd>Garena công bố thể thức BO7 cho chung kết giải cộng đồng. Điều 7 đến 9 của Series B quy định thứ tự cấm chọn, luật Global và ván 7. <span class="source-links"><a href="https://lienquan.garena.vn/chinh-phuc-ngoi-vuong-thap-ky-khac-ghi-dau-an-cong-dong-chung-ket-tu-phuong-dai-chien-mua-dong-2026/" target="_blank" rel="noopener">Chung kết Tứ Phương Đại Chiến 2026</a><a href="https://lienquan.garena.vn/luat-thi-dau-the-thao-dien-tu-lien-quan-mobile-dau-truong-danh-vong-series-b/" target="_blank" rel="noopener">Điều lệ Series B</a><a href="https://lienquan.garena.vn/hoc-vien/tuong-skin/" target="_blank" rel="noopener">Danh mục tướng và ảnh</a></span></dd></div>
+            <div><dt>Đài Loan</dt><dd>Điều lệ giải do NPUST công bố quy định BO3 Global BP và quyền chọn bên. <a href="https://pe.npust.edu.tw/wp-content/uploads/2026/04/0400011a00_attch4.pdf" target="_blank" rel="noopener">Điều lệ 傳說對決 2026</a></dd></div>
+            <div><dt>Thái Lan</dt><dd>Điều lệ giải đăng trên Liên đoàn Esports Thái Lan quy định Global Ban/Pick và hạn chế tướng ra mắt trong 14 ngày. Garena RoV công bố quy chế riêng cho RPL. <span class="source-links"><a href="https://tesf.or.th/sbpacesports/rules/rules.pdf" target="_blank" rel="noopener">Điều lệ giải 2026</a><a href="https://www.rov.in.th/esports-news/rplrulesupdate" target="_blank" rel="noopener">Quy chế RPL</a></span></dd></div>
+            <div><dt>Indonesia</dt><dd>Garena Indonesia công bố thể thức vòng loại ASL và phát sóng chung kết APL 2026. <span class="source-links"><a href="https://cdn.garenanow.com/gstaticid/AOV/esports/webcov23winter/Rules%20ASL%20Qualifier%202024%20Spring.v1.pdf" target="_blank" rel="noopener">Điều lệ ASL Qualifier 2024</a><a href="https://www.youtube.com/watch?v=Ca_z8FI5v60" target="_blank" rel="noopener">Chung kết APL 2026</a></span></dd></div>
+          </dl>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form" autocomplete="off">
+      <div class="dialog-head"><h2 id="settings-title">Thiết lập series</h2><button type="button" class="quiet" data-close="settings-dialog">Đóng</button></div>
+      <div class="form-grid">
+        <label>Tên đội A<input name="teamA" maxlength="40" required value="Đội A"></label>
+        <label>Tên đội B<input name="teamB" maxlength="40" required value="Đội B"></label>
+        <label>Thể thức<select name="format"><option value="1">BO1</option><option value="3">BO3</option><option value="5" selected>BO5</option><option value="7">BO7</option></select></label>
+        <label>Luật kho tướng<select name="mode"><option value="global">Global Ban/Pick</option><option value="standard">Theo từng ván</option></select></label>
+        <label>Bên xanh ván 1<select name="firstBlue"><option value="A">Đội A</option><option value="B">Đội B</option></select></label>
+        <label>Luân phiên bên<select name="alternate"><option value="yes">Đổi bên sau mỗi ván</option><option value="no">Giữ bên khởi đầu</option></select></label>
+        <label>Thời gian mỗi lượt (giây)<input name="seconds" type="number" min="5" max="180" step="1" required value="30"></label>
+        <label>Biến thể Flowborn<select name="groupFlowborn"><option value="yes">Khóa chung</option><option value="no">Khóa riêng</option></select></label>
+      </div>
+      <fieldset id="final-settings" class="final-settings" hidden>
+        <legend>Ván 7</legend>
+        <label>Kiểu draft<select name="final"><option value="blind">Chọn Ẩn và mở lại kho</option><option value="reset">Cấm chọn, mở lại kho</option><option value="keep">Tiếp tục luật series</option></select></label>
+        <label id="mirror-setting"><input name="mirrors" type="checkbox" checked> Cho phép hai đội trùng tướng khi Chọn Ẩn</label>
+      </fieldset>
+      <div class="restriction-field">
+        <label for="restrictions-search">Tướng cấm của ban tổ chức</label>
+        <input id="restrictions-search" name="restriction-search" type="search" autocomplete="off" placeholder="Tìm tướng để thêm hoặc bỏ cấm…">
+        <div id="restrictions-list" class="restrictions-list"></div>
+      </div>
+      <p id="settings-note" class="form-note" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button type="button" id="restart" class="quiet">Tạo series mới</button>
+        <button type="submit" class="primary">Lưu thiết lập</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <h2 id="confirm-title">Tạo series mới?</h2>
+      <p>Bàn draft hiện tại và lịch sử các ván sẽ được xóa khỏi trình duyệt.</p>
+      <div class="dialog-actions">
+        <button type="submit" value="cancel" class="quiet">Quay lại</button>
+        <button type="submit" value="confirm" class="primary">Tạo series mới</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="result-dialog" aria-labelledby="result-title">
+    <div class="dialog-head"><h2 id="result-title">Đội thắng ván</h2><button type="button" class="quiet" data-close="result-dialog">Đóng</button></div>
+    <div class="result-options">
+      <button type="button" id="result-blue" class="quiet blue"></button>
+      <button type="button" id="result-red" class="quiet red"></button>
+    </div>
+  </dialog>
+</body>
+</html>
