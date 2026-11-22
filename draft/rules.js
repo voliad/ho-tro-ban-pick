@@ -53,7 +53,7 @@
 
   function activeTurn(state) {
     const game = state.games.at(-1);
-    if (game.winner) return null;
+    if (game.winner || game.draftSkipped) return null;
     const row = sequence(state.settings, state.games.length)[game.turns.length];
     if (!row) return null;
     const [kind, side, count] = row;
@@ -123,6 +123,10 @@
     if (game.winner) {
       game.winner = null;
       return "result";
+    }
+    if (game.draftSkipped) {
+      delete game.draftSkipped;
+      return "skip";
     }
     if (game.turns.length) {
       game.turns.pop();
