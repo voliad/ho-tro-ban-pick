@@ -208,6 +208,16 @@
       airi: ["omen"],
       "11596": ["florentino", "marja"],
       richter: ["marja"],
+      zuka: ["biron", "arthur"],
+      yena: ["billow", "arthur"],
+      "ngo-khong": ["qi"],
+      heino: ["marja"],
+      kaine: ["qi", "biron"],
+      amily: ["florentino"],
+      skud: ["florentino", "trieu-van"],
+      kilgroth: ["murad", "florentino"],
+      dextra: ["murad"],
+      wiro: ["florentino", "trieu-van"],
       florentino: ["murad", "ryoma"],
       bijan: ["marja", "omen"],
       veres: ["marja", "florentino"],
@@ -225,6 +235,13 @@
     },
     "Đi rừng": {
       billow: ["zephys", "kaine"],
+      zuka: ["skud", "billow"],
+      tachi: ["florentino", "marja"],
+      quillen: ["skud"],
+      aoi: ["wonder-woman", "rourke"],
+      kriknak: ["keera", "billow"],
+      "wonder-woman": ["keera", "florentino"],
+      zill: ["yan", "wonder-woman"],
       tamyn: ["zephys", "butterfly"],
       zephys: ["keera", "elandorr"],
       "11596": ["keera", "marja"],
@@ -250,6 +267,17 @@
     },
     "Đường giữa": {
       lorion: ["lauriel"],
+      yue: ["liliana"],
+      dirak: ["dieu-thuyen"],
+      heino: ["flowborn-2", "darcy"],
+      "the-flash": ["liliana"],
+      lauriel: ["liliana", "zata"],
+      natalya: ["azzenka", "yue"],
+      krixi: ["azzenka"],
+      "dieu-thuyen": ["yue"],
+      gildur: ["goverra", "zata"],
+      annette: ["yue"],
+      ishar: ["liliana"],
       liliana: ["raz"],
       darcy: ["sephera", "lauriel"],
       evita: ["yue", "zata"],
@@ -276,6 +304,8 @@
     },
     "Xạ thủ": {
       elandorr: ["valhein", "erin"],
+      "bolt-baron": ["hayate"],
+      preyta: ["fennik"],
       violet: ["capheny"],
       moren: ["stuart"],
       fennik: ["valhein", "capheny"],
@@ -345,7 +375,7 @@
   const risks = {
     "Tà Thần": { marja: ["murad"], "bolt-baron": ["marja"] },
     "Đi rừng": {},
-    "Đường giữa": { lorion: ["liliana"], liliana: ["veera"], yue: ["gildur"] },
+    "Đường giữa": { lorion: ["liliana"], liliana: ["veera"], yue: ["gildur"], "the-flash": ["veera"] },
     "Xạ thủ": {
       flowborn: ["elandorr", "elsu"],
       moren: ["fennik"],
@@ -358,6 +388,7 @@
   };
 
   const partners = [
+    { hero: "natalya", lane: "Đường giữa", ally: "grakk" },
     { hero: "yue", lane: "Đường giữa", ally: "gildur" },
     { hero: "lorion", lane: "Đường giữa", ally: "dyadia" },
     { hero: "lauriel", lane: "Đường giữa", ally: "dyadia" },
@@ -478,8 +509,11 @@
     const relevant = lanes.length ? lanes : Object.keys(cards);
     return relevant.map(lane => {
       const rating = cards[lane]?.[id]?.[0];
-      if (rating === undefined) return window.QZADD_TIERS.tierFor(id, [lane]);
-      return { lane, rating, source: source.name, ...ratingFor(rating) };
+      const qzadd = window.QZADD_TIERS.tierFor(id, [lane]);
+      if (rating === undefined) return qzadd;
+      const { tier, weight } = ratingFor(rating);
+      const combinedWeight = qzadd?.weight === undefined ? weight : (weight + qzadd.weight) / 2;
+      return { lane, rating, source: source.name, tier, weight: combinedWeight, qzadd };
     }).reduce((best, entry) => !best || entry && (entry.weight ?? -Infinity) > (best.weight ?? -Infinity) ?
       entry : best, null);
   }
