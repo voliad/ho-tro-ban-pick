@@ -15,7 +15,7 @@
   <script src="./qzadd-tiers.js?v=20261107-board" defer></script>
   <script src="./lane-pools.js?v=2" defer></script>
   <script src="./app.js?v=team-combos-v2" defer></script>
-  <script src="./airplay.js?v=1" defer></script>
+  <script src="./airplay.js?v=2" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -54,20 +54,15 @@
       </div>
 
       <details class="airplay-panel">
-        <summary>Chiếu màn hình iPhone</summary>
+        <summary>Chia sẻ màn hình</summary>
         <div class="airplay-content">
-          <p>iPhoneMirror nhận AirPlay trên Windows. Ban Pick hiển thị cửa sổ chiếu mà bạn cấp quyền chia sẻ. Hình ảnh được xử lý tại trình duyệt.</p>
-          <ol>
-            <li>Cài và mở <a href="https://github.com/RayrenSX/iPhoneMirror/releases" target="_blank" rel="noopener noreferrer">iPhoneMirror cho Windows x64</a>. Kết nối hai thiết bị vào cùng mạng Wi-Fi.</li>
-            <li>Trên iPhone, mở <strong>Trung tâm điều khiển → Phản chiếu màn hình</strong> và chọn tên AirPlay của iPhoneMirror.</li>
-            <li>Trên máy tính, bấm <strong>Chia sẻ cửa sổ chiếu</strong>, chọn mục <strong>Cửa sổ</strong> rồi chọn iPhoneMirror hoặc cửa sổ xem riêng của ứng dụng.</li>
-          </ol>
+          <p>Chọn cửa sổ hoặc thẻ đang hiển thị trận đấu.</p>
           <div class="airplay-actions">
-            <button type="button" class="quiet" id="airplay-start">Chia sẻ cửa sổ chiếu</button>
+            <button type="button" class="quiet" id="airplay-start">Bắt đầu chia sẻ</button>
             <button type="button" class="quiet" id="airplay-stop" hidden>Dừng chia sẻ</button>
           </div>
           <p id="airplay-status" role="status"></p>
-          <video id="airplay-preview" aria-label="Xem màn hình iPhone" autoplay muted playsinline hidden></video>
+          <video id="airplay-preview" aria-label="Xem màn hình đang chia sẻ" autoplay muted playsinline hidden></video>
         </div>
       </details>
 
