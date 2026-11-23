@@ -6,7 +6,7 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=airplay">
+  <link rel="stylesheet" href="./style.css?v=scan-image">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=filter-rows" defer></script>
   <script src="./counters.js?v=cross-match" defer></script>
@@ -17,7 +17,7 @@
   <script src="./app.js?v=draft-scan" defer></script>
   <script src="./airplay.js?v=2" defer></script>
   <script src="./scan-samples.js?v=1" defer></script>
-  <script src="./draft-scan.js?v=1" defer></script>
+  <script src="./draft-scan.js?v=2" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -62,11 +62,14 @@
           <div class="airplay-actions">
             <button type="button" class="quiet" id="airplay-start">Bắt đầu chia sẻ</button>
             <button type="button" class="quiet" id="airplay-stop" hidden>Dừng chia sẻ</button>
+            <label class="scan-file">Tải ảnh để thử <input type="file" id="scan-file" accept="image/png,image/jpeg,image/webp"></label>
+            <button type="button" class="quiet" id="scan-clear" hidden>Bỏ ảnh</button>
             <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn vùng game · Thử nghiệm Rank</button>
           </div>
           <p id="airplay-status" role="status"></p>
           <div id="scan-results" aria-live="polite"></div>
           <video id="airplay-preview" aria-label="Xem màn hình đang chia sẻ" autoplay muted playsinline hidden></video>
+          <img id="scan-preview" alt="Ảnh cấm/chọn đang thử nhận diện" hidden>
         </div>
       </details>
 
