@@ -12,6 +12,7 @@
   const clear = $("scan-clear");
   const calibrate = $("scan-calibrate");
   const output = $("scan-results");
+  const feedStatus = $("scan-feed-status");
   const ocr = $("scan-ocr");
   const ocrStatus = $("scan-ocr-status");
   const canvas = document.createElement("canvas");
@@ -50,10 +51,14 @@
   let slots = [];
   let textMatches = new Map();
   let readingText = false;
+  const attemptedSlots = new Map();
   let loadingPortraits = false;
   let imageUrl;
   let rotation = 0;
   let manualRotation = false;
+  let lastFrame;
+  let lastFrameChange = 0;
+  const recentConfirmed = new Map();
   const source = () => imageUrl ? image : rotation ? rotatedVideo : video;
   const dimensions = element => element === image ? [image.naturalWidth, image.naturalHeight] :
     element === video ? [video.videoWidth, video.videoHeight] : [element.width, element.height];
@@ -146,6 +151,31 @@
     return rows.filter(row => accepted.has(row));
   }
 
+  function updateFeedStatus() {
+    let message = "";
+    if (video.srcObject && !imageUrl) {
+      const now = performance.now();
+      if (!lastFrameChange) lastFrameChange = now;
+      if (video.readyState >= 2) {
+        ctx.drawImage(video, 0, 0, 8, 8);
+        const pixels = rgb();
+        if (!lastFrame || squaredDistance(lastFrame, pixels) > 192 * 4) {
+          lastFrame = pixels;
+          lastFrameChange = now;
+        }
+      }
+      message = now - lastFrameChange > 3500
+        ? "Hình chưa thay đổi. Nếu vẫn thấy Safari, hãy kiểm tra quyền chia sẻ toàn màn hình khi mở Liên Quân."
+        : video.readyState < 2 ? "Đã kết nối · Đang chờ hình."
+        : lastGameEvidence && now - lastGameEvidence < 2000 ? "Đang quét màn hình cấm/chọn."
+        : "Đang nhận hình · Chờ giao diện cấm/chọn Liên Quân.";
+    } else {
+      lastFrame = null;
+      lastFrameChange = 0;
+    }
+    if (feedStatus.textContent !== message) feedStatus.textContent = message;
+  }
+
   function scan() {
     if (!crop || (imageUrl ? !image.naturalWidth : video.readyState < 2)) return;
     if (imageUrl ? scannedPortraitCount === portraitCount : lastVideoTime === video.currentTime) return;
@@ -161,6 +191,7 @@
     const rows = [];
     slots = [];
     let locks = 0;
+    const locksBySide = { blue: 0, red: 0 };
     for (const side of colors) {
       const left = side === "blue";
       for (let index = 0; index < 5; index++) {
@@ -178,12 +209,13 @@
           if (offset) break;
         }
         locks += Number(Boolean(offset));
+        locksBySide[side] += Number(Boolean(offset));
         const original = sample(banX, 137, 34);
         const adjusted = offset
           ? sample(banX + offset.dx, 137 + offset.dy, 34) : sample(banX + 3, 140, 34);
         const aligned = [original, sample(banX + 3, 140, 34)];
         const ban = identify(aligned, references.bans) ??
-          (offset && identify([original, adjusted], samples.bans, 30, 4)) ??
+          (offset ? identify([original, adjusted], samples.bans, 30, 4) : null) ??
           identify([original, adjusted], references.bans);
         if (ban) rows.push({ side, kind: "ban", index, id: ban, confirmed: Boolean(offset) });
 
@@ -196,24 +228,52 @@
         const slot = side + "|" + index;
         const fallback = textMatches.get(slot);
         const textId = fallback && squaredDistance(fallback.portrait, portrait) < 13 ** 2 * 192 ? fallback.id : null;
-        const pick = identify([portrait, sample(pickX + 3, y + 2, 65)], references.picks) ??
-          (rotation ? identify([sample(pickX - 4, y - 3, 65), sample(pickX + 4, y - 3, 65)], samples.picks) : null) ??
-          textId;
-        slots.push({ side, index, portrait });
-        if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow });
+        const patches = [portrait, sample(pickX + 3, y + 2, 65)];
+        const known = identify(patches, samples.picks) ??
+          (rotation ? identify([sample(pickX - 4, y - 3, 65), sample(pickX + 4, y - 3, 65)], samples.picks) : null);
+        const a = identify([patches[0], patches[0]], references.picks, 27, 6);
+        const b = identify([patches[1], patches[1]], references.picks, 27, 6);
+        const visual = known ?? (a === b ? a : null);
+        const pick = visual && textId && visual !== textId ? null : visual ?? textId;
+        slots.push({ side, index, portrait, unresolved: !pick && !glow });
+        if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known) });
       }
     }
-    // Require the five locked ban slots on each side before treating clean pick rows as confirmed.
-    const visible = uniqueHeroes(rows.filter(row => row.kind === "ban" || row.pending || locks === 10).map(row =>
-      row.kind === "pick" ? { ...row, confirmed: !row.pending } : row));
+    const knownPicks = new Set(rows.filter(row => row.kind === "pick" && row.known && !row.pending).map(row => row.id));
+    const pickPhase = locks === 10 || knownPicks.size >= 2 ||
+      (knownPicks.size > 0 && locksBySide.blue >= 3 && locksBySide.red >= 3);
+    const pendingOcr = pickPhase ? slots.filter(slot => {
+      if (!slot.unresolved) return false;
+      const prior = attemptedSlots.get(slot.side + "|" + slot.index);
+      return !prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2;
+    }).slice(0, 2) : [];
+    if (pendingOcr.length && !readingText) {
+      for (const slot of pendingOcr) attemptedSlots.set(slot.side + "|" + slot.index, slot.portrait);
+      readNames(pendingOcr);
+    }
+    const visible = uniqueHeroes(rows.filter(row => row.kind === "ban" || row.pending || pickPhase).map(row =>
+      row.kind === "pick" ? { ...row, confirmed: pickPhase && !row.pending } : row));
     const next = new Map();
-    const stable = [];
+    let stable = [];
     for (const row of visible) {
       const key = [row.side, row.kind, row.index, row.id, row.confirmed].join("|");
       next.set(key, Math.min(2, (previous.get(key) ?? 0) + 1));
       if (imageUrl || next.get(key) === 2) stable.push(row);
     }
     previous = next;
+    if (!imageUrl) {
+      const now = performance.now();
+      const confirmed = stable.filter(row => row.confirmed);
+      const slotKey = row => row.side + "|" + row.kind + "|" + row.index;
+      const occupied = new Set(visible.map(slotKey));
+      const retained = [];
+      for (const [slot, entry] of recentConfirmed) {
+        if (now - entry.time >= 1100 || occupied.has(slot)) recentConfirmed.delete(slot);
+        else retained.push(entry.row);
+      }
+      for (const row of confirmed) recentConfirmed.set(slotKey(row), { row, time: now });
+      stable = uniqueHeroes([...stable, ...retained]);
+    }
     if (locks >= 2 || stable.some(row => row.kind === "pick")) lastGameEvidence = performance.now();
     elapsed = Math.round(performance.now() - started);
     ocr.disabled = readingText;
@@ -223,9 +283,11 @@
     output.replaceChildren();
     const summary = document.createElement("p");
     const namedBans = stable.filter(row => row.kind === "ban" && row.confirmed).length;
+    const unreadSlots = pickPhase ? slots.filter(slot => slot.unresolved).length : 0;
     summary.textContent = "Quét " + elapsed + " ms · Biểu tượng khóa: " + locks + "/10." +
       " Nhận diện tên tướng đã cấm: " + namedBans + "/10." +
-      (locks < 10 ? " Chưa đủ dấu hiệu để xác nhận các lượt chọn." : "");
+      (!pickPhase ? " Chưa đủ dấu hiệu để xác nhận các lượt chọn." : "") +
+      (unreadSlots ? " Có " + unreadSlots + " ô chọn cần đối chiếu thêm." : "");
     output.append(summary);
     for (const side of colors) {
       const items = stable.filter(row => row.side === side);
@@ -250,8 +312,10 @@
     trackGame = false;
     lastRegionSearch = lastGameEvidence = 0;
     previous.clear();
+    recentConfirmed.clear();
     slots = [];
     textMatches.clear();
+    attemptedSlots.clear();
     ocr.disabled = true;
     ocrStatus.textContent = "";
     signature = "";
@@ -400,7 +464,9 @@
     updateVideoPreview();
     crop = region;
     previous.clear();
+    recentConfirmed.clear();
     textMatches.clear();
+    attemptedSlots.clear();
     lastVideoTime = -1;
   }
 
@@ -408,6 +474,8 @@
     if (imageUrl) clearImage();
     file.value = "";
     resetScan();
+    lastFrame = null;
+    lastFrameChange = performance.now();
     rotation = 0;
     manualRotation = false;
     updateVideoPreview();
@@ -506,16 +574,16 @@
   video.addEventListener("click", selectCorner);
   rotatedVideo.addEventListener("click", selectCorner);
   image.addEventListener("click", selectCorner);
-  ocr.addEventListener("click", async () => {
-    if (!crop || readingText || !slots.length) return;
+  async function readNames(targets) {
+    if (!crop || readingText || !targets.length) return;
     const region = crop;
     readingText = true;
     ocr.disabled = true;
     ocrStatus.textContent = "Đang đọc chữ. Lần đầu có thể cần tải mô hình.";
     try {
-      const matches = await window.DRAFT_OCR.read(frame, slots);
+      const matches = await window.DRAFT_OCR.read(frame, targets);
       if (crop !== region) return;
-      textMatches = new Map(matches.map(row => [row.side + "|" + row.index, row]));
+      for (const row of matches) textMatches.set(row.side + "|" + row.index, row);
       scannedPortraitCount = lastVideoTime = -1;
       scanSafely();
       ocrStatus.textContent = matches.length
@@ -528,7 +596,8 @@
       readingText = false;
       ocr.disabled = !crop || !slots.length;
     }
-  });
+  }
+  ocr.addEventListener("click", () => readNames(slots));
 
   function scanSafely() {
     try {
@@ -542,6 +611,7 @@
 
   setInterval(() => {
     updateVideoPreview();
+    updateFeedStatus();
     if (imageUrl || video.srcObject) {
       calibrate.disabled = !dimensions(source())[0];
       if (!imageUrl) followSharedGame();
