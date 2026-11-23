@@ -493,9 +493,10 @@
       return threats.length ? '<br><span class="counter-risk">Đối thủ có ' +
         escapeHtml(threats.join(", ")) + ' · Giảm ưu tiên bài này.</span>' : "";
     };
-    const tierLabel = entry => entry.rating !== undefined ?
-      entry.tier + " (" + entry.rating.toFixed(1).replace(".", ",") + " · VN)" :
-      entry.tier === "Draft" ? "Theo đội hình" : entry.tier;
+    const qzaddLabel = tier => (tier === "Draft" ? "Theo đội hình" : tier) + " Qzadd";
+    const tierLabel = entry => entry.rating === undefined ? qzaddLabel(entry.tier) :
+      entry.tier + " (" + entry.rating.toFixed(1).replace(".", ",") + " · VN)" +
+      (entry.qzadd ? " / " + qzaddLabel(entry.qzadd.tier) : "");
     const riskDetails = ({ bad, threats }) => [...bad].map(([target, labels]) => {
       const threat = threats.get(target);
       const level = threat?.weight > 0 ? "counter-threat-high" : threat?.weight < 0 ? "counter-threat-low" : "";
