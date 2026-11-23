@@ -277,7 +277,7 @@
     return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
       pairs: [Object.keys(tips), []], direct: [[], []], tips, tactical: true };
   });
-  const { tierFor, counters: vietnamRows } = window.DRAFT_VIETNAM_META;
+  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners } = window.DRAFT_VIETNAM_META;
   const counterRows = [...laneCounterRows, ...vietnamRows, ...referenceRows];
 
   const positions = Object.keys(lanePools);
@@ -408,6 +408,18 @@
     const allies = new Set(picks);
     const combosByHero = new Map();
     const completeCombos = [];
+    const partnerMatches = new Map();
+    for (const { hero, lane: position, ally } of vietnamPartners) {
+      const candidate = assigned[position] === hero ? ally : allies.has(ally) &&
+        (!needed.length || needed.includes(position)) ? hero : null;
+      if (!candidate || allies.has(candidate) || reason(candidate)) continue;
+      const names = partnerMatches.get(candidate) ?? new Set();
+      names.add(candidate === hero ? ally : hero);
+      partnerMatches.set(candidate, names);
+      if (!candidates.has(candidate)) {
+        candidates.set(candidate, { id: candidate, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() });
+      }
+    }
     for (const combo of window.DRAFT_TEAM_COMBOS) {
       const ids = Object.keys(combo.heroes);
       const missing = ids.filter(id => !allies.has(id));
@@ -429,7 +441,7 @@
     const recommendations = picks.length >= 5 && !selectedTarget ? [] : needed.length ? roster.filter(({ id }) =>
       !reason(id) && needed.some(position => fitsLane(id, position))).map(({ id }) =>
       candidates.get(id) ?? { id, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() }) :
-      [...candidates.values()].filter(entry => (entry.good.size || entry.mixed.size || combosByHero.has(entry.id)) &&
+      [...candidates.values()].filter(entry => (entry.good.size || entry.mixed.size || combosByHero.has(entry.id) || partnerMatches.has(entry.id)) &&
         (!turn || !reason(entry.id)));
     const subset = (left, right) => [...left.keys()].every(id => right.has(id));
     const dominates = (a, b) => subset(b.good, a.good) && subset(a.bad, b.bad) &&
@@ -449,7 +461,14 @@
       entry.threats = new Map([...entry.bad].map(([target, labels]) =>
         [target, tierFor(target, evidenceLanes(labels))]));
       const risk = [...entry.threats.values()].reduce((total, tier) => total + 3 + (tier?.weight ?? 0), 0);
-      entry.score = 2 * entry.good.size - risk + (entry.tier?.weight ?? 0) + (combosByHero.get(entry.id)?.points ?? 0);
+      const matchup = vietnamRisks[entry.id];
+      entry.softRisks = matchup && (!fitLanes.length || fitLanes.includes(matchup.lane)) ?
+        matchup.opponents.filter(id => opponents.has(id)) : [];
+      const softRisk = entry.softRisks.filter(id => !entry.bad.has(id) && !entry.mixed.has(id))
+        .reduce((total, id) => total + 1 + (tierFor(id)?.weight ?? 0) / 4, 0);
+      const partnerBonus = Math.min(partnerMatches.get(entry.id)?.size ?? 0, 2) * 0.75;
+      entry.score = 2 * entry.good.size - risk - softRisk + (entry.tier?.weight ?? 0) +
+        (combosByHero.get(entry.id)?.points ?? 0) + partnerBonus;
     }
     recommendations.sort((a, b) => b.score - a.score ||
       Number(dominated.has(a)) - Number(dominated.has(b)) ||
@@ -480,6 +499,7 @@
       const featuredLane = featuredLanes.get(id);
       const displayTier = featuredLane ? tierFor(id, [featuredLane]) : tier;
       const synergy = combosByHero.get(id);
+      const partners = partnerMatches.get(id);
       const name = escapeHtml(nameFor(id));
       const featured = index < 3;
       const cardClass = "counter-card" + (featured ? " counter-featured" : "");
@@ -492,6 +512,10 @@
           (featuredLane ? lanePools[featuredLane].label : fitLanes.map(position => lanePools[position].label).join(" / ")) + '</span>' : '') +
         (synergy ? '<span class="counter-synergy"><b>' + (synergy.complete ? "Hoàn thiện bài " : "Ghép bài ") +
           escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + comboWarning(synergy.combo) + '</span>' : '') +
+        (partners?.size ? '<span class="counter-synergy">Phối hợp với ' +
+          escapeHtml([...partners].map(nameFor).join(", ")) + ' (Partner · AOV Update VN)</span>' : '') +
+        (entry.softRisks.length ? '<span class="counter-risk">Cần dè chừng ' +
+          escapeHtml(entry.softRisks.map(nameFor).join(", ")) + ' (Risk · AOV Update VN)</span>' : '') +
         '<span class="counter-balance">' + (good.size || bad.size || mixed.size ? good.size + ' thuận · ' + bad.size + ' bất lợi' : 'Chưa có dữ liệu kèo với đối thủ') +
         (mixed.size ? ' · ' + mixed.size + ' trái chiều' : '') + '</span>' +
         (good.size ? '<span>Khắc chế ' + escapeHtml(evidence(good)) + '</span>' : '') +
