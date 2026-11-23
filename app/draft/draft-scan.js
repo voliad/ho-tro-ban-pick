@@ -236,17 +236,20 @@
         const visual = known ?? (a === b ? a : null);
         const pick = visual && textId && visual !== textId ? null : visual ?? textId;
         slots.push({ side, index, portrait, unresolved: !pick && !glow });
-        if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known) });
+        if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known),
+          nameRead: Boolean(textId) });
       }
     }
     const knownPicks = new Set(rows.filter(row => row.kind === "pick" && row.known && !row.pending).map(row => row.id));
-    const pickPhase = locks === 10 || knownPicks.size >= 2 ||
+    const namedPick = rows.some(row => row.kind === "pick" && row.nameRead && !row.pending);
+    const pickPhase = locks === 10 || knownPicks.size >= 2 || namedPick ||
       (knownPicks.size > 0 && locksBySide.blue >= 3 && locksBySide.red >= 3);
-    const pendingOcr = pickPhase ? slots.filter(slot => {
+    const pendingOcr = readingText ? [] : slots.filter(slot => {
       if (!slot.unresolved) return false;
       const prior = attemptedSlots.get(slot.side + "|" + slot.index);
-      return !prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2;
-    }).slice(0, 2) : [];
+      return (!prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2) &&
+        (pickPhase || window.DRAFT_OCR.hasLabel(frame, slot));
+    }).slice(0, 2);
     if (pendingOcr.length && !readingText) {
       for (const slot of pendingOcr) attemptedSlots.set(slot.side + "|" + slot.index, slot.portrait);
       readNames(pendingOcr);

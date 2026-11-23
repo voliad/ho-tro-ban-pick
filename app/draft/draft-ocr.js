@@ -61,6 +61,13 @@
   }
 
   window.DRAFT_OCR = {
+    hasLabel(frame, slot) {
+      const patch = labelImage(frame, slot.side, slot.index);
+      const pixels = patch.getContext("2d").getImageData(0, 0, patch.width, patch.height).data;
+      let ink = 0;
+      for (let i = 0; i < pixels.length; i += 4) if (pixels[i] < 190) ink++;
+      return ink >= 90 && ink < patch.width * patch.height * .45;
+    },
     async read(frame, slots) {
       const crops = slots.map(slot => labelImage(frame, slot.side, slot.index));
       const worker = await loadWorker();
