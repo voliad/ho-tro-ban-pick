@@ -88,5 +88,5 @@
       !best || (entry.weight ?? -Infinity) > (best.weight ?? -Infinity) ? entry : best, null);
   }
 
-  window.QZADD_TIERS = { source, board, order, changes, tierFor };
+  window.QZADD_TIERS = { source, board, order, changes, tierFor, weight };
 })();

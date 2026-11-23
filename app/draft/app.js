@@ -277,7 +277,8 @@
     return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
       pairs: [Object.keys(tips), []], direct: [[], []], tips, tactical: true };
   });
-  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners, profiles: vietnamProfiles, equipment: vietnamEquipment, enchantments: vietnamEnchantments } = window.DRAFT_VIETNAM_META;
+  const { tierFor: weightedTierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners, profiles: vietnamProfiles, equipment: vietnamEquipment, enchantments: vietnamEnchantments } = window.DRAFT_VIETNAM_META;
+  const tierFor = (id, lanes) => weightedTierFor(id, lanes, isRank ? 3 : 2);
   const counterRows = [...laneCounterRows, ...vietnamRows, ...referenceRows];
 
   const positions = Object.keys(lanePools);
@@ -504,10 +505,7 @@
       return threats.length ? '<br><span class="counter-risk">Đối thủ có ' +
         escapeHtml(threats.join(", ")) + ' · Giảm ưu tiên bài này.</span>' : "";
     };
-    const qzaddLabel = tier => (tier === "Draft" ? "Theo đội hình" : tier) + " Qzadd";
-    const tierLabel = entry => entry.rating === undefined ? qzaddLabel(entry.tier) :
-      entry.tier + " (" + entry.rating.toFixed(1).replace(".", ",") + " · VN)" +
-      (entry.qzadd ? " / " + qzaddLabel(entry.qzadd.tier) : "");
+    const tierLabel = ({ tier }) => tier === "Draft" ? "Theo đội hình" : tier;
     const riskDetails = ({ bad, threats }) => [...bad].map(([target, labels]) => {
       const threat = threats.get(target);
       const level = threat?.weight > 0 ? "counter-threat-high" : threat?.weight < 0 ? "counter-threat-low" : "";
