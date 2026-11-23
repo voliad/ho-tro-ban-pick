@@ -12,6 +12,7 @@
 
   const nemeses = {
     dyadia: ["grakk", "enzo"],
+    dolia: ["grakk", "enzo"],
     enzo: ["ybneth", "toro"],
     krizzix: ["annette"],
   };
