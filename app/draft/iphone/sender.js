@@ -23,6 +23,7 @@
   let capture;
   let track;
   let call;
+  let channel;
   let ended = false;
   let connecting;
   let retry;
@@ -69,6 +70,15 @@
     if (track.readyState === "ended") {
       finish("iPhone đã dừng phát màn hình.");
       return;
+    }
+    if (!channel || channel.peerConnection?.connectionState === "failed") {
+      channel?.close();
+      channel = peer.connect(to, { reliable: true });
+      const control = channel;
+      control?.on("data", message => {
+        if (channel === control && message?.type === "restart-video") retryCall();
+      });
+      control?.on("close", () => { if (channel === control) channel = null; });
     }
     const current = peer.call(to, capture);
     if (!current) {
