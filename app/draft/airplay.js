@@ -10,7 +10,7 @@
   let stopSource;
   let requesting = false;
 
-  function reset(message) {
+  function reset(message, manual = false) {
     const cleanup = stopSource;
     stream = null;
     stopSource = null;
@@ -19,7 +19,7 @@
     stop.hidden = true;
     start.disabled = requesting || !devices?.getDisplayMedia;
     status.textContent = message;
-    cleanup?.();
+    cleanup?.(manual);
   }
 
   async function show(capture, cleanup, message) {
@@ -31,6 +31,14 @@
     track.addEventListener("ended", () => {
       if (stream === capture) reset("Đã dừng chia sẻ màn hình.");
     }, { once: true });
+    track.addEventListener("mute", () => {
+      if (stream === capture) status.textContent = "Nguồn chia sẻ tạm ngừng gửi hình.";
+    });
+    track.addEventListener("unmute", () => {
+      if (stream !== capture) return;
+      status.textContent = message;
+      preview.play().catch(() => {});
+    });
     preview.srcObject = capture;
     preview.hidden = false;
     stop.hidden = false;
@@ -73,7 +81,7 @@
     }
   });
 
-  stop.addEventListener("click", () => reset("Đã dừng chia sẻ cửa sổ."));
+  stop.addEventListener("click", () => reset("Đã dừng chia sẻ màn hình.", true));
   window.addEventListener("pagehide", () => {
     if (stream) reset("");
   });

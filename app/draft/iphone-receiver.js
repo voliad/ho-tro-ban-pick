@@ -14,6 +14,7 @@
     room = null;
     if (previous) {
       clearTimeout(previous.timer);
+      clearTimeout(previous.reconnect);
       previous.peer.destroy();
       if (previous.stream) window.DRAFT_SCREEN.clear(previous.stream);
     }
@@ -38,54 +39,74 @@
     const peer = new window.Peer(receiver);
     const current = { peer, timer: setTimeout(() => close("Kết nối đã hết hạn. Hãy tạo mã mới."), 180000) };
     room = current;
-    let receiving = false;
+
     peer.on("open", () => {
       if (room !== current) return;
+      if (current.link) {
+        if (!current.call) status.textContent = "Đang chờ iPhone phát màn hình.";
+        return;
+      }
       const url = new URL("./iphone/", location.href);
       url.hash = new URLSearchParams({ to: receiver, from: sender }).toString();
       current.link = url.href;
       new window.QRCode(qr, { text: url.href, width: 176, height: 176, correctLevel: window.QRCode.CorrectLevel.M });
       invite.hidden = false;
-      status.textContent = "Đang chờ iPhone phát màn hình.";
+      if (!current.call) status.textContent = "Đang chờ iPhone phát màn hình.";
     });
     peer.on("call", call => {
-      if (room !== current || call.peer !== sender || receiving) {
+      if (room !== current || call.peer !== sender) {
         call.close();
         return;
       }
-      receiving = true;
+      const previousCall = current.call;
+      current.call = call;
+      if (current.stream) {
+        window.DRAFT_SCREEN.clear(current.stream);
+        current.stream = null;
+      }
+      previousCall?.close();
       invite.hidden = true;
-      qr.replaceChildren();
       clearTimeout(current.timer);
-      current.timer = setTimeout(() => close("Chưa nhận được hình. Hãy kiểm tra hai thiết bị cùng Wi-Fi rồi tạo mã mới."), 25000);
+      const waitForReconnect = () => {
+        if (room !== current || current.call !== call) return;
+        current.call = null;
+        clearTimeout(current.timer);
+        const stream = current.stream;
+        current.stream = null;
+        if (stream) window.DRAFT_SCREEN.clear(stream);
+        call.close();
+        status.textContent = "Mất tín hiệu video. Đang chờ iPhone tự kết nối lại…";
+        current.timer = setTimeout(() => close("Chưa khôi phục được hình. Hãy mở kết nối mới."), 90000);
+      };
+      current.timer = setTimeout(waitForReconnect, 25000);
       status.textContent = "Đã ghép nối. Đang chờ hình từ iPhone…";
       call.on("stream", async stream => {
-        if (room !== current || current.stream || !stream.getVideoTracks().length) return;
+        if (room !== current || current.call !== call || current.stream || !stream.getVideoTracks().length) return;
         current.stream = stream;
         try {
-          await window.DRAFT_SCREEN.show(stream, () => {
-            if (room === current) close("Đã ngắt kết nối iPhone.");
-          }, "Đang hiển thị màn hình iPhone.");
-          if (room !== current) return;
+          await window.DRAFT_SCREEN.show(stream, manual => manual ? close() : waitForReconnect(), "Đang hiển thị màn hình iPhone.");
+          if (room !== current || current.call !== call) return;
           clearTimeout(current.timer);
           status.textContent = "Đã nhận màn hình iPhone.";
         } catch {
-          if (room === current) close("Đã kết nối nhưng không phát được video. Hãy thử lại.");
+          waitForReconnect();
         }
       });
-      call.on("close", () => {
-        if (room === current) close("iPhone đã dừng chia sẻ.");
-      });
-      call.on("error", () => {
-        if (room === current) close("Mất kết nối video. Hãy tạo mã mới.");
-      });
+      call.on("close", waitForReconnect);
+      call.on("error", waitForReconnect);
       call.answer();
     });
-    peer.on("error", () => {
-      if (room === current && !current.stream) close("Không kết nối được dịch vụ ghép đôi. Hãy thử lại.");
+    peer.on("error", error => {
+      if (room !== current || current.stream || ["network", "socket-error", "socket-closed", "disconnected"].includes(error.type)) return;
+      close("Không kết nối được dịch vụ ghép đôi. Hãy thử lại.");
     });
     peer.on("disconnected", () => {
-      if (room === current && !current.stream) close("Dịch vụ ghép đôi đã ngắt. Hãy tạo mã mới.");
+      if (room !== current) return;
+      clearTimeout(current.reconnect);
+      if (!current.stream) status.textContent = "Đang khôi phục kết nối ghép đôi…";
+      current.reconnect = setTimeout(() => {
+        if (room === current && peer.disconnected) peer.reconnect();
+      }, 1500);
     });
   });
 
