@@ -243,7 +243,13 @@
     if (hadFocus) grid.querySelector('[data-hero="' + CSS.escape(hadFocus) + '"]')?.focus({ preventScroll: true });
   }
 
-  const laneCounterRows = Object.entries(window.DRAFT_COUNTERS.lanes).flatMap(([lane, heroes]) => {
+  const laneCounterRows = Object.entries(window.DRAFT_COUNTERS.lanes).flatMap(([lane, sourceHeroes]) => {
+    const contributed = window.DRAFT_COUNTERS.contributed?.[lane] ?? {};
+    const heroes = { ...sourceHeroes };
+    for (const [target, ids] of Object.entries(contributed)) {
+      const [good, bad] = heroes[target] ?? [[], []];
+      heroes[target] = [[...new Set([...good, ...ids])], bad];
+    }
     const targets = new Set(Object.keys(heroes));
     for (const pairs of Object.values(heroes)) for (const id of pairs.flat()) targets.add(id);
     if (lane === "Trợ thủ") for (const id of Object.keys(window.DRAFT_COUNTERS.mechanics)) targets.add(id);
@@ -262,7 +268,7 @@
       }
       const tips = lane === "Trợ thủ" ? window.DRAFT_COUNTERS.mechanics[target] ?? {} : {};
       for (const id of Object.keys(tips)) if (!pairs.some(ids => ids.includes(id))) pairs[0].push(id);
-      return { lane, target, pairs, direct, tips, key: lane + "|" + target };
+      return { lane, target, pairs, direct, tips, contributed, key: lane + "|" + target };
     }).sort((a, b) => nameFor(a.target).localeCompare(nameFor(b.target), "vi"));
   });
   const tactics = window.DRAFT_COUNTER_TACTICS;
@@ -372,7 +378,9 @@
           if (!row.tactical && index === 0) candidates.get(id).verified.add(row.target);
           const matchups = index === 0 ? candidates.get(id).good : candidates.get(id).bad;
           const lanes = matchups.get(row.target) ?? [];
-          const source = row.direct[index].includes(id) ? "Qzadd" :
+          const fromUser = index === 0 ? row.contributed?.[row.target]?.includes(id) :
+            row.contributed?.[id]?.includes(row.target);
+          const source = fromUser ? "người dùng bổ sung" : row.direct[index].includes(id) ? "Qzadd" :
             row.tips[id] && index === 0 ? "theo cơ chế" : "tra chéo";
           lanes.push(row.lane + " · " + source);
           matchups.set(row.target, lanes);

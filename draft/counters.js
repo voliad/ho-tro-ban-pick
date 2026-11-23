@@ -1,4 +1,5 @@
 window.DRAFT_COUNTERS = {
+  contributed: { "Đi rừng": { astrid: ["rourke"] } },
   sources: {
     "Tà Thần": "1079347884598918",
     "Đi rừng": "1087508920449481",
