@@ -322,3 +322,9 @@ dialog::backdrop {background:#050915b8}
   .search-open {min-width:2.8rem}
   .brand {font-size:1rem}
 }
+
+.tier-sources {display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.tier-sources a {display:inline-block;padding:.65rem .85rem;border:1px solid currentColor;border-radius:.45rem;text-decoration:none}
+.tier-sources a[aria-current="page"] {font-weight:750;background:#e6ef85;color:#121417}
+.vn-tier-chart {display:block;width:fit-content;max-width:100%;margin:.8rem auto;text-align:center}
+.vn-tier-chart img {display:block;max-width:100%;height:auto;margin-bottom:.5rem}
