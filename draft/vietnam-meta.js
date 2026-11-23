@@ -505,15 +505,19 @@
     return { tier, weight: Math.max(-1.5, rating - 6) };
   }
 
-  function tierFor(id, lanes = []) {
+  function tierFor(id, lanes = [], vietnamWeight = 1) {
     const relevant = lanes.length ? lanes : Object.keys(cards);
     return relevant.map(lane => {
       const rating = cards[lane]?.[id]?.[0];
       const qzadd = window.QZADD_TIERS.tierFor(id, [lane]);
       if (rating === undefined) return qzadd;
-      const { tier, weight } = ratingFor(rating);
-      const combinedWeight = qzadd?.weight === undefined ? weight : (weight + qzadd.weight) / 2;
-      return { lane, rating, source: source.name, tier, weight: combinedWeight, qzadd };
+      const { weight } = ratingFor(rating);
+      const combinedWeight = qzadd?.weight === undefined ? weight :
+        (vietnamWeight * weight + qzadd.weight) / (vietnamWeight + 1);
+      const tiers = Object.entries(window.QZADD_TIERS.weight);
+      const [tier] = tiers.reduce((best, next) =>
+        Math.abs(next[1] - combinedWeight) < Math.abs(best[1] - combinedWeight) ? next : best);
+      return { lane, tier, weight: combinedWeight };
     }).reduce((best, entry) => !best || entry && (entry.weight ?? -Infinity) > (best.weight ?? -Infinity) ?
       entry : best, null);
   }
