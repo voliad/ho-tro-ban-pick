@@ -45,5 +45,38 @@
     { hero: "bright", lane: "Xạ thủ", ally: "zip" },
   ];
 
-  window.DRAFT_VIETNAM_META = { tierFor, counters, risks, partners };
+  // Each profile follows the card for this lane. The first field is its playstyle.
+  const profiles = {
+    "Tà Thần": {
+      murad: ["Cấu rỉa", "Không thể bị chọn làm mục tiêu"],
+      marja: ["DPS / tích cộng dồn", "Hồi máu", "Không thể bị chọn làm mục tiêu"],
+    },
+    "Đi rừng": {
+      billow: ["Sốc sát thương"],
+      tamyn: ["DPS / tích cộng dồn", "Hồi máu"],
+      zephys: ["Sốc sát thương", "Kháng cao"],
+    },
+    "Đường giữa": {
+      lorion: ["Khống chế", "Hồi máu"],
+      liliana: ["Cấu rỉa"],
+      darcy: ["Khống chế", "Kháng cao"],
+      evita: ["Cấu rỉa"],
+    },
+    "Trợ thủ": {
+      dyadia: ["Cấu rỉa", "Lộ diện", "Hồi máu"],
+      enzo: ["Khống chế"],
+      arthur: ["Khống chế"],
+      ybneth: ["Khống chế", "Hồi máu", "Sát thương theo % máu"],
+      krizzix: ["Khống chế", "Lộ diện", "Tàng hình"],
+    },
+    "Xạ thủ": {
+      elandorr: ["DPS / tích cộng dồn", "Chí mạng", "Thuần đánh tay", "Lối tốc đánh"],
+      flowborn: ["Cấu rỉa", "Chí mạng", "Lối tốc đánh"],
+      "11596": ["Sốc sát thương"],
+      hayate: ["Cấu rỉa", "Sát thương chuẩn"],
+      elsu: ["Sốc sát thương", "Lộ diện", "Chí mạng", "Kháng cao"],
+    },
+  };
+
+  window.DRAFT_VIETNAM_META = { tierFor, counters, risks, partners, profiles };
 })();
