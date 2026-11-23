@@ -3,6 +3,10 @@
 
   const $ = id => document.getElementById(id);
   const video = $("airplay-preview");
+  const rotatedVideo = $("scan-video-preview");
+  const rotationProbe = document.createElement("canvas");
+  const rotateButton = $("scan-rotate");
+  const autoRotateButton = $("scan-auto-rotate");
   const image = $("scan-preview");
   const file = $("scan-file");
   const clear = $("scan-clear");
@@ -48,9 +52,35 @@
   let readingText = false;
   let loadingPortraits = false;
   let imageUrl;
-  const source = () => imageUrl ? image : video;
-  const dimensions = element => element === image
-    ? [image.naturalWidth, image.naturalHeight] : [video.videoWidth, video.videoHeight];
+  let rotation = 0;
+  let manualRotation = false;
+  const source = () => imageUrl ? image : rotation ? rotatedVideo : video;
+  const dimensions = element => element === image ? [image.naturalWidth, image.naturalHeight] :
+    element === video ? [video.videoWidth, video.videoHeight] : [element.width, element.height];
+
+  function rotateFrame(canvas, angle) {
+    const [width, height] = dimensions(video);
+    const quarter = angle === 90 || angle === 270;
+    const w = quarter ? height : width, h = quarter ? width : height;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.translate(w / 2, h / 2);
+    context.rotate(angle * Math.PI / 180);
+    context.drawImage(video, -width / 2, -height / 2);
+  }
+
+  function updateVideoPreview() {
+    const playing = !imageUrl && Boolean(video.srcObject);
+    rotateButton.hidden = !playing;
+    autoRotateButton.hidden = !playing || !manualRotation;
+    video.toggleAttribute("data-rotated", playing && rotation !== 0);
+    rotatedVideo.hidden = !playing || rotation === 0;
+    if (!rotatedVideo.hidden && video.readyState >= 2) rotateFrame(rotatedVideo, rotation);
+  }
 
   function squaredDistance(a, b, limit = Infinity) {
     let sum = 0;
@@ -166,7 +196,9 @@
         const slot = side + "|" + index;
         const fallback = textMatches.get(slot);
         const textId = fallback && squaredDistance(fallback.portrait, portrait) < 13 ** 2 * 192 ? fallback.id : null;
-        const pick = identify([portrait, sample(pickX + 3, y + 2, 65)], references.picks) ?? textId;
+        const pick = identify([portrait, sample(pickX + 3, y + 2, 65)], references.picks) ??
+          (rotation ? identify([sample(pickX - 4, y - 3, 65), sample(pickX + 4, y - 3, 65)], samples.picks) : null) ??
+          textId;
         slots.push({ side, index, portrait });
         if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow });
       }
@@ -264,14 +296,14 @@
     loadPortraits();
   }
 
-  function findGameRegion() {
-    const [width, height] = dimensions(source());
+  function findGameRegion(drawable = source()) {
+    const [width, height] = dimensions(drawable);
     if (width < 320 || height < 140) return null;
     const finder = document.createElement("canvas");
     finder.width = 360;
     finder.height = Math.round(height * 360 / width);
     const context = finder.getContext("2d", { willReadFrequently: true });
-    context.drawImage(source(), 0, 0, finder.width, finder.height);
+    context.drawImage(drawable, 0, 0, finder.width, finder.height);
     const pixels = context.getImageData(0, 0, finder.width, finder.height).data;
     const gameColor = (x, y, brightness, saturation) => {
       const i = (y * finder.width + x) * 4;
@@ -312,17 +344,60 @@
   }
 
   calibrate.addEventListener("click", beginCalibration);
+  function lockEvidence(drawable, region) {
+    const sx = region.width / 2346, sy = region.height / 1086;
+    const limit = 30 ** 2 * 192;
+    let count = 0;
+    for (const first of [370, 2161]) {
+      for (let index = 0; index < 5; index++) {
+        const x = first + 84 * index - 261;
+        for (const dx of [0, -4, 4]) {
+          ctx.drawImage(drawable, region.x + (x + dx - 14) * sx, region.y + (167 - 88 - 14) * sy,
+            28 * sx, 28 * sy, 0, 0, 8, 8);
+          const pixels = rgb();
+          if (samples.locks.some(ref => squaredDistance(pixels, ref, limit) < limit)) {
+            count++;
+            break;
+          }
+        }
+      }
+    }
+    return count;
+  }
+
   function followSharedGame() {
     if (!trackGame || !video.srcObject || video.readyState < 2) return;
     const now = performance.now();
     if (now - lastRegionSearch < 750 || now - lastGameEvidence < 1600 && crop) return;
     lastRegionSearch = now;
-    const region = findGameRegion();
+    let region = findGameRegion();
+    let bestAngle = rotation;
+    if (!manualRotation) {
+      let best = region ? lockEvidence(source(), region) : 0;
+      for (const angle of [0, 90, 270, 180]) {
+        if (angle === rotation || best === 10) continue;
+        if (angle) rotateFrame(rotationProbe, angle);
+        const drawable = angle ? rotationProbe : video;
+        const candidate = findGameRegion(drawable);
+        if (!candidate) continue;
+        for (const nudge of [0, .01, -.01]) {
+          const adjusted = { ...candidate, y: Math.max(0, candidate.y + nudge * candidate.height) };
+          const score = lockEvidence(drawable, adjusted);
+          if (score < 3 || score <= best) continue;
+          best = score;
+          bestAngle = angle;
+          region = adjusted;
+          if (best === 10) break;
+        }
+      }
+    }
     if (!region) {
       if (!crop) output.textContent = "Đang tìm khung game. Hãy mở Liên Quân trên nguồn đang chia sẻ.";
       return;
     }
-    if (crop && ["x", "y", "width", "height"].every(key => Math.abs(crop[key] - region[key]) < 3)) return;
+    if (bestAngle === rotation && crop && ["x", "y", "width", "height"].every(key => Math.abs(crop[key] - region[key]) < 3)) return;
+    rotation = bestAngle;
+    updateVideoPreview();
     crop = region;
     previous.clear();
     textMatches.clear();
@@ -333,6 +408,9 @@
     if (imageUrl) clearImage();
     file.value = "";
     resetScan();
+    rotation = 0;
+    manualRotation = false;
+    updateVideoPreview();
     trackGame = true;
     lastRegionSearch = -Infinity;
     loadPortraits();
@@ -345,6 +423,21 @@
     trackGame = true;
     lastRegionSearch = -Infinity;
   });
+
+  function changeRotation(angle, manual) {
+    if (!video.srcObject || imageUrl || video.readyState < 2) return;
+    resetScan();
+    rotation = angle;
+    manualRotation = manual;
+    updateVideoPreview();
+    trackGame = true;
+    lastRegionSearch = -Infinity;
+    followSharedGame();
+    scanSafely();
+  }
+
+  rotateButton.addEventListener("click", () => changeRotation((rotation + 90) % 360, true));
+  autoRotateButton.addEventListener("click", () => changeRotation(0, false));
 
   function clearImage() {
     if (!imageUrl) return;
@@ -375,6 +468,7 @@
       if (imageUrl !== url) return;
       video.style.display = "none";
       image.hidden = false;
+      updateVideoPreview();
       startAutomaticScan();
     } catch {
       if (imageUrl !== url) return;
@@ -410,6 +504,7 @@
   }
 
   video.addEventListener("click", selectCorner);
+  rotatedVideo.addEventListener("click", selectCorner);
   image.addEventListener("click", selectCorner);
   ocr.addEventListener("click", async () => {
     if (!crop || readingText || !slots.length) return;
@@ -446,6 +541,7 @@
   }
 
   setInterval(() => {
+    updateVideoPreview();
     if (imageUrl || video.srcObject) {
       calibrate.disabled = !dimensions(source())[0];
       if (!imageUrl) followSharedGame();
