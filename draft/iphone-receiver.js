@@ -55,6 +55,7 @@
         return;
       }
       const url = new URL("./iphone/", location.href);
+      url.searchParams.set("v", "video-health-2");
       url.hash = new URLSearchParams({ to: receiver, from: sender }).toString();
       current.link = url.href;
       new window.QRCode(qr, { text: url.href, width: 176, height: 176, correctLevel: window.QRCode.CorrectLevel.M });
@@ -133,25 +134,47 @@
           const frameProgress = () => video?.getVideoPlaybackQuality?.().totalVideoFrames || video?.currentTime;
           let frameTime = frameProgress();
           let lastFrame = performance.now();
-          let lastRequest = 0;
-          current.watch = setInterval(() => {
+          let lastRequest = -Infinity;
+          let checkingStats = false;
+          let inboundBytes;
+          current.watch = setInterval(async () => {
             if (room !== current || current.call !== call || document.hidden || !video || video.srcObject !== stream) return;
             const now = performance.now();
             const progress = frameProgress();
             if (progress !== frameTime) {
               frameTime = progress;
               lastFrame = now;
-              lastRequest = 0;
+              inboundBytes = undefined;
               if (status.textContent !== "Đã nhận màn hình iPhone.") status.textContent = "Đã nhận màn hình iPhone.";
             } else if (now - lastFrame > 6000) {
               const linkState = connection.connectionState ?? connection.iceConnectionState;
               const linkLost = ["disconnected", "failed", "closed"].includes(linkState);
-              const reason = linkLost ? "Đường truyền video bị gián đoạn." :
+              let reason = linkLost ? "Đường truyền video bị gián đoạn." :
                 track.muted ? "Luồng iPhone tạm ngừng gửi video." : "";
+              if (!reason && !checkingStats && connection.getStats) {
+                checkingStats = true;
+                const checkedFrame = frameTime;
+                try {
+                  const stats = await connection.getStats();
+                  if (room !== current || current.call !== call || frameProgress() !== checkedFrame) return;
+                  let bytes = 0;
+                  for (const row of stats.values()) {
+                    if (row.type === "inbound-rtp" && (row.kind ?? row.mediaType) === "video") bytes += row.bytesReceived ?? 0;
+                  }
+                  if (inboundBytes !== undefined && bytes - inboundBytes > 10000) {
+                    reason = "Máy tính vẫn nhận dữ liệu video nhưng chưa giải mã được khung hình mới.";
+                  }
+                  inboundBytes = bytes;
+                } catch {
+                  // The browser can stop reporting stats while a connection is closing.
+                } finally {
+                  checkingStats = false;
+                }
+              }
               const nextStatus = reason || "Đang chờ khung hình mới. Bạn có thể bấm Khôi phục hình nếu màn hình đã đứng.";
               if (status.textContent !== nextStatus) status.textContent = nextStatus;
               if (video.paused) video.play().catch(() => {});
-              if (reason && current.channel?.open && (!lastRequest || now - lastRequest > 15000)) {
+              if (reason && current.channel?.open && now - lastRequest > 15000) {
                 lastRequest = now;
                 reportIssue(reason);
                 current.channel.send({ type: "restart-video" });
