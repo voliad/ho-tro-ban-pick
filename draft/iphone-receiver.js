@@ -8,6 +8,10 @@
   const qr = $("iphone-qr");
   const status = $("iphone-room-status");
   const recover = $("iphone-recover");
+  const lastIssue = $("iphone-last-issue");
+  function reportIssue(message) {
+    lastIssue.textContent = "Lần gián đoạn gần nhất · " + message;
+  }
   let room;
 
   function close(message = "") {
@@ -31,6 +35,7 @@
   start.addEventListener("click", () => {
     if (room) return;
     panel.hidden = false;
+    lastIssue.textContent = "";
     if (!window.Peer || !window.QRCode || !window.RTCPeerConnection || !crypto.randomUUID) {
       status.textContent = "Không mở được kết nối. Hãy thử Ban Pick qua HTTPS trên Chrome hoặc Edge.";
       return;
@@ -72,6 +77,7 @@
       channel.on("data", message => {
         if (room !== current || current.channel !== channel || message?.type !== "capture-ended") return;
         current.captureEnded = true;
+        reportIssue("iPhone đã dừng quay màn hình.");
         invite.hidden = false;
         recover.hidden = true;
         status.textContent = "iPhone đã ngừng quay. Bấm Phát màn hình trên iPhone để tiếp tục cùng phòng.";
@@ -95,8 +101,9 @@
       previousCall?.close();
       invite.hidden = true;
       clearTimeout(current.timer);
-      const waitForReconnect = () => {
+      const waitForReconnect = reason => {
         if (room !== current || current.call !== call) return;
+        if (!current.captureEnded) reportIssue(reason ?? "Luồng video đã đóng.");
         current.call = null;
         clearInterval(current.watch);
         clearTimeout(current.timer);
@@ -110,7 +117,7 @@
           status.textContent = "Phòng vẫn mở. Bấm Phát màn hình trên iPhone hoặc mở lại liên kết này.";
         }, 90000);
       };
-      current.timer = setTimeout(waitForReconnect, 25000);
+      current.timer = setTimeout(() => waitForReconnect("Máy tính không nhận được luồng video."), 25000);
       status.textContent = "Đã ghép nối. Đang chờ hình từ iPhone…";
       call.on("stream", async stream => {
         if (room !== current || current.call !== call || current.stream || !stream.getVideoTracks().length) return;
@@ -121,6 +128,8 @@
           clearTimeout(current.timer);
           status.textContent = "Đã nhận màn hình iPhone.";
           const video = $("airplay-preview");
+          const [track] = stream.getVideoTracks();
+          const connection = call.peerConnection;
           const frameProgress = () => video?.getVideoPlaybackQuality?.().totalVideoFrames || video?.currentTime;
           let frameTime = frameProgress();
           let lastFrame = performance.now();
@@ -135,11 +144,16 @@
               lastRequest = 0;
               if (status.textContent !== "Đã nhận màn hình iPhone.") status.textContent = "Đã nhận màn hình iPhone.";
             } else if (now - lastFrame > 6000) {
-              status.textContent = "Chưa nhận được khung hình mới từ iPhone.";
+              const linkState = connection.connectionState ?? connection.iceConnectionState;
+              const linkLost = ["disconnected", "failed", "closed"].includes(linkState);
+              const reason = linkLost ? "Đường truyền video bị gián đoạn." :
+                track.muted ? "Luồng iPhone tạm ngừng gửi video." : "";
+              const nextStatus = reason || "Đang chờ khung hình mới. Bạn có thể bấm Khôi phục hình nếu màn hình đã đứng.";
+              if (status.textContent !== nextStatus) status.textContent = nextStatus;
               if (video.paused) video.play().catch(() => {});
-              if (current.channel?.open && (!lastRequest || now - lastRequest > 15000)) {
+              if (reason && current.channel?.open && (!lastRequest || now - lastRequest > 15000)) {
                 lastRequest = now;
-                status.textContent = "Luồng video đứng. Đang yêu cầu iPhone gửi lại hình…";
+                reportIssue(reason);
                 current.channel.send({ type: "restart-video" });
               }
             }
@@ -148,8 +162,8 @@
           waitForReconnect();
         }
       });
-      call.on("close", waitForReconnect);
-      call.on("error", waitForReconnect);
+      call.on("close", () => waitForReconnect("Kết nối video đã đóng."));
+      call.on("error", () => waitForReconnect("WebRTC báo lỗi truyền video."));
       call.answer();
     });
     peer.on("error", error => {
