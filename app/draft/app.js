@@ -381,7 +381,7 @@
           const fromUser = index === 0 ? row.contributed?.[row.target]?.includes(id) :
             row.contributed?.[id]?.includes(row.target);
           const source = row.source ?? (fromUser ? "người dùng bổ sung" : row.direct[index].includes(id) ? "Qzadd" :
-            row.tips[id] && index === 0 ? "theo cơ chế" : "tra chéo");
+            row.tips[id] && index === 0 ? "theo cơ chế" : "Qzadd (tra chéo)");
           lanes.push(row.lane + " · " + source);
           matchups.set(row.target, lanes);
         }
@@ -486,7 +486,18 @@
     const featuredLanes = needed.length > 1 ? featuredByLane(recommendations) : new Map();
     if (featuredLanes.size) recommendations.sort((a, b) =>
       Number(featuredLanes.has(b.id)) - Number(featuredLanes.has(a.id)));
-    const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
+    const evidenceByLane = labels => {
+      const sourcesByLane = new Map();
+      for (const label of labels) {
+        const [position, source] = label.split(" · ");
+        if (!sourcesByLane.has(position)) sourcesByLane.set(position, new Set());
+        sourcesByLane.get(position).add(source);
+      }
+      return [...sourcesByLane].map(([position, sources]) =>
+        (lanePools[position]?.label ?? position) + " · " + [...sources].join(" + ")).join("; ");
+    };
+    const evidence = map => [...map].map(([target, labels]) =>
+      nameFor(target) + " (" + evidenceByLane(labels) + ")").join(", ");
     const comboName = combo => Object.keys(combo.heroes).map(nameFor).join(" + ");
     const comboWarning = combo => {
       const threats = (combo.threats ?? []).filter(id => opponents.has(id)).map(nameFor);
@@ -500,7 +511,7 @@
     const riskDetails = ({ bad, threats }) => [...bad].map(([target, labels]) => {
       const threat = threats.get(target);
       const level = threat?.weight > 0 ? "counter-threat-high" : threat?.weight < 0 ? "counter-threat-low" : "";
-      return '<span class="' + level + '" title="' + escapeHtml(labels.join(", ")) + '">' +
+      return '<span class="' + level + '" title="' + escapeHtml(evidenceByLane(labels)) + '">' +
         escapeHtml(nameFor(target)) + (threat ? ' · ' + tierLabel(threat) + ' ' + threat.lane : "") + '</span>';
     }).join(", ");
     featuredHeroes = new Map(active && !scanned ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
@@ -528,7 +539,7 @@
         '</span><span class="counter-copy"><strong>' + name +
         '</strong>' + (displayTier ? '<span class="counter-tier" data-tier="' + displayTier.tier + '">' +
           tierLabel(displayTier) + ' · ' + lanePools[displayTier.lane].label + '</span>' : '') +
-        (fitLanes.length ? '<span class="counter-balance" data-fit-lane="' + escapeHtml(featuredLane ?? fitLanes[0]) + '">' +
+        (fitLanes.length && (fitLanes.length > 1 && !featuredLane || displayTier?.lane !== (featuredLane ?? fitLanes[0])) ? '<span class="counter-balance" data-fit-lane="' + escapeHtml(featuredLane ?? fitLanes[0]) + '">' +
           (featuredLane ? lanePools[featuredLane].label : fitLanes.map(position => lanePools[position].label).join(" / ")) + '</span>' : '') +
         (playstyle ? '<span class="counter-playstyle" title="AOV Update VN · Beta 55.2">' +
           escapeHtml((addsStyle ? "Bổ sung " : "") + playstyle + " · " + lanePools[profileLane].label) + '</span>' : '') +
