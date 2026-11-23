@@ -14,7 +14,7 @@
   <script src="./team-combos.js?v=2" defer></script>
   <script src="./qzadd-tiers.js?v=20261107-board" defer></script>
   <script src="./lane-pools.js?v=2" defer></script>
-  <script src="./app.js?v=draft-scan" defer></script>
+  <script src="./app.js?v=keyboard-shortcuts" defer></script>
   <script src="./airplay.js?v=2" defer></script>
   <script src="./scan-samples.js?v=1" defer></script>
   <script src="./draft-scan.js?v=2" defer></script>
@@ -125,10 +125,10 @@
         </div>
         <div id="selection" class="selection" aria-live="polite">Chưa chọn tướng</div>
         <div class="control-actions">
-          <button type="button" id="undo" class="quiet" disabled>Hoàn tác</button>
-          <button type="button" id="reset-draft" class="quiet">Làm mới từ đầu</button>
+          <button type="button" id="undo" class="quiet" aria-keyshortcuts="Control+Z" title="Ctrl + Z" disabled>Hoàn tác</button>
+          <button type="button" id="reset-draft" class="quiet" aria-keyshortcuts="Control+R" title="Ctrl + R">Làm mới từ đầu</button>
           <button type="button" id="skip-draft" class="quiet">Bỏ qua lượt cấm</button>
-          <button type="button" id="commit" class="primary" disabled>Xác nhận cấm</button>
+          <button type="button" id="commit" class="primary" aria-keyshortcuts="Enter" title="Enter" disabled>Xác nhận cấm</button>
         </div>
       </div>
       <p id="notice" class="notice" role="status"></p>
