@@ -108,7 +108,6 @@
         '<a href="/ho-tro-ban-pick/tier-list" class="subtle-link">Xem bảng Qzadd</a></div><div id="home-meta"></div></section>' +
       '<aside class="panel rankings" aria-labelledby="home-esports-title"><div class="section-head"><div><h2 id="home-esports-title">BXH đội tuyển</h2>' +
         '<p>Elo theo dữ liệu ATG</p></div><a href="/ho-tro-ban-pick/esports" class="subtle-link">Xem BXH</a></div><div id="home-teams"></div></aside></div>' +
-      '<section class="content-block" aria-label="Tier List cộng đồng" id="home-community"></section>' +
       '<section class="content-block" aria-label="Giáo án nổi bật"><div id="home-guides"></div></section>');
     let activeLane = "Đi rừng";
     const { board, order, source } = window.QZADD_TIERS;
@@ -157,21 +156,13 @@
         '<div class="guide-grid">' + (guides ?? []).slice(0, 3).map(guideCard).join("") + '</div>';
     }
 
-    function communityList(rows) {
-      $("home-community").innerHTML = sectionHead("Tier List cộng đồng", "Tham khảo các bảng xếp hạng do người chơi tạo.",
-        button("Xem cộng đồng", "/ho-tro-ban-pick/tier-list/all")) + '<div class="tier-cards">' +
-        (rows ?? []).slice(0, 3).map(tierCard).join("") + '</div>';
-    }
-
-    stats();
+      stats();
     preview();
     rankings();
     guideList();
-    communityList(boot.community);
     load("esports").then(response => { esports = response.data; stats(); }).catch(() => {});
     load("teams").then(response => { teams = response.data; stats(); rankings(); }).catch(() => {});
     load("guides").then(response => { guides = response.data; guideList(); }).catch(() => {});
-    load("community").then(response => communityList(response.data)).catch(() => {});
   }
 
   function guideCard(guide) {
@@ -185,12 +176,6 @@
     main.innerHTML = '<div class="wrap subpage">' + head(title, desc, extra) + '<div id="page-content" aria-live="polite">' +
       empty("Đang tải dữ liệu ATG…") + '</div></div>';
     return $("page-content");
-  }
-
-  function tierCard(board) {
-    return '<a class="panel tier-card" href="/ho-tro-ban-pick/tier-list/' + escape(board.id) + '"><h2>' + escape(board.title) +
-      '</h2><p>' + escape(board.creatorName) + ' / ' + date(board.updatedAt ?? board.createdAt) + '</p><div class="tier-mini">' +
-      (board.preview?.[0]?.heroes ?? []).map(hero => thumb(hero, "", false)).join("") + '</div></a>';
   }
 
   function renderQzaddTier() {
@@ -209,8 +194,7 @@
     let position = positions[0];
     document.title = "Tier List Qzadd | Hỗ trợ Ban Pick";
     const container = layout("Tier List Qzadd",
-      "Xếp hạng theo vị trí tại RoV Thái Lan · " + source.date,
-      '<div class="knowledge-actions">' + button("Tier List cộng đồng", "/ho-tro-ban-pick/tier-list/all") + '</div>');
+      "Xếp hạng theo vị trí tại RoV Thái Lan · " + source.date);
     container.innerHTML = '<section class="panel data-panel qz-board" aria-label="Bảng xếp hạng theo vị trí">' +
       '<div class="qz-tools"><div id="qz-lanes"></div>' + search("qz-search", "Tìm tướng ở vị trí này…") +
       '</div><p class="qz-count" id="qz-count"></p><div class="qz-groups" id="qz-groups"></div>' +
@@ -264,71 +248,6 @@
     $("qz-search").addEventListener("input", renderGroups);
     renderTabs();
     renderGroups();
-  }
-
-  async function showTier() {
-    if (!detail) {
-      renderQzaddTier();
-      return;
-    }
-    const boardId = /^\d+$/.test(detail || "") ? detail : null;
-    const isCommunity = detail === "all";
-    const container = layout(isCommunity ? "Tier List cộng đồng" : "Tier List", "Tra cứu và so sánh xếp hạng tướng theo vị trí.",
-      button("Tier List Qzadd", "/ho-tro-ban-pick/tier-list"));
-    if (isCommunity) {
-      try {
-        const response = await load("community");
-        container.innerHTML = sourceNote(response) + '<div class="toolbar">' + search("community-search", "Tìm Tier List…") + '</div><div id="tier-cards" class="tier-cards"></div>';
-        function renderCards() {
-          const q = norm($("community-search").value);
-          $("tier-cards").innerHTML = response.data.filter(board => norm(board.title + " " + (board.creatorName ?? "")).includes(q))
-            .map(tierCard).join("") || empty("Không tìm thấy Tier List phù hợp.");
-        }
-        $("community-search").addEventListener("input", renderCards);
-        renderCards();
-      } catch { showError(container, legacy("/tier-list/all")); }
-      return;
-    }
-    try {
-      if (!boardId) {
-        container.innerHTML = empty("Không tìm thấy Tier List này.");
-        return;
-      }
-      const response = await load("tier/" + boardId);
-      const board = response.data;
-      container.innerHTML = '<div class="panel data-panel">' + sectionHead(escape(board.title),
-        (board.creatorName ? escape(board.creatorName) + ' / ' : "") + date(board.updatedAt ?? board.createdAt) +
-        ' / ' + number(board.heroCount) + ' tướng',
-        button("Bình luận, đánh giá", legacy("/tier-list/" + boardId))) +
-        sourceNote(response) + '<div class="toolbar">' + search("tier-search", "Tìm trong bảng…") +
-        '<div id="tier-lanes"></div></div><div id="tier-board"></div></div>';
-      let position = "";
-      function filterBoard() {
-        const q = norm($("tier-search").value);
-        const usedColumns = board.columns.map((lane, index) => ({ lane, index })).filter(item => !position || item.lane === position);
-        $("tier-board").innerHTML = '<div class="table-scroll"><table class="tier-table"><thead><tr><th scope="col">Bậc</th>' +
-          usedColumns.map(item => '<th scope="col">' + escape(nameOfLane(item.lane)) + '</th>').join("") +
-          '</tr></thead><tbody>' + board.rows.map(row => '<tr><th scope="row"><span class="rank-badge" data-rank="' +
-            escape(row.label) + '">' + escape(row.label) + '</span></th>' + usedColumns.map(item =>
-              '<td><div class="tier-heroes">' + ((row.cells[item.index] ?? []).filter(hero => norm(hero.name).includes(q))
-                .map(hero => heroButton(hero)).join("") || '<span class="muted">—</span>') +
-              '</div></td>').join("") + '</tr>').join("") + '</tbody></table></div>';
-      }
-      function renderTabs() {
-        $("tier-lanes").innerHTML = toggleGroup([["", "Tất cả"], ...board.columns.map(lane => [lane, nameOfLane(lane)])], position, "Lọc vị trí");
-      }
-      renderTabs();
-      filterBoard();
-      $("tier-search").addEventListener("input", filterBoard);
-      $("tier-lanes").addEventListener("click", event => {
-        const field = event.target.closest("[data-filter]");
-        if (!field) return;
-        position = field.dataset.filter;
-        renderTabs();
-        filterBoard();
-        $("tier-lanes").querySelector('[aria-pressed="true"]').focus({ preventScroll: true });
-      });
-    } catch { showError(container, legacy(boardId ? "/tier-list/" + boardId : "/tier-list")); }
   }
 
   async function showGuides() {
@@ -631,6 +550,6 @@
   });
   const section = "/ho-tro-ban-pick" + (area ? "/" + area : "/");
   document.querySelector('.nav a[href="' + section + '"]')?.setAttribute("aria-current", "page");
-  const views = { "tier-list": showTier, guides: showGuides, esports: showEsports, wiki: showWiki, "ban-pick": renderDraftTools };
+  const views = { "tier-list": renderQzaddTier, guides: showGuides, esports: showEsports, wiki: showWiki, "ban-pick": renderDraftTools };
   (views[area] ?? renderHome)();
 })();
