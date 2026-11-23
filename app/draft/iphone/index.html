@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phát màn hình iPhone | Hỗ trợ Ban Pick</title>
+  <link rel="stylesheet" href="../style.css?v=iphone-room">
+  <script src="../vendor/peerjs-1.5.5.min.js" defer></script>
+  <script src="./sender.js?v=1" defer></script>
+</head>
+<body>
+  <main class="iphone-sender">
+    <h1>Phát màn hình iPhone</h1>
+    <p>Bấm phát, cấp quyền trong hộp thoại của iPhone rồi đợi máy tính nhận hình trước khi mở Liên Quân.</p>
+    <div class="airplay-actions">
+      <button class="primary" type="button" id="iphone-send" disabled>Phát màn hình</button>
+      <button class="quiet" type="button" id="iphone-stop" hidden>Dừng phát</button>
+    </div>
+    <p id="iphone-sender-status" role="status"></p>
+  </main>
+</body>
+</html>

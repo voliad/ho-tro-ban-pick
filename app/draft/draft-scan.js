@@ -39,6 +39,9 @@
   let portraitCount = 0;
   let scannedPortraitCount = -1;
   let lastVideoTime = -1;
+  let trackGame = false;
+  let lastRegionSearch = 0;
+  let lastGameEvidence = 0;
   let elapsed = 0;
   let slots = [];
   let textMatches = new Map();
@@ -179,6 +182,7 @@
       if (imageUrl || next.get(key) === 2) stable.push(row);
     }
     previous = next;
+    if (locks >= 2 || stable.some(row => row.kind === "pick")) lastGameEvidence = performance.now();
     elapsed = Math.round(performance.now() - started);
     ocr.disabled = readingText;
     const key = JSON.stringify([locks, stable]);
@@ -211,6 +215,8 @@
   function resetScan() {
     crop = corner = null;
     choosing = false;
+    trackGame = false;
+    lastRegionSearch = lastGameEvidence = 0;
     previous.clear();
     slots = [];
     textMatches.clear();
@@ -306,10 +312,38 @@
   }
 
   calibrate.addEventListener("click", beginCalibration);
+  function followSharedGame() {
+    if (!trackGame || !video.srcObject || video.readyState < 2) return;
+    const now = performance.now();
+    if (now - lastRegionSearch < 750 || now - lastGameEvidence < 1600 && crop) return;
+    lastRegionSearch = now;
+    const region = findGameRegion();
+    if (!region) {
+      if (!crop) output.textContent = "Đang tìm khung game. Hãy mở Liên Quân trên nguồn đang chia sẻ.";
+      return;
+    }
+    if (crop && ["x", "y", "width", "height"].every(key => Math.abs(crop[key] - region[key]) < 3)) return;
+    crop = region;
+    previous.clear();
+    textMatches.clear();
+    lastVideoTime = -1;
+  }
+
   video.addEventListener("draft-share-ready", () => {
     if (imageUrl) clearImage();
     file.value = "";
-    startAutomaticScan();
+    resetScan();
+    trackGame = true;
+    lastRegionSearch = -Infinity;
+    loadPortraits();
+    followSharedGame();
+    scanSafely();
+  });
+  video.addEventListener("resize", () => {
+    if (!trackGame || imageUrl) return;
+    resetScan();
+    trackGame = true;
+    lastRegionSearch = -Infinity;
   });
 
   function clearImage() {
@@ -414,6 +448,7 @@
   setInterval(() => {
     if (imageUrl || video.srcObject) {
       calibrate.disabled = !dimensions(source())[0];
+      if (!imageUrl) followSharedGame();
       scanSafely();
     } else if (!calibrate.disabled) {
       calibrate.disabled = true;

@@ -33,11 +33,13 @@ async function respond(request) {
     }
   }
   if (path === "/draft") return Response.redirect(new URL("/draft/", url), 308);
+  if (path === "/draft/iphone") return Response.redirect(new URL("/draft/iphone/", url), 308);
   if (originalPaths.has(path)) return Response.redirect("https://atgacademy.noxaov.vn" + path, 307);
   const guideAlias = /^\/guides\/(?:basic|advanced)\/(\d+)$/.exec(path);
   if (guideAlias) return Response.redirect(new URL("/guides/" + guideAlias[1], url), 308);
   const root = /^(?:\/(?:tier-list|guides|wiki|esports|ban-pick)(?:\/[^.]+)?)?\/?$/.test(path);
-  const file = root ? "index.html" : path === "/draft/" ? "draft/index.html" : path.slice(1);
+  const draftPage = path === "/draft/" || path === "/draft/iphone/";
+  const file = root ? "index.html" : draftPage ? path.slice(1) + "index.html" : path.slice(1);
   if (!Object.hasOwn(assets, file)) return new Response("Không tìm thấy trang", { status: 404, headers: security });
   const ext = file.split(".").at(-1);
   const payload = assets[file];

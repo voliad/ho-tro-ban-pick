@@ -6,7 +6,7 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=filter-icons">
+  <link rel="stylesheet" href="./style.css?v=iphone-room">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=filter-rows" defer></script>
   <script src="./counters.js?v=cross-match" defer></script>
@@ -15,10 +15,13 @@
   <script src="./qzadd-tiers.js?v=20261107-board" defer></script>
   <script src="./lane-pools.js?v=2" defer></script>
   <script src="./app.js?v=game-icons" defer></script>
-  <script src="./airplay.js?v=3" defer></script>
+  <script src="./airplay.js?v=iphone-room" defer></script>
+  <script src="./vendor/peerjs-1.5.5.min.js" defer></script>
+  <script src="./vendor/qrcodejs-1.0.0.min.js" defer></script>
+  <script src="./iphone-receiver.js?v=1" defer></script>
   <script src="./scan-samples.js?v=5" defer></script>
   <script src="./draft-ocr.js?v=1" defer></script>
-  <script src="./draft-scan.js?v=unique-heroes" defer></script>
+  <script src="./draft-scan.js?v=iphone-room" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -61,12 +64,24 @@
         <div class="airplay-content">
           <p>Web tự tìm vùng game Rank trong ảnh hoặc màn hình chia sẻ. Nếu khung bị lệch, dùng nút chọn lại vùng game.</p>
           <div class="airplay-actions">
+            <button type="button" class="quiet" id="iphone-receive">Nhận từ iPhone</button>
             <button type="button" class="quiet" id="airplay-start">Bắt đầu chia sẻ</button>
             <button type="button" class="quiet" id="airplay-stop" hidden>Dừng chia sẻ</button>
             <label class="scan-file">Tải ảnh để thử <input type="file" id="scan-file" accept="image/png,image/jpeg,image/webp"></label>
             <button type="button" class="quiet" id="scan-clear" hidden>Bỏ ảnh</button>
             <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn lại vùng game</button>
             <button type="button" class="quiet" id="scan-ocr" disabled>AI đọc tên tướng</button>
+          </div>
+          <div id="iphone-room" class="iphone-room" hidden>
+            <div id="iphone-invite" class="iphone-invite" hidden>
+              <div id="iphone-qr" role="img" aria-label="Mã QR ghép nối iPhone"></div>
+              <div>
+                <p>Quét mã bằng Camera iPhone, mở liên kết bằng Safari rồi chọn <strong>Phát màn hình</strong>. Giữ mã này riêng tư.</p>
+                <button type="button" class="quiet" id="iphone-copy">Sao chép liên kết</button>
+              </div>
+            </div>
+            <p id="iphone-room-status" role="status"></p>
+            <button type="button" class="quiet" id="iphone-close">Đóng kết nối</button>
           </div>
           <p id="airplay-status" role="status"></p>
           <div id="scan-results" aria-live="polite"></div>
