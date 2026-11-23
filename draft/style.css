@@ -71,6 +71,13 @@ input[type="checkbox"] { accent-color: var(--color-accent); width: 1rem; height:
 .top-inner nav a:hover, .top-inner nav a[aria-current="page"] { color: var(--color-ink); }
 .top-inner nav a[aria-current="page"] { border-bottom-color: var(--color-accent); }
 .top-actions { display: flex; gap: .5rem; }
+.airplay-panel { margin: 0 0 .8rem; border: 1px solid var(--color-rule); background: var(--color-paper-2); }
+.airplay-panel summary { cursor: pointer; padding: .65rem .8rem; font-weight: 700; color: var(--color-accent); }
+.airplay-content { display: grid; gap: .6rem; padding: 0 .8rem .8rem; color: var(--color-ink-2); font-size: .88rem; }
+.airplay-content ol { padding-inline-start: 1.45rem; }
+.airplay-content a { text-decoration: underline; }
+.airplay-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.airplay-content video { width: min(100%, 44rem); max-height: 46vh; background: #000; object-fit: contain; }
 .quiet, .primary { min-height: 2.55rem; padding: 0 .85rem; border: 1px solid var(--color-rule); background: var(--color-clear); font-weight: 650; white-space: nowrap; font-size: .875rem; }
 .quiet:hover:not(:disabled) { background: var(--color-control); border-color: var(--color-muted); }
 .academy-link { display: inline-flex; align-items: center; color: var(--color-ink); text-decoration: none; }
