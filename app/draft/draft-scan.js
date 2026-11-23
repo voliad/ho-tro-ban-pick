@@ -5,6 +5,11 @@
   const video = $("airplay-preview");
   const rotatedVideo = $("scan-video-preview");
   const rotationProbe = document.createElement("canvas");
+  const borderProbe = document.createElement("canvas");
+  borderProbe.width = 80;
+  borderProbe.height = 44;
+  const borderContext = borderProbe.getContext("2d", { willReadFrequently: true });
+  let videoBounds;
   const rotateButton = $("scan-rotate");
   const autoRotateButton = $("scan-auto-rotate");
   const image = $("scan-preview");
@@ -64,7 +69,8 @@
     element === video ? [video.videoWidth, video.videoHeight] : [element.width, element.height];
 
   function rotateFrame(canvas, angle) {
-    const [width, height] = dimensions(video);
+    const [fullWidth, fullHeight] = dimensions(video);
+    const { x, y, width, height } = videoBounds ?? { x: 0, y: 0, width: fullWidth, height: fullHeight };
     const quarter = angle === 90 || angle === 270;
     const w = quarter ? height : width, h = quarter ? width : height;
     if (canvas.width !== w || canvas.height !== h) {
@@ -75,7 +81,28 @@
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.translate(w / 2, h / 2);
     context.rotate(angle * Math.PI / 180);
-    context.drawImage(video, -width / 2, -height / 2);
+    context.drawImage(video, x, y, width, height, -width / 2, -height / 2, width, height);
+  }
+
+  function sidewaysContent() {
+    const [width, height] = dimensions(video);
+    if (width <= height) return null;
+    borderContext.drawImage(video, 0, 0, 80, 44);
+    const pixels = borderContext.getImageData(0, 0, 80, 44).data;
+    const columns = [];
+    for (let x = 0; x < 80; x++) {
+      let lit = 0;
+      for (let y = 0; y < 44; y++) {
+        const i = (y * 80 + x) * 4;
+        if (Math.max(pixels[i], pixels[i + 1], pixels[i + 2]) > 24) lit++;
+      }
+      if (lit >= 9) columns.push(x);
+    }
+    const left = columns[0], right = columns.at(-1);
+    if (left === undefined || left < 12 || right > 67 || Math.abs(left + right - 79) > 9) return null;
+    const innerWidth = Math.round((right - left + 1) * width / 80);
+    if (height / innerWidth < 1.65 || height / innerWidth > 2.65) return null;
+    return { x: Math.floor(left * width / 80), y: 0, width: innerWidth, height };
   }
 
   function updateVideoPreview() {
@@ -437,6 +464,12 @@
     const now = performance.now();
     if (now - lastRegionSearch < 750 || now - lastGameEvidence < 1600 && crop) return;
     lastRegionSearch = now;
+    const bounds = sidewaysContent();
+    const previousAngle = rotation;
+    if (!manualRotation && bounds && rotation % 180 === 0) rotation = 90;
+    if (!manualRotation && !bounds && videoBounds) rotation = 0;
+    videoBounds = bounds ?? undefined;
+    updateVideoPreview();
     let region = findGameRegion();
     let bestAngle = rotation;
     if (!manualRotation) {
@@ -462,7 +495,7 @@
       if (!crop) output.textContent = "Đang tìm khung game. Hãy mở Liên Quân trên nguồn đang chia sẻ.";
       return;
     }
-    if (bestAngle === rotation && crop && ["x", "y", "width", "height"].every(key => Math.abs(crop[key] - region[key]) < 3)) return;
+    if (bestAngle === previousAngle && crop && ["x", "y", "width", "height"].every(key => Math.abs(crop[key] - region[key]) < 3)) return;
     rotation = bestAngle;
     updateVideoPreview();
     crop = region;
@@ -480,6 +513,7 @@
     lastFrame = null;
     lastFrameChange = performance.now();
     rotation = 0;
+    videoBounds = undefined;
     manualRotation = false;
     updateVideoPreview();
     trackGame = true;
