@@ -50,12 +50,11 @@ const esports = item => ({
 });
 const reference = item => pick(item, "id name slug iconUrl imageUrl description cooldown branch category level");
 
-export const standardKeys = ["meta", "community", "guides", "heroes", "teams", "esports", "tournaments", "spells", "enchantments"];
+export const standardKeys = ["meta", "guides", "heroes", "teams", "esports", "tournaments", "spells", "enchantments"];
 
 function target(key) {
   const fixed = {
     meta: ["/api/tier-lists/official", data => tier(data, true)],
-    community: ["/api/tier-lists/community/all", data => list(data).map(item => tier(item, false))],
     guides: ["/api/guides?status=PUBLISHED&sort=newest", data => list(data).filter(i => i.status === "PUBLISHED")
       .sort((a, b) => new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt))
       .map(i => guide(i, false))],
@@ -67,10 +66,9 @@ function target(key) {
     enchantments: ["/api/enchantments", data => list(data).map(reference)],
   };
   if (Object.hasOwn(fixed, key)) return fixed[key];
-  const match = /^(tier|guide|esports)\/([1-9]\d{0,8})$/.exec(key);
+  const match = /^(guide|esports)\/([1-9]\d{0,8})$/.exec(key);
   if (!match) return null;
   const [, kind, id] = match;
-  if (kind === "tier") return ["/api/tier-lists/" + id, data => tier(data, true)];
   if (kind === "guide") return ["/api/guides/" + id, data => {
     if (data.status !== "PUBLISHED") throw Error("Guide is not public");
     return guide(data, true);

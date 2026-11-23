@@ -6,11 +6,14 @@ const snapshotFile = "app/snapshot.json";
 if (process.argv.includes("--refresh")) {
   const entries = await Promise.all(standardKeys.map(async key => [key, await sourceData(key)]));
   const data = Object.fromEntries(entries);
-  const details = [...data.community.slice(0, 3).map(i => "tier/" + i.id), ...data.guides.slice(0, 6).map(i => "guide/" + i.id)];
+  const details = [...data.guides.slice(0, 6).map(i => "guide/" + i.id)];
   await Promise.all(details.map(async key => { data[key] = await sourceData(key); }));
   await writeFile(snapshotFile, JSON.stringify({ checkedAt: new Date().toISOString(), data }));
 }
 const snapshot = JSON.parse(await readFile(snapshotFile, "utf8"));
+for (const key of Object.keys(snapshot.data)) {
+  if (key === "community" || key.startsWith("tier/")) delete snapshot.data[key];
+}
 const textTypes = new Set([".html", ".js", ".css", ".json"]);
 const assets = {};
 async function readAssets(relative = "") {
@@ -32,7 +35,7 @@ portraits.flowbornmage = portraits.flowbornphapsu;
 portraits.flowbornmarksman = portraits.flowbornxathu;
 assets["boot.js"] = "window.ATG_BOOT = " + JSON.stringify({
   meta: snapshot.data.meta, guides: snapshot.data.guides, teams: snapshot.data.teams,
-  esports: { summary: snapshot.data.esports.summary }, community: snapshot.data.community, portraits,
+  esports: { summary: snapshot.data.esports.summary }, portraits,
   roster: draftHeroes.map(({ id, name, variant }) => ({ id, name, variant })),
   teamLogos: Object.keys(assets).filter(file => file.startsWith("teams/")),
 }) + ";";

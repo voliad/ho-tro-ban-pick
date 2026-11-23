@@ -9,7 +9,6 @@ const output = "dist/pages";
 const snapshot = JSON.parse(await readFile("app/snapshot.json", "utf8"));
 const data = snapshot.data;
 const extra = [
-  ...data.community.map(row => "tier/" + row.id),
   ...data.guides.map(row => "guide/" + row.id),
   ...data.tournaments.map(row => "esports/" + row.tournamentId),
 ];
@@ -32,9 +31,9 @@ for (const folder of ["art", "teams", "draft"]) {
 }
 await cp("app/catalog.json", path.join(output, "catalog.json"));
 const html = prefix(await readFile("app/index.html", "utf8"));
-const routes = ["", "tier-list", "tier-list/all", "guides", "guides/goi-lenh", "wiki", "wiki/toc-danh",
+const routes = ["", "tier-list", "guides", "guides/goi-lenh", "wiki", "wiki/toc-danh",
   "wiki/hieu-qua-vang", "wiki/hut-mau-phep", "esports", "esports/data", "ban-pick",
-  ...data.community.map(row => "tier-list/" + row.id), ...data.guides.map(row => "guides/" + row.id)];
+  ...data.guides.map(row => "guides/" + row.id)];
 for (const route of routes) await write(path.join(route, "index.html"), html);
 for (const name of ["site.css", "strategy.js", "attack-speed.js", "site.js", "draft/index.html"]) {
   let code = prefix(await readFile("app/" + name, "utf8"));
@@ -53,6 +52,7 @@ const firstLine = worker.slice(0, worker.indexOf("\n"));
 const bundled = JSON.parse(firstLine.slice("const assets = ".length, -1));
 await write("boot.js", bundled["boot.js"]);
 for (const [key, value] of Object.entries(data)) {
+  if (key === "community" || key.startsWith("tier/")) continue;
   await write("data/" + key + ".json", JSON.stringify({ data: value, source: "snapshot", checkedAt: snapshot.checkedAt }));
 }
 await write(".nojekyll", "");
