@@ -277,7 +277,7 @@
     return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
       pairs: [Object.keys(tips), []], direct: [[], []], tips, tactical: true };
   });
-  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners, profiles: vietnamProfiles, equipment: vietnamEquipment } = window.DRAFT_VIETNAM_META;
+  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners, profiles: vietnamProfiles, equipment: vietnamEquipment, enchantments: vietnamEnchantments } = window.DRAFT_VIETNAM_META;
   const counterRows = [...laneCounterRows, ...vietnamRows, ...referenceRows];
 
   const positions = Object.keys(lanePools);
@@ -511,6 +511,7 @@
         displayTier.lane : entry.profiles.keys().next().value);
       const [playstyle, ...traits] = entry.profiles.get(profileLane) ?? [];
       const addsStyle = active && fitLanes.includes(profileLane) && teamStyles.size && !teamStyles.has(playstyle);
+      const chartEnchantments = vietnamEnchantments[profileLane]?.[id] ?? [];
       const chartEquipment = vietnamEquipment[profileLane]?.[id] ?? [];
       const equipmentHint = profileLane === "Trợ thủ" && playstyle === "Hỗ trợ / chống chịu" ?
         "Khiên Thánh Quang khi cần che chắn đồng minh" :
@@ -533,6 +534,8 @@
         (traits.length ? '<span>' + escapeHtml(traits.join(" · ")) + '</span>' : '') +
         (chartEquipment.length ? '<span><b>Nên có theo AOV Update VN</b> · ' +
           escapeHtml(chartEquipment.join(", ")) + '</span>' : '') +
+        (chartEnchantments.length ? '<span><b>Phù hiệu theo AOV Update VN</b> · ' +
+          escapeHtml(chartEnchantments.join(", ")) + '</span>' : '') +
         (equipmentHint ? '<span><b>Trang bị tình huống</b> · ' + escapeHtml(equipmentHint) + '</span>' : '') +
         (synergy ? '<span class="counter-synergy"><b>' + (synergy.complete ? "Hoàn thiện bài " : "Ghép bài ") +
           escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + comboWarning(synergy.combo) + '</span>' : '') +
