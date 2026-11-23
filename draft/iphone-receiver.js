@@ -7,6 +7,7 @@
   const invite = $("iphone-invite");
   const qr = $("iphone-qr");
   const status = $("iphone-room-status");
+  const recover = $("iphone-recover");
   let room;
 
   function close(message = "") {
@@ -21,6 +22,7 @@
     }
     start.disabled = false;
     invite.hidden = true;
+    recover.hidden = true;
     qr.replaceChildren();
     panel.hidden = !message;
     status.textContent = message;
@@ -61,6 +63,19 @@
       }
       current.channel?.close();
       current.channel = channel;
+      channel.on("open", () => {
+        if (room === current && current.channel === channel) recover.hidden = false;
+      });
+      channel.on("close", () => {
+        if (room === current && current.channel === channel) recover.hidden = true;
+      });
+      channel.on("data", message => {
+        if (room !== current || current.channel !== channel || message?.type !== "capture-ended") return;
+        current.captureEnded = true;
+        invite.hidden = false;
+        recover.hidden = true;
+        status.textContent = "iPhone đã ngừng quay. Bấm Phát màn hình trên iPhone để tiếp tục cùng phòng.";
+      });
     });
 
     peer.on("call", call => {
@@ -71,6 +86,8 @@
       clearInterval(current.watch);
       const previousCall = current.call;
       current.call = call;
+      current.captureEnded = false;
+      recover.hidden = !current.channel?.open;
       if (current.stream) {
         window.DRAFT_SCREEN.clear(current.stream);
         current.stream = null;
@@ -87,7 +104,7 @@
         current.stream = null;
         if (stream) window.DRAFT_SCREEN.clear(stream);
         call.close();
-        status.textContent = "Mất tín hiệu video. Đang chờ iPhone tự kết nối lại…";
+        if (!current.captureEnded) status.textContent = "Mất tín hiệu video. Đang chờ iPhone tự kết nối lại…";
         current.timer = setTimeout(() => close("Chưa khôi phục được hình. Hãy mở kết nối mới."), 90000);
       };
       current.timer = setTimeout(waitForReconnect, 25000);
@@ -146,6 +163,11 @@
     });
   });
 
+  recover.addEventListener("click", () => {
+    if (!room?.channel?.open || room.captureEnded) return;
+    room.channel.send({ type: "restart-video", manual: true });
+    status.textContent = "Đã yêu cầu iPhone gửi lại hình.";
+  });
   $("iphone-close").addEventListener("click", () => close());
   $("iphone-copy").addEventListener("click", async () => {
     const current = room;

@@ -29,6 +29,13 @@
   let retry;
   let failures = 0;
   let recoveryDeadline = 0;
+  let quality = 0;
+  let lastRecovery = 0;
+  const profiles = [
+    { fps: 12, bitrate: 1600000 },
+    { fps: 10, bitrate: 1050000 },
+    { fps: 8, bitrate: 750000 },
+  ];
   const opening = setTimeout(() => finish("Không ghép nối được. Hãy mở mã QR mới."), 20000);
 
   function finish(message) {
@@ -44,13 +51,16 @@
     status.textContent = message;
   }
 
-  function retryCall() {
+  function retryCall(adapt = true) {
     if (ended || retry) return;
     if (!recoveryDeadline) recoveryDeadline = Date.now() + 85000;
     if (Date.now() >= recoveryDeadline || peer.destroyed) {
       finish("Chưa khôi phục được kết nối. Hãy mở mã QR mới.");
       return;
     }
+    const now = Date.now();
+    if (adapt && lastRecovery && now - lastRecovery < 60000) quality = Math.min(quality + 1, profiles.length - 1);
+    if (adapt) lastRecovery = now;
     clearTimeout(connecting);
     const previous = call;
     call = null;
@@ -76,7 +86,7 @@
       channel = peer.connect(to, { reliable: true });
       const control = channel;
       control?.on("data", message => {
-        if (channel === control && message?.type === "restart-video") retryCall();
+        if (channel === control && message?.type === "restart-video") retryCall(message.manual !== true);
       });
       control?.on("close", () => { if (channel === control) channel = null; });
     }
@@ -92,8 +102,8 @@
       const parameters = videoSender.getParameters();
       if (parameters.encodings?.length) {
         parameters.degradationPreference = "balanced";
-        parameters.encodings[0].maxFramerate = 12;
-        parameters.encodings[0].maxBitrate = 1600000;
+        parameters.encodings[0].maxFramerate = profiles[quality].fps;
+        parameters.encodings[0].maxBitrate = profiles[quality].bitrate;
         videoSender.setParameters(parameters).catch(() => {});
       }
     }
@@ -169,7 +179,23 @@
         return;
       }
       if ("contentHint" in track) track.contentHint = "detail";
-      track.addEventListener("ended", () => finish("Đã dừng phát màn hình."), { once: true });
+      track.addEventListener("ended", () => {
+        if (ended || capture !== selected) return;
+        clearTimeout(connecting);
+        clearTimeout(retry);
+        retry = null;
+        recoveryDeadline = 0;
+        const previous = call;
+        call = null;
+        capture = null;
+        track = null;
+        selected.getTracks().forEach(item => item.stop());
+        previous?.close();
+        if (channel?.open) channel.send({ type: "capture-ended" });
+        start.disabled = false;
+        stop.hidden = true;
+        status.textContent = "iPhone đã dừng quay màn hình. Bấm Phát màn hình để tiếp tục cùng phòng.";
+      }, { once: true });
       stop.hidden = false;
       status.textContent = "Đang gửi hình tới máy tính…";
       if (peer.disconnected) retryCall();
