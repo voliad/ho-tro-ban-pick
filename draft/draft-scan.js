@@ -11,44 +11,77 @@
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 8;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const frame = document.createElement("canvas");
+  const frameContext = frame.getContext("2d", { willReadFrequently: true });
   const samples = window.DRAFT_SCAN_SAMPLES;
   const heroes = window.DRAFT_HEROES;
   const names = new Map(heroes.map(hero => [hero.id, hero.name]));
   const colors = ["blue", "red"];
   const scanEvent = snapshot => document.dispatchEvent(new CustomEvent("draft-scan", { detail: snapshot }));
-  const rgb = () => Array.from(ctx.getImageData(0, 0, 8, 8).data).filter((_, i) => i % 4 !== 3);
+  function rgb() {
+    const rgba = ctx.getImageData(0, 0, 8, 8).data;
+    const result = new Uint8Array(192);
+    for (let i = 0, j = 0; i < rgba.length; i += 4) {
+      result[j++] = rgba[i];
+      result[j++] = rgba[i + 1];
+      result[j++] = rgba[i + 2];
+    }
+    return result;
+  }
   let crop;
   let corner;
   let choosing = false;
   let previous = new Map();
   let signature = "";
-  let references = samples;
+  const references = { bans: [...samples.bans], picks: [...samples.picks] };
+  let portraitCount = 0;
+  let scannedPortraitCount = -1;
+  let lastVideoTime = -1;
+  let elapsed = 0;
   let loadingPortraits = false;
   let imageUrl;
   const source = () => imageUrl ? image : video;
   const dimensions = element => element === image
     ? [image.naturalWidth, image.naturalHeight] : [video.videoWidth, video.videoHeight];
 
-  function distance(a, b) {
-    return Math.sqrt(a.reduce((sum, value, i) => sum + (value - b[i]) ** 2, 0) / a.length);
+  function squaredDistance(a, b, limit = Infinity) {
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) {
+      const delta = a[i] - b[i];
+      sum += delta * delta;
+      if (sum >= limit) return limit;
+    }
+    return sum;
   }
 
   function identify(patches, refs) {
-    const scores = new Map();
+    let bestId, secondId;
+    let best = 36 ** 2 * 192;
+    let second = best;
     for (const [id, ref] of refs) {
-      const score = Math.min(...patches.map(pixel => distance(pixel, ref)));
-      if (score < (scores.get(id) ?? Infinity)) scores.set(id, score);
+      const score = Math.min(squaredDistance(patches[0], ref, second), squaredDistance(patches[1], ref, second));
+      if (id === bestId) {
+        best = Math.min(best, score);
+      } else if (score < best) {
+        second = best;
+        secondId = bestId;
+        best = score;
+        bestId = id;
+      } else if (score < second) {
+        second = score;
+        secondId = id;
+      }
     }
-    const [best, second] = [...scores].sort((a, b) => a[1] - b[1]);
-    return best && best[1] < 31 && (!second || second[1] - best[1] >= 5) ? best[0] : null;
+    return best < 31 ** 2 * 192 && (!secondId || Math.sqrt(second / 192) - Math.sqrt(best / 192) >= 5)
+      ? bestId : null;
   }
 
   function sample(x, y, width, height = width) {
     // Coordinates refer to the game viewport in the supplied rank screenshots.
-    const scaleX = crop.width / 2346;
-    const scaleY = crop.height / 1086;
-    ctx.drawImage(source(), crop.x + (x - 261 - width / 2) * scaleX,
-      crop.y + (y - 88 - height / 2) * scaleY, width * scaleX, height * scaleY, 0, 0, 8, 8);
+    const scaleX = frame.width / 2346;
+    const scaleY = frame.height / 1086;
+    ctx.drawImage(frame, (x - 261 - width / 2) * scaleX,
+      (y - 88 - height / 2) * scaleY, width * scaleX, height * scaleY, 0, 0, 8, 8);
     return rgb();
   }
 
@@ -56,7 +89,7 @@
     const patch = sample(side === "blue" ? 365 : 2500, y, 170, 46);
     let hits = 0;
     for (let i = 0; i < patch.length; i += 3) {
-      const [r, g, b] = patch.slice(i, i + 3);
+      const r = patch[i], g = patch[i + 1], b = patch[i + 2];
       if (side === "blue" ? b > 145 && b - r > 78 && g - r > 28 : r > 155 && r - g > 70 && r - b > 38) hits++;
     }
     return hits >= 4;
@@ -64,6 +97,16 @@
 
   function scan() {
     if (!crop || (imageUrl ? !image.naturalWidth : video.readyState < 2)) return;
+    if (imageUrl ? scannedPortraitCount === portraitCount : lastVideoTime === video.currentTime) return;
+    scannedPortraitCount = portraitCount;
+    lastVideoTime = video.currentTime;
+    const started = performance.now();
+    const width = Math.round(crop.width), height = Math.round(crop.height);
+    if (frame.width !== width || frame.height !== height) {
+      frame.width = width;
+      frame.height = height;
+    }
+    frameContext.drawImage(source(), crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
     const rows = [];
     let locks = 0;
     for (const side of colors) {
@@ -74,7 +117,8 @@
         for (const dx of [0, -4, 4]) {
           for (const dy of [0, -4, 4]) {
             const lock = sample(banX + dx, 167 + dy, 28);
-            if (samples.locks.some(ref => distance(lock, ref) < 30)) {
+            const limit = 30 ** 2 * 192;
+            if (samples.locks.some(ref => squaredDistance(lock, ref, limit) < limit)) {
               locked = true;
               break;
             }
@@ -103,12 +147,13 @@
       if (imageUrl || next.get(key) === 2) stable.push(row);
     }
     previous = next;
+    elapsed = Math.round(performance.now() - started);
     const key = JSON.stringify([locks, stable]);
     if (key === signature) return;
     signature = key;
     output.replaceChildren();
     const summary = document.createElement("p");
-    summary.textContent = "Biểu tượng khóa nhận diện được: " + locks + "/10." +
+    summary.textContent = "Quét " + elapsed + " ms · Biểu tượng khóa: " + locks + "/10." +
       (locks < 10 ? " Chưa đủ dấu hiệu để xác nhận các lượt chọn." : "");
     output.append(summary);
     for (const side of colors) {
@@ -133,6 +178,7 @@
     choosing = false;
     previous.clear();
     signature = "";
+    scannedPortraitCount = lastVideoTime = -1;
     scanEvent(null);
     output.textContent = "";
   }
@@ -140,7 +186,10 @@
   function loadPortraits() {
     if (loadingPortraits) return;
     loadingPortraits = true;
-    for (const hero of heroes) {
+    let index = 0;
+    function loadNext() {
+      const hero = heroes[index++];
+      if (!hero) return;
       const img = new Image();
       img.src = hero.image;
       img.decode().then(() => {
@@ -150,8 +199,10 @@
         const portrait = [hero.id, rgb()];
         references.bans.push(portrait);
         references.picks.push(portrait);
-      }).catch(() => {});
+        portraitCount++;
+      }).catch(() => {}).finally(loadNext);
     }
+    for (let i = 0; i < 6; i++) loadNext();
   }
 
   function beginCalibration() {
@@ -229,18 +280,28 @@
     crop = { ...corner, width, height };
     choosing = false;
     output.textContent = "Đang quét các ô cấm/chọn…";
+    scanSafely();
   }
 
   video.addEventListener("click", selectCorner);
   image.addEventListener("click", selectCorner);
 
+  function scanSafely() {
+    try {
+      scan();
+    } catch {
+      resetScan();
+      output.textContent = "Không đọc được khung hình. Hãy chọn lại vùng game.";
+    }
+  }
+
   setInterval(() => {
     if (imageUrl || video.srcObject) {
       calibrate.disabled = !dimensions(source())[0];
-      scan();
+      scanSafely();
     } else if (!calibrate.disabled) {
       calibrate.disabled = true;
       resetScan();
     }
-  }, 400);
+  }, 160);
 })();
