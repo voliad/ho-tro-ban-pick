@@ -14,11 +14,11 @@
   <script src="./team-combos.js?v=2" defer></script>
   <script src="./qzadd-tiers.js?v=20261107-board" defer></script>
   <script src="./lane-pools.js?v=2" defer></script>
-  <script src="./app.js?v=keyboard-shortcuts" defer></script>
+  <script src="./app.js?v=scan-autofill" defer></script>
   <script src="./airplay.js?v=3" defer></script>
-  <script src="./scan-samples.js?v=2" defer></script>
+  <script src="./scan-samples.js?v=3" defer></script>
   <script src="./draft-ocr.js?v=1" defer></script>
-  <script src="./draft-scan.js?v=ocr" defer></script>
+  <script src="./draft-scan.js?v=autofill" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -59,13 +59,13 @@
       <details class="airplay-panel">
         <summary>Chia sẻ màn hình</summary>
         <div class="airplay-content">
-          <p>Chọn cửa sổ hoặc thẻ đang hiển thị trận đấu.</p>
+          <p>Web tự tìm vùng game Rank trong ảnh hoặc màn hình chia sẻ. Nếu khung bị lệch, dùng nút chọn lại vùng game.</p>
           <div class="airplay-actions">
             <button type="button" class="quiet" id="airplay-start">Bắt đầu chia sẻ</button>
             <button type="button" class="quiet" id="airplay-stop" hidden>Dừng chia sẻ</button>
             <label class="scan-file">Tải ảnh để thử <input type="file" id="scan-file" accept="image/png,image/jpeg,image/webp"></label>
             <button type="button" class="quiet" id="scan-clear" hidden>Bỏ ảnh</button>
-            <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn vùng game · Thử nghiệm Rank</button>
+            <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn lại vùng game</button>
             <button type="button" class="quiet" id="scan-ocr" disabled>AI đọc tên tướng</button>
           </div>
           <p id="airplay-status" role="status"></p>

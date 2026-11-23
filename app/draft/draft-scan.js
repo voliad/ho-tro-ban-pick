@@ -119,21 +119,25 @@
       const left = side === "blue";
       for (let index = 0; index < 5; index++) {
         const banX = (left ? 370 : 2161) + 84 * index;
-        let locked = false;
-        for (const dx of [0, -4, 4]) {
-          for (const dy of [0, -4, 4]) {
+        let offset;
+        const limit = 30 ** 2 * 192;
+        for (const dx of [0, -4, 4, -8, 8, -12, 12, -16, 16]) {
+          for (const dy of [0, -4, 4, -8, 8]) {
             const lock = sample(banX + dx, 167 + dy, 28);
-            const limit = 30 ** 2 * 192;
             if (samples.locks.some(ref => squaredDistance(lock, ref, limit) < limit)) {
-              locked = true;
+              offset = { dx, dy };
               break;
             }
           }
-          if (locked) break;
+          if (offset) break;
         }
-        locks += Number(locked);
-        const ban = identify([sample(banX, 137, 34), sample(banX + 3, 140, 34)], references.bans);
-        if (ban) rows.push({ side, kind: "ban", index, id: ban, confirmed: locked });
+        locks += Number(Boolean(offset));
+        const original = sample(banX, 137, 34);
+        const adjusted = offset
+          ? sample(banX + offset.dx, 137 + offset.dy, 34) : sample(banX + 3, 140, 34);
+        const ban = identify([original, sample(banX + 3, 140, 34)], references.bans) ??
+          identify([original, adjusted], references.bans);
+        if (ban) rows.push({ side, kind: "ban", index, id: ban, confirmed: Boolean(offset) });
 
         const y = 320 + index * 144.5;
         const glow = shining(side, y);
@@ -229,11 +233,58 @@
     loadPortraits();
   }
 
+  function findGameRegion() {
+    const [width, height] = dimensions(source());
+    if (width < 320 || height < 140) return null;
+    const finder = document.createElement("canvas");
+    finder.width = 360;
+    finder.height = Math.round(height * 360 / width);
+    const context = finder.getContext("2d", { willReadFrequently: true });
+    context.drawImage(source(), 0, 0, finder.width, finder.height);
+    const pixels = context.getImageData(0, 0, finder.width, finder.height).data;
+    const gameColor = (x, y, brightness, saturation) => {
+      const i = (y * finder.width + x) * 4;
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      return Math.max(r, g, b) > brightness && Math.max(r, g, b) - Math.min(r, g, b) > saturation;
+    };
+    for (const [brightness, saturation, topOffset] of [[36, 24, 0], [18, 9, -1]]) {
+      let best = null;
+      for (let y = 2; y < finder.height - 2; y++) {
+        let start = 0;
+        for (let x = 0; x <= finder.width; x++) {
+          if (x < finder.width && gameColor(x, y + 1, brightness, saturation) &&
+            !gameColor(x, y - 2, brightness, saturation)) continue;
+          const span = x - start;
+          const gameHeight = span * 1086 / 2346;
+          if (span >= 95 && y + gameHeight <= finder.height + 2 && (!best || span > best.span)) {
+            best = { x: start, y: y + topOffset, span, gameHeight };
+          }
+          start = x + 1;
+        }
+      }
+      if (best) {
+        const scale = width / finder.width;
+        return { x: best.x * scale, y: best.y * scale, width: best.span * scale,
+          height: Math.min(best.gameHeight * scale, height - best.y * scale) };
+      }
+    }
+    return Math.abs(width / height - 2346 / 1086) < .08 ? { x: 0, y: 0, width, height } : null;
+  }
+
+  function startAutomaticScan() {
+    beginCalibration();
+    const region = findGameRegion();
+    if (!region) return;
+    crop = region;
+    choosing = false;
+    scanSafely();
+  }
+
   calibrate.addEventListener("click", beginCalibration);
   video.addEventListener("draft-share-ready", () => {
     if (imageUrl) clearImage();
     file.value = "";
-    beginCalibration();
+    startAutomaticScan();
   });
 
   function clearImage() {
@@ -265,7 +316,7 @@
       if (imageUrl !== url) return;
       video.style.display = "none";
       image.hidden = false;
-      beginCalibration();
+      startAutomaticScan();
     } catch {
       if (imageUrl !== url) return;
       clearImage();

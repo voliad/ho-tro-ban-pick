@@ -138,15 +138,25 @@
   }
 
   function renderTeam(game, side, turn, hiddenDraft) {
+    const live = scannedDraft?.some(row => row.confirmed);
+    const scanSide = side === $("draft-perspective").value ? "blue" : "red";
     const team = rules.onSide(game, side);
     const active = turn?.side === side;
     const settings = state.settings;
     const hidePicks = hiddenDraft && Boolean(turn) && !active;
     const teamName = escapeHtml(nameOf(team));
     const committed = game.turns.filter(row => row.side === side);
-    const groups = hiddenDraft ? ["pick"] : ["ban", "pick"];
+    const groups = hiddenDraft && !live ? ["pick"] : ["ban", "pick"];
     const slots = groups.map(kind => {
-      const count = kind === "ban" && !isRank ? 4 : 5;
+      const count = kind === "ban" && !isRank && !live ? 4 : 5;
+      if (live) {
+        const rows = scannedDraft.filter(row => row.confirmed && row.side === scanSide && row.kind === kind);
+        const bySlot = new Map(rows.map(row => [row.index, row.id]));
+        return '<div class="slot-group ' + kind + '"><div class="slot-head"><h3>' +
+          (kind === "ban" ? "Lượt cấm" : "Lượt chọn") + '</h3><span>' + rows.length + '/' + count +
+          '</span></div><ol class="slot-list">' +
+          Array.from({ length: count }, (_, i) => slot(bySlot.get(i), i, false, false)).join("") + '</ol></div>';
+      }
       const ids = committed.filter(row => row.kind === kind).flatMap(row => row.ids);
       const concealed = hidePicks && kind === "pick" && ids.length > 0;
       const highlight = active && turn.kind === kind;
@@ -163,7 +173,7 @@
     $("team-" + side).innerHTML = '<div class="team-head' + (active ? " active-side" : "") +
       '"><div><span>Bên ' + sideLabel[side].toLowerCase() + '</span><h2>' + teamName +
       '</h2></div><span class="side-icon" aria-hidden="true"></span></div>' + slots +
-      '<p class="team-foot">' + (settings.mode === "global" ? used + " tướng đã dùng" : "Kho tướng theo từng ván") + '</p>';
+      '<p class="team-foot">' + (live ? "Tự điền từ vùng game" : settings.mode === "global" ? used + " tướng đã dùng" : "Kho tướng theo từng ván") + '</p>';
   }
 
   let featuredHeroes = new Map();
@@ -437,7 +447,8 @@
     const number = state.games.length;
     const settings = state.settings;
     const score = rules.score(state);
-    const turn = rules.activeTurn(state);
+    const live = scannedDraft?.some(row => row.confirmed);
+    const turn = live ? null : rules.activeTurn(state);
     const winner = rules.seriesWinner(state);
     const hidden = rules.isBlind(settings, number);
     const blue = game.blue;
@@ -449,7 +460,7 @@
     $("score-blue").textContent = score[blue];
     $("score-red").textContent = score[red];
     $("game-label").textContent = "Ván " + number;
-    $("turn-label").textContent = winner ? nameOf(winner) + " thắng series" :
+    $("turn-label").textContent = live ? "Tự điền từ ảnh hoặc màn hình" : winner ? nameOf(winner) + " thắng series" :
       turn ? sideLabel[turn.side] + (hidden ? " chọn ẩn" : " " + actionLabel[turn.kind] + " tướng") : "Draft đã hoàn tất";
     $("turn-label").dataset.side = turn?.side ?? "";
     $("games").innerHTML = Array.from({ length: settings.format }, (_, i) => {
@@ -465,22 +476,23 @@
     renderCounters(game, turn, hidden);
     renderRoster(turn);
 
-    $("pool-note").textContent = turn
+    $("pool-note").textContent = live ? "Bàn đang hiển thị các ô đã xác nhận từ vùng game." : turn
       ? (hidden ? "Chọn đủ 5 tướng. Đội hình được mở khi hai bên đã chốt." :
         "Tướng đã cấm hoặc đã chọn trong ván được khóa trong kho.")
       : "Xem lại các lượt trong Lịch sử.";
-    $("selection").textContent = selection.length
+    $("selection").textContent = live ? "Dừng chia sẻ hoặc bỏ ảnh để quay lại bàn thủ công." : selection.length
       ? selection.map(nameFor).join(", ")
       : turn ? "Chọn " + turn.count + " tướng từ kho" : winner ? "Series đã kết thúc" : "Chờ ghi kết quả ván";
-    $("commit").textContent = turn ? (hidden ? "Chốt đội hình" :
+    $("commit").textContent = live ? "Đang tự điền" : turn ? (hidden ? "Chốt đội hình" :
       isRank && turn.kind === "ban" && turn.count > 1 ? "Chốt " + turn.count + " tướng cấm" :
         "Xác nhận " + actionLabel[turn.kind]) : "Ghi kết quả";
-    $("commit").disabled = winner !== null || Boolean(turn && selection.length !== turn.count);
+    $("commit").disabled = Boolean(live) || winner !== null || Boolean(turn && selection.length !== turn.count);
     $("skip-draft").hidden = turn?.kind !== "ban";
-    $("undo").disabled = !(selection.length || number > 1 || game.turns.length || game.winner || game.draftSkipped || game.skipBansFrom !== undefined);
+    $("undo").disabled = Boolean(live) || !(selection.length || number > 1 || game.turns.length || game.winner || game.draftSkipped || game.skipBansFrom !== undefined);
     $("undo").textContent = selection.length ? "Bỏ chọn" : game.winner || !game.draftSkipped && game.skipBansFrom === undefined && !game.turns.length && number > 1 ? "Hoàn tác kết quả" : "Hoàn tác";
     $("timer-toggle").disabled = !turn;
     positionControl();
+    if (live) $("swap").disabled = true;
     renderClock();
   }
 
@@ -515,6 +527,7 @@
   }
 
   function chooseHero(id) {
+    if (scannedDraft?.some(row => row.confirmed)) return;
     const turn = rules.activeTurn(state);
     if (!turn || !heroesById.has(id)) return;
     const reason = rules.eligibility(state, turn, true)(id);
@@ -863,6 +876,7 @@
   }
   perspective.addEventListener("change", () => {
     applyPerspective(perspective.value);
+    if (scannedDraft) renderDraft();
     try { localStorage.setItem(perspectiveKey, perspective.value); } catch {}
   });
   restore();
