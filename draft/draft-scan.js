@@ -193,7 +193,7 @@
         }
       }
       message = now - lastFrameChange > 3500
-        ? "Hình chưa thay đổi. Nếu vẫn thấy Safari, hãy kiểm tra quyền chia sẻ toàn màn hình khi mở Liên Quân."
+        ? "Khung hình chưa đổi. Hãy chờ màn hình cấm/chọn nếu bạn đang ở sảnh."
         : video.readyState < 2 ? "Đã kết nối · Đang chờ hình."
         : lastGameEvidence && now - lastGameEvidence < 2000 ? "Đang quét màn hình cấm/chọn."
         : "Đang nhận hình · Chờ giao diện cấm/chọn Liên Quân.";

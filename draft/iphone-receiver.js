@@ -15,6 +15,7 @@
     if (previous) {
       clearTimeout(previous.timer);
       clearTimeout(previous.reconnect);
+      clearInterval(previous.watch);
       previous.peer.destroy();
       if (previous.stream) window.DRAFT_SCREEN.clear(previous.stream);
     }
@@ -53,11 +54,21 @@
       invite.hidden = false;
       if (!current.call) status.textContent = "Đang chờ iPhone phát màn hình.";
     });
+    peer.on("connection", channel => {
+      if (room !== current || channel.peer !== sender) {
+        channel.close();
+        return;
+      }
+      current.channel?.close();
+      current.channel = channel;
+    });
+
     peer.on("call", call => {
       if (room !== current || call.peer !== sender) {
         call.close();
         return;
       }
+      clearInterval(current.watch);
       const previousCall = current.call;
       current.call = call;
       if (current.stream) {
@@ -70,6 +81,7 @@
       const waitForReconnect = () => {
         if (room !== current || current.call !== call) return;
         current.call = null;
+        clearInterval(current.watch);
         clearTimeout(current.timer);
         const stream = current.stream;
         current.stream = null;
@@ -88,6 +100,30 @@
           if (room !== current || current.call !== call) return;
           clearTimeout(current.timer);
           status.textContent = "Đã nhận màn hình iPhone.";
+          const video = $("airplay-preview");
+          const frameProgress = () => video?.getVideoPlaybackQuality?.().totalVideoFrames || video?.currentTime;
+          let frameTime = frameProgress();
+          let lastFrame = performance.now();
+          let lastRequest = 0;
+          current.watch = setInterval(() => {
+            if (room !== current || current.call !== call || document.hidden || !video || video.srcObject !== stream) return;
+            const now = performance.now();
+            const progress = frameProgress();
+            if (progress !== frameTime) {
+              frameTime = progress;
+              lastFrame = now;
+              lastRequest = 0;
+              if (status.textContent !== "Đã nhận màn hình iPhone.") status.textContent = "Đã nhận màn hình iPhone.";
+            } else if (now - lastFrame > 6000) {
+              status.textContent = "Chưa nhận được khung hình mới từ iPhone.";
+              if (video.paused) video.play().catch(() => {});
+              if (current.channel?.open && (!lastRequest || now - lastRequest > 15000)) {
+                lastRequest = now;
+                status.textContent = "Luồng video đứng. Đang yêu cầu iPhone gửi lại hình…";
+                current.channel.send({ type: "restart-video" });
+              }
+            }
+          }, 1000);
         } catch {
           waitForReconnect();
         }
