@@ -348,7 +348,7 @@
     "Đường giữa": { lorion: ["liliana"], liliana: ["veera"] },
     "Xạ thủ": {
       flowborn: ["elandorr", "elsu"],
-      "11596": ["stuart"],
+      "11596": ["flowborn", "stuart"],
       murad: ["elandorr"],
       stuart: ["bolt-baron"],
       telannas: ["violet"],
@@ -363,6 +363,7 @@
     { hero: "elandorr", lane: "Đi rừng", ally: "dyadia" },
     { hero: "bright", lane: "Xạ thủ", ally: "zip" },
     { hero: "stuart", lane: "Xạ thủ", ally: "dolia" },
+    { hero: "11596", lane: "Xạ thủ", ally: "bijan" },
   ];
 
   // Symbols confirmed against the official item icons. These are separate from draft's situational advice.
