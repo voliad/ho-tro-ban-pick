@@ -105,7 +105,10 @@
         if (stream) window.DRAFT_SCREEN.clear(stream);
         call.close();
         if (!current.captureEnded) status.textContent = "Mất tín hiệu video. Đang chờ iPhone tự kết nối lại…";
-        current.timer = setTimeout(() => close("Chưa khôi phục được hình. Hãy mở kết nối mới."), 90000);
+        current.timer = setTimeout(() => {
+          invite.hidden = false;
+          status.textContent = "Phòng vẫn mở. Bấm Phát màn hình trên iPhone hoặc mở lại liên kết này.";
+        }, 90000);
       };
       current.timer = setTimeout(waitForReconnect, 25000);
       status.textContent = "Đã ghép nối. Đang chờ hình từ iPhone…";
@@ -179,5 +182,5 @@
       if (room === current) status.textContent = "Chưa sao chép được liên kết. Bạn có thể dùng mã QR.";
     }
   });
-  window.addEventListener("pagehide", () => close());
+  window.addEventListener("pagehide", event => { if (!event.persisted) close(); });
 })();

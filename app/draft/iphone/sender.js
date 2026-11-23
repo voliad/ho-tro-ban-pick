@@ -54,8 +54,17 @@
   function retryCall(adapt = true) {
     if (ended || retry) return;
     if (!recoveryDeadline) recoveryDeadline = Date.now() + 85000;
-    if (Date.now() >= recoveryDeadline || peer.destroyed) {
-      finish("Chưa khôi phục được kết nối. Hãy mở mã QR mới.");
+    if (peer.destroyed) {
+      finish("Dịch vụ ghép đôi đã đóng. Hãy mở lại liên kết ghép đôi.");
+      return;
+    }
+    if (Date.now() >= recoveryDeadline) {
+      clearTimeout(connecting);
+      const previous = call;
+      call = null;
+      previous?.close();
+      start.disabled = false;
+      status.textContent = "Đã tạm dừng thử lại. Bấm Phát màn hình để khôi phục trong cùng phòng.";
       return;
     }
     const now = Date.now();
@@ -162,7 +171,15 @@
 
   let requesting = false;
   start.addEventListener("click", async () => {
-    if (ended || requesting || capture) return;
+    if (ended || requesting) return;
+    if (capture) {
+      start.disabled = true;
+      recoveryDeadline = 0;
+      failures = 0;
+      if (peer.disconnected) peer.reconnect();
+      else connect();
+      return;
+    }
     requesting = true;
     start.disabled = true;
     status.textContent = "Đang chờ cấp quyền chia sẻ màn hình…";
@@ -209,9 +226,17 @@
     }
   });
 
-  window.addEventListener("online", () => {
-    if (!ended && peer.disconnected) peer.reconnect();
+  function resumeConnection() {
+    if (ended || retry || !start.disabled) return;
+    if (peer.disconnected) peer.reconnect();
+    else if (capture && !call) connect();
+  }
+
+  window.addEventListener("online", resumeConnection);
+  window.addEventListener("pageshow", resumeConnection);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) resumeConnection();
   });
   stop.addEventListener("click", () => finish("Đã dừng phát màn hình."));
-  window.addEventListener("pagehide", () => finish(""));
+  window.addEventListener("pagehide", event => { if (!event.persisted) finish(""); });
 })();
