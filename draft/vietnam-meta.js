@@ -383,6 +383,8 @@
     },
     "Đi rừng": {
       "11596": ["Chùy băng sương"],
+      billow: ["Liềm Đoạt Mệnh"],
+      paine: ["Vương miện Hecate"],
       tamyn: ["Thương Longinus"],
       volkath: ["Liềm Đoạt Mệnh"],
       murad: ["Thương Longinus"],
@@ -390,6 +392,8 @@
       enzo: ["Thương Longinus"],
     },
     "Đường giữa": {
+      alice: ["Mặt nạ Berith"],
+      bonnie: ["Mặt nạ Berith"],
       lorion: ["Mặt nạ Berith"],
       liliana: ["Trượng bùng nổ"],
       evita: ["Mặt nạ Berith"],
@@ -486,7 +490,7 @@
       .map(([id, [, ...traits]]) => [id, traits.map(trait => labels[trait])])),
   ]));
 
-  const enchantments = { "Đường giữa": { yue: ["Sung mãn"] } };
+  const enchantments = { "Đường giữa": { yue: ["Sung mãn"], alice: ["Sung mãn"] } };
 
   window.DRAFT_VIETNAM_META = { source, cards, ratingFor, tierFor, counters, nemeses, risks, partners, profiles, equipment, deltas, priorities, enchantments };
 })();
