@@ -8,6 +8,8 @@
   const clear = $("scan-clear");
   const calibrate = $("scan-calibrate");
   const output = $("scan-results");
+  const ocr = $("scan-ocr");
+  const ocrStatus = $("scan-ocr-status");
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 8;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -38,6 +40,9 @@
   let scannedPortraitCount = -1;
   let lastVideoTime = -1;
   let elapsed = 0;
+  let slots = [];
+  let textMatches = new Map();
+  let readingText = false;
   let loadingPortraits = false;
   let imageUrl;
   const source = () => imageUrl ? image : video;
@@ -108,6 +113,7 @@
     }
     frameContext.drawImage(source(), crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
     const rows = [];
+    slots = [];
     let locks = 0;
     for (const side of colors) {
       const left = side === "blue";
@@ -132,7 +138,12 @@
         const y = 320 + index * 144.5;
         const glow = shining(side, y);
         const pickX = left ? (glow ? 530 : 500) : (glow ? 2338 : 2368);
-        const pick = identify([sample(pickX, y, 65), sample(pickX + 3, y + 2, 65)], references.picks);
+        const portrait = sample(pickX, y, 65);
+        const slot = side + "|" + index;
+        const fallback = textMatches.get(slot);
+        const textId = fallback && squaredDistance(fallback.portrait, portrait) < 13 ** 2 * 192 ? fallback.id : null;
+        const pick = identify([portrait, sample(pickX + 3, y + 2, 65)], references.picks) ?? textId;
+        slots.push({ side, index, portrait });
         if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow });
       }
     }
@@ -148,6 +159,7 @@
     }
     previous = next;
     elapsed = Math.round(performance.now() - started);
+    ocr.disabled = readingText;
     const key = JSON.stringify([locks, stable]);
     if (key === signature) return;
     signature = key;
@@ -177,6 +189,10 @@
     crop = corner = null;
     choosing = false;
     previous.clear();
+    slots = [];
+    textMatches.clear();
+    ocr.disabled = true;
+    ocrStatus.textContent = "";
     signature = "";
     scannedPortraitCount = lastVideoTime = -1;
     scanEvent(null);
@@ -285,11 +301,35 @@
 
   video.addEventListener("click", selectCorner);
   image.addEventListener("click", selectCorner);
+  ocr.addEventListener("click", async () => {
+    if (!crop || readingText || !slots.length) return;
+    const region = crop;
+    readingText = true;
+    ocr.disabled = true;
+    ocrStatus.textContent = "Đang đọc chữ. Lần đầu có thể cần tải mô hình.";
+    try {
+      const matches = await window.DRAFT_OCR.read(frame, slots);
+      if (crop !== region) return;
+      textMatches = new Map(matches.map(row => [row.side + "|" + row.index, row]));
+      scannedPortraitCount = lastVideoTime = -1;
+      scanSafely();
+      ocrStatus.textContent = matches.length
+        ? "AI đọc được " + matches.length + " tên. Trạng thái cấm/chọn vẫn được kiểm tra riêng."
+        : "AI chưa đọc rõ tên tướng trong các ô đội hình.";
+    } catch (error) {
+      console.warn("Draft OCR:", error);
+      if (crop === region) ocrStatus.textContent = "Không tải hoặc chạy được mô hình đọc chữ. Hãy thử lại.";
+    } finally {
+      readingText = false;
+      ocr.disabled = !crop || !slots.length;
+    }
+  });
 
   function scanSafely() {
     try {
       scan();
-    } catch {
+    } catch (error) {
+      console.warn("Draft frame scan:", error);
       resetScan();
       output.textContent = "Không đọc được khung hình. Hãy chọn lại vùng game.";
     }
