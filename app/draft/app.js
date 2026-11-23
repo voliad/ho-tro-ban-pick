@@ -278,14 +278,24 @@
       score === best && !(mask & (1 << index)))).map(([key]) => key);
   }
 
+  let scannedDraft = null;
+  document.addEventListener("draft-scan", event => {
+    scannedDraft = event.detail;
+    renderDraft();
+  });
+
   function renderCounters(game, turn, hidden) {
     const expanded = $("counter-results").querySelector("details")?.open;
     const selectedTarget = $("counter-target").value;
-    const active = turn?.kind === "pick";
-    const opponents = new Set(!turn || hidden ? [] : game.turns
+    const scanned = scannedDraft !== null;
+    const observed = (scannedDraft ?? []).filter(row => row.confirmed);
+    const observedPicks = side => [...new Set(observed.filter(row => row.kind === "pick" && row.side === side).map(row => row.id))];
+    const active = scanned ? observed.some(row => row.kind === "pick") : turn?.kind === "pick";
+    const opponents = new Set(scanned ? observedPicks("red") : !turn || hidden ? [] : game.turns
       .filter(entry => entry.kind === "pick" && entry.side !== turn.side).flatMap(entry => entry.ids));
     const rows = counterRows.filter(row => selectedTarget ? row.key === selectedTarget : opponents.has(row.target));
-    const reason = rules.eligibility(state, turn, true);
+    const unavailableIds = new Set(observed.map(row => rules.heroKey(state.settings, row.id)));
+    const reason = scanned ? id => unavailableIds.has(rules.heroKey(state.settings, id)) : rules.eligibility(state, turn, true);
     const candidates = new Map();
     for (const row of rows) {
       for (const [index, ids] of row.pairs.entries()) {
@@ -312,7 +322,7 @@
         entry.verified.delete(target);
       }
     }
-    const picks = active ? game.turns.filter(row => row.kind === "pick" && row.side === turn.side)
+    const picks = scanned ? observedPicks("blue") : active ? game.turns.filter(row => row.kind === "pick" && row.side === turn.side)
       .flatMap(row => row.ids) : [];
     const needed = active ? (lane ? [lane] : picks.length ? missingLanes(picks) : []) : [];
     const fits = (id, position) => lanePools[position].main.has(id) || lanePools[position].extra.has(id);
@@ -378,7 +388,7 @@
       return '<span class="' + level + '" title="' + escapeHtml(labels.join(", ")) + '">' +
         escapeHtml(nameFor(target)) + (threat ? ' · ' + tierLabel(threat) + ' ' + threat.lane : "") + '</span>';
     }).join(", ");
-    featuredHeroes = new Map(active ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
+    featuredHeroes = new Map(active && !scanned ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
     const cards = recommendations.map((entry, index) => {
       const { id, good, bad, mixed, tier, fitLanes } = entry;
       const synergy = combosByHero.get(id);
@@ -400,13 +410,13 @@
           '<span>' + escapeHtml(row.tips[id]) + '</span>').join("") +
         (bad.size ? '<span class="counter-risk">Bất lợi trước ' + riskDetails(entry) + '</span>' : "") +
         (mixed.size ? '<span class="counter-risk">Kèo trái chiều với ' + escapeHtml(evidence(mixed)) + '</span>' : "") + '</span>';
-      return active ? '<button type="button" class="' + cardClass + '" data-counter-pick="' + id +
+      return active && !scanned ? '<button type="button" class="' + cardClass + '" data-counter-pick="' + id +
         '" aria-pressed="' + selection.includes(id) + '">' + body +
         '<span class="counter-action">' + (selection.includes(id) ? "Đã chọn" : "Chọn") + '</span></button>' :
         '<div class="' + cardClass + '">' + body + '</div>';
     });
     const status = needed.length ? (lane ? "Đang lọc theo " : "Vị trí đội hình có thể còn thiếu: ") +
-      needed.map(position => lanePools[position].label).join(", ") : selectedTarget ? "Tra cứu kèo đã chọn" :
+      needed.map(position => lanePools[position].label).join(", ") : scanned ? "Nhận diện từ màn hình · bên trái là đội bạn" : selectedTarget ? "Tra cứu kèo đã chọn" :
       combosByHero.size && !opponents.size ? "Gợi ý phối hợp với tướng đồng đội đã chốt" : turn && opponents.size ?
       "Gợi ý cho bên " + sideLabel[turn.side].toLowerCase() + " đang thao tác" : "Chờ đối thủ chốt tướng để gợi ý tự động";
     const unavailable = needed.length ? "Hiện không có tướng khả dụng cho vị trí này." : rows.length ? "Hiện không có tướng khắc chế khả dụng." : opponents.size ?
