@@ -192,7 +192,7 @@
       ["caesar", "Tà Thần"], ["jungle", "Đi rừng"], ["mid", "Đường giữa"],
       ["dragon", "Đường Rồng"], ["support", "Trợ thủ"],
     ];
-    const { source, cards, ratingFor, nemeses, risks, partners, profiles, equipment, deltas, priorities } = window.DRAFT_VIETNAM_META;
+    const { source, cards, ratingFor, nemeses, risks, partners, profiles, equipment, deltas, priorities, enchantments } = window.DRAFT_VIETNAM_META;
     const heroes = new Map(boot.roster.map(hero => [hero.id, hero]));
     const heroName = id => [heroes.get(id)?.name, heroes.get(id)?.variant].filter(Boolean).join(" ");
     const listNames = ids => escape(ids.map(heroName).join(", "));
@@ -229,7 +229,8 @@
           escape(heroName(id)) + '</h2>' + line(ratingFor(score).tier, scoreText) + line("Ưu tiên trong bảng", priorities[position]?.[id]) +
           line("Lối chơi", escape(traits.join(" · "))) + line("Bị khắc chế bởi", listNames(threats)) +
           line("Khắc chế", listNames(favorable)) + line("Cần dè chừng", listNames(risky)) +
-          line("Phối hợp", listNames(allies)) + line("Trang bị nên có", escape(gear.join(", "))) + '</div></article>';
+          line("Phối hợp", listNames(allies)) + line("Trang bị nên có", escape(gear.join(", "))) +
+          line("Phù hiệu", escape((enchantments[position]?.[id] ?? []).join(", "))) + '</div></article>';
       }).join("") || empty("Không tìm thấy tướng ở đường này.");
     }
     function renderLane() {

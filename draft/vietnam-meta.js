@@ -301,14 +301,14 @@
       enzo: ["ybneth", "toro"],
       arthur: ["trieu-van", "maloch"],
       ybneth: ["baldum", "annette"],
-      krizzix: ["annette", "cresht"],
+      krizzix: ["annette", "chaugnar"],
       dolia: ["grakk", "enzo"],
       richter: ["florentino", "dyadia"],
       teemee: ["grakk", "annette"],
       zip: ["grakk", "baldum"],
       cresht: ["maloch", "trieu-van"],
       annette: ["grakk", "arduin"],
-      rouie: ["grakk"],
+      rouie: ["grakk", "thane"],
       arduin: ["maloch", "chaugnar"],
       grakk: ["chaugnar", "toro"],
       veres: ["gildur", "enzo"],
@@ -345,9 +345,10 @@
   const risks = {
     "Tà Thần": { marja: ["murad"], "bolt-baron": ["marja"] },
     "Đi rừng": {},
-    "Đường giữa": { lorion: ["liliana"], liliana: ["veera"] },
+    "Đường giữa": { lorion: ["liliana"], liliana: ["veera"], yue: ["gildur"] },
     "Xạ thủ": {
       flowborn: ["elandorr", "elsu"],
+      moren: ["fennik"],
       "11596": ["flowborn", "stuart"],
       murad: ["elandorr"],
       stuart: ["bolt-baron"],
@@ -357,6 +358,7 @@
   };
 
   const partners = [
+    { hero: "yue", lane: "Đường giữa", ally: "gildur" },
     { hero: "lorion", lane: "Đường giữa", ally: "dyadia" },
     { hero: "lauriel", lane: "Đường giữa", ally: "dyadia" },
     { hero: "elandorr", lane: "Xạ thủ", ally: "dyadia" },
@@ -369,6 +371,7 @@
   // Symbols confirmed against the official item icons. These are separate from draft's situational advice.
   const equipment = {
     "Tà Thần": {
+      "11596": ["Chùy băng sương"],
       murad: ["Thương Longinus"],
       marja: ["Thập Tự Kiếm"],
       florentino: ["Giáp Gaia", "Thương khung kiếm"],
@@ -379,6 +382,7 @@
       errol: ["Thương Longinus"],
     },
     "Đi rừng": {
+      "11596": ["Chùy băng sương"],
       tamyn: ["Thương Longinus"],
       volkath: ["Liềm Đoạt Mệnh"],
       murad: ["Thương Longinus"],
@@ -482,5 +486,7 @@
       .map(([id, [, ...traits]]) => [id, traits.map(trait => labels[trait])])),
   ]));
 
-  window.DRAFT_VIETNAM_META = { source, cards, ratingFor, tierFor, counters, nemeses, risks, partners, profiles, equipment, deltas, priorities };
+  const enchantments = { "Đường giữa": { yue: ["Sung mãn"] } };
+
+  window.DRAFT_VIETNAM_META = { source, cards, ratingFor, tierFor, counters, nemeses, risks, partners, profiles, equipment, deltas, priorities, enchantments };
 })();
