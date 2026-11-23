@@ -3,6 +3,9 @@
 
   const $ = id => document.getElementById(id);
   const video = $("airplay-preview");
+  const image = $("scan-preview");
+  const file = $("scan-file");
+  const clear = $("scan-clear");
   const calibrate = $("scan-calibrate");
   const output = $("scan-results");
   const canvas = document.createElement("canvas");
@@ -19,7 +22,12 @@
   let choosing = false;
   let previous = new Map();
   let signature = "";
-  let references;
+  let references = samples;
+  let loadingPortraits = false;
+  let imageUrl;
+  const source = () => imageUrl ? image : video;
+  const dimensions = element => element === image
+    ? [image.naturalWidth, image.naturalHeight] : [video.videoWidth, video.videoHeight];
 
   function distance(a, b) {
     return Math.sqrt(a.reduce((sum, value, i) => sum + (value - b[i]) ** 2, 0) / a.length);
@@ -39,7 +47,7 @@
     // Coordinates refer to the game viewport in the supplied rank screenshots.
     const scaleX = crop.width / 2346;
     const scaleY = crop.height / 1086;
-    ctx.drawImage(video, crop.x + (x - 261 - width / 2) * scaleX,
+    ctx.drawImage(source(), crop.x + (x - 261 - width / 2) * scaleX,
       crop.y + (y - 88 - height / 2) * scaleY, width * scaleX, height * scaleY, 0, 0, 8, 8);
     return rgb();
   }
@@ -55,7 +63,7 @@
   }
 
   function scan() {
-    if (!crop || video.readyState < 2) return;
+    if (!crop || (imageUrl ? !image.naturalWidth : video.readyState < 2)) return;
     const rows = [];
     let locks = 0;
     for (const side of colors) {
@@ -85,20 +93,24 @@
       }
     }
     // Require the five locked ban slots on each side before treating clean pick rows as confirmed.
-    const visible = rows.filter(row => row.kind === "ban" || locks === 10).map(row =>
+    const visible = rows.filter(row => row.kind === "ban" || row.pending || locks === 10).map(row =>
       row.kind === "pick" ? { ...row, confirmed: !row.pending } : row);
     const next = new Map();
     const stable = [];
     for (const row of visible) {
       const key = [row.side, row.kind, row.index, row.id, row.confirmed].join("|");
       next.set(key, Math.min(2, (previous.get(key) ?? 0) + 1));
-      if (next.get(key) === 2) stable.push(row);
+      if (imageUrl || next.get(key) === 2) stable.push(row);
     }
     previous = next;
-    const key = JSON.stringify(stable);
+    const key = JSON.stringify([locks, stable]);
     if (key === signature) return;
     signature = key;
     output.replaceChildren();
+    const summary = document.createElement("p");
+    summary.textContent = "Biểu tượng khóa nhận diện được: " + locks + "/10." +
+      (locks < 10 ? " Chưa đủ dấu hiệu để xác nhận các lượt chọn." : "");
+    output.append(summary);
     for (const side of colors) {
       const items = stable.filter(row => row.side === side);
       if (!items.length) continue;
@@ -109,45 +121,95 @@
           : row.confirmed ? "Đã chốt" : "Đang nhá chọn") + ")").join(" · ");
       output.append(line);
     }
-    if (!stable.length) output.textContent = "Chưa đọc rõ ô tướng. Hãy kiểm tra vùng game đã chọn.";
+    if (!stable.length) output.append(crop.width < 800
+      ? "Chưa đọc rõ ô tướng. Vùng game chỉ rộng " + Math.round(crop.width) +
+        " px. Hãy phóng lớn game trước khi chụp hoặc chia sẻ."
+      : "Chưa đọc rõ ô tướng. Hãy kiểm tra vùng game đã chọn.");
     scanEvent(stable);
   }
 
-  calibrate.addEventListener("click", async () => {
-    if (!video.videoWidth) return;
-    const source = video.srcObject;
+  function resetScan() {
     crop = corner = null;
     choosing = false;
     previous.clear();
     signature = "";
     scanEvent(null);
-    output.textContent = "Đang chuẩn bị quét…";
-    if (!references) {
-      const loaded = await Promise.all(heroes.map(hero => new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-          const size = Math.min(img.width, img.height) * .65;
-          ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, 8, 8);
-          resolve([hero.id, rgb()]);
-        };
-        img.onerror = () => resolve(null);
-        img.src = hero.image;
-      })));
-      const portraits = loaded.filter(Boolean);
-      references = { bans: [...samples.bans, ...portraits], picks: [...samples.picks, ...portraits] };
+    output.textContent = "";
+  }
+
+  function loadPortraits() {
+    if (loadingPortraits) return;
+    loadingPortraits = true;
+    for (const hero of heroes) {
+      const img = new Image();
+      img.src = hero.image;
+      img.decode().then(() => {
+        const size = Math.min(img.width, img.height) * .65;
+        ctx.clearRect(0, 0, 8, 8);
+        ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, 8, 8);
+        const portrait = [hero.id, rgb()];
+        references.bans.push(portrait);
+        references.picks.push(portrait);
+      }).catch(() => {});
     }
-    if (video.srcObject !== source) return;
+  }
+
+  function beginCalibration() {
+    if (!dimensions(source())[0]) return;
+    resetScan();
     choosing = true;
     output.textContent = "Bấm góc trên bên trái của vùng game.";
+    loadPortraits();
+  }
+
+  calibrate.addEventListener("click", beginCalibration);
+
+  function clearImage() {
+    if (!imageUrl) return;
+    URL.revokeObjectURL(imageUrl);
+    imageUrl = null;
+    image.removeAttribute("src");
+    image.hidden = clear.hidden = true;
+    calibrate.disabled = !video.srcObject || !video.videoWidth;
+    video.style.removeProperty("display");
+    resetScan();
+  }
+
+  clear.addEventListener("click", () => {
+    clearImage();
+    file.value = "";
+  });
+  file.addEventListener("change", async () => {
+    const [selected] = file.files;
+    if (!selected) return;
+    clearImage();
+    resetScan();
+    const url = URL.createObjectURL(selected);
+    imageUrl = url;
+    image.src = url;
+    clear.hidden = false;
+    try {
+      await image.decode();
+      if (imageUrl !== url) return;
+      video.style.display = "none";
+      image.hidden = false;
+      beginCalibration();
+    } catch {
+      if (imageUrl !== url) return;
+      clearImage();
+      file.value = "";
+      output.textContent = "Không đọc được ảnh. Hãy thử ảnh PNG, JPEG hoặc WebP.";
+    }
   });
 
-  video.addEventListener("click", event => {
-    if (!choosing) return;
-    const box = video.getBoundingClientRect();
-    const scale = Math.min(box.width / video.videoWidth, box.height / video.videoHeight);
-    const x = (event.clientX - box.left - (box.width - video.videoWidth * scale) / 2) / scale;
-    const y = (event.clientY - box.top - (box.height - video.videoHeight * scale) / 2) / scale;
-    if (x < 0 || y < 0 || x > video.videoWidth || y > video.videoHeight) return;
+  function selectCorner(event) {
+    if (!choosing || source() !== event.currentTarget) return;
+    const box = source().getBoundingClientRect();
+    const [sourceWidth, sourceHeight] = dimensions(source());
+    const scale = Math.min(box.width / sourceWidth, box.height / sourceHeight);
+    const x = (event.clientX - box.left - (box.width - sourceWidth * scale) / 2) / scale;
+    const y = (event.clientY - box.top - (box.height - sourceHeight * scale) / 2) / scale;
+    if (x < 0 || y < 0 || x > sourceWidth || y > sourceHeight) return;
     if (!corner) {
       corner = { x, y };
       output.textContent = "Bấm góc dưới bên phải của vùng game.";
@@ -162,20 +224,18 @@
     crop = { ...corner, width, height };
     choosing = false;
     output.textContent = "Đang quét các ô cấm/chọn…";
-  });
+  }
+
+  video.addEventListener("click", selectCorner);
+  image.addEventListener("click", selectCorner);
 
   setInterval(() => {
-    if (video.srcObject) {
-      calibrate.disabled = !video.videoWidth;
+    if (imageUrl || video.srcObject) {
+      calibrate.disabled = !dimensions(source())[0];
       scan();
     } else if (!calibrate.disabled) {
       calibrate.disabled = true;
-      crop = corner = null;
-      choosing = false;
-      previous.clear();
-      signature = "";
-      output.textContent = "";
-      scanEvent(null);
+      resetScan();
     }
   }, 400);
 })();
