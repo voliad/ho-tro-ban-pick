@@ -178,7 +178,47 @@
     return $("page-content");
   }
 
+  function tierSources(region) {
+    return '<nav class="tier-sources" aria-label="Máy chủ">' +
+      '<a href="/ho-tro-ban-pick/tier-list/"' + (region === "th" ? ' aria-current="page"' : '') + '>Thái Lan · Qzadd</a>' +
+      '<a href="/ho-tro-ban-pick/tier-list/?region=vn"' + (region === "vn" ? ' aria-current="page"' : '') + '>Việt Nam · AOV Update VN</a></nav>';
+  }
+
+  function renderVietnamTier() {
+    const lanes = [
+      ["caesar", "Tà Thần"], ["jungle", "Đi rừng"], ["mid", "Đường giữa"],
+      ["dragon", "Đường Rồng"], ["support", "Trợ thủ"],
+    ];
+    const post = "https://www.facebook.com/aovupdatevn/posts/1146795281204264/";
+    let lane = lanes[0][0];
+    document.title = "Tier List Việt Nam | Hỗ trợ Ban Pick";
+    const container = layout("Tier List Việt Nam", "Beta 55.2 · 13/11/2026 · Cao Thủ 40 sao trở lên hoặc 1.400 điểm Đỉnh Cao");
+    container.innerHTML = tierSources("vn") +
+      '<section class="panel data-panel qz-board" aria-label="Xếp hạng máy chủ Việt Nam">' +
+      '<div class="qz-tools"><div id="vn-lanes"></div></div><div id="vn-chart"></div>' +
+      '<div class="qz-source"><p>Ở Tà Thần, AOV Update VN ghi nhận Biron, Ngộ Không và Bijan nổi lên bên cạnh nhóm tướng quen thuộc. ' +
+      'Ở đường giữa, bài viết lưu ý khả năng cấu rỉa, dồn sát thương hoặc khống chế của Evita, D’Arcy, Preyta và Erin, đồng thời nhắc đến rủi ro khi gặp sát thủ.</p>' +
+      '<div class="attack-sources"><a class="subtle-link" href="' + post + '">Bài gốc AOV Update VN</a></div></div></section>';
+    const tabs = $("vn-lanes");
+    function renderLane() {
+      tabs.innerHTML = toggleGroup(lanes, lane, "Đường thi đấu");
+      const label = lanes.find(([id]) => id === lane)[1];
+      $("vn-chart").innerHTML = '<a class="vn-tier-chart" href="/ho-tro-ban-pick/art/vn-beta-55-2/' + lane + '.jpg" target="_blank" rel="noopener">' +
+        '<img src="/ho-tro-ban-pick/art/vn-beta-55-2/' + lane + '.jpg" width="960" height="960" alt="Tier List Beta 55.2 · ' + label + '">' +
+        '<span>Mở ảnh bảng ' + label + ' để phóng to</span></a>';
+    }
+    tabs.addEventListener("click", event => {
+      const tab = event.target.closest("[data-filter]");
+      if (!tab || tab.dataset.filter === lane) return;
+      lane = tab.dataset.filter;
+      renderLane();
+      tabs.querySelector('[aria-pressed="true"]').focus({ preventScroll: true });
+    });
+    renderLane();
+  }
+
   function renderQzaddTier() {
+    if (new URLSearchParams(location.search).get("region") === "vn") return renderVietnamTier();
     const { board, order, source, changes, tierFor } = window.QZADD_TIERS;
     const pools = window.AOV_LANE_POOLS;
     const byId = new Map(boot.roster.map(hero => [hero.id, hero]));
@@ -195,7 +235,7 @@
     document.title = "Tier List Qzadd | Hỗ trợ Ban Pick";
     const container = layout("Tier List Qzadd",
       "Xếp hạng theo vị trí tại RoV Thái Lan · " + source.date);
-    container.innerHTML = '<section class="panel data-panel qz-board" aria-label="Bảng xếp hạng theo vị trí">' +
+    container.innerHTML = tierSources("th") + '<section class="panel data-panel qz-board" aria-label="Bảng xếp hạng theo vị trí">' +
       '<div class="qz-tools"><div id="qz-lanes"></div>' + search("qz-search", "Tìm tướng ở vị trí này…") +
       '</div><p class="qz-count" id="qz-count"></p><div class="qz-groups" id="qz-groups"></div>' +
       '<section id="qz-supplement" class="qz-supplement" aria-labelledby="qz-supplement-title" hidden></section>' +
