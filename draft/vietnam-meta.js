@@ -1,83 +1,485 @@
 (() => {
   "use strict";
 
-  // Legible ratings and matchup portraits in AOV Update VN, Beta 55.2 (13/11/2026).
-  const ratings = {
-    "Tà Thần": { murad: 6, marja: 6.1 },
-    "Đi rừng": { billow: 6.5, tamyn: 6.3, zephys: 6.1, "11596": 6.1 },
-    "Đường giữa": { lorion: 6, liliana: 6, darcy: 6, evita: 6 },
-    "Xạ thủ": { elandorr: 6, flowborn: 6.2, "11596": 6.4 },
-    "Trợ thủ": { dyadia: 6.5, enzo: 6, arthur: 6, ybneth: 6.1, krizzix: 6.4 },
-  };
-
-  const nemeses = {
-    dyadia: ["grakk", "enzo"],
-    dolia: ["grakk", "enzo"],
-    enzo: ["ybneth", "toro"],
-    krizzix: ["annette"],
-  };
-  const targets = new Set([...Object.keys(nemeses), ...Object.values(nemeses).flat()]);
-  const counters = [...targets].map(target => ({
-    lane: "Trợ thủ", target, key: "vn|" + target, source: "AOV Update VN", tips: {},
-    pairs: [nemeses[target] ?? [], Object.keys(nemeses).filter(id => nemeses[id].includes(target))],
-  }));
-
-  function tierFor(id, lanes = []) {
-    const qzadd = window.QZADD_TIERS;
-    const relevant = lanes.length ? lanes : Object.keys(ratings);
-    const entries = relevant.map(lane => {
-      const rating = ratings[lane]?.[id];
-      if (rating === undefined) return qzadd.tierFor(id, [lane]);
-      const tier = rating >= 6.5 ? "S" : "A";
-      return { lane, tier, rating, source: "AOV Update VN", weight: tier === "S" ? 0.5 : (rating - 6) };
-    });
-    return entries.filter(Boolean).reduce((best, entry) =>
-      !best || (entry.weight ?? -Infinity) > (best.weight ?? -Infinity) ? entry : best, null);
-  }
-
-  const risks = {
-    marja: { lane: "Tà Thần", opponents: ["murad"] },
-    lorion: { lane: "Đường giữa", opponents: ["liliana"] },
-    stuart: { lane: "Xạ thủ", opponents: ["bolt-baron"] },
-  };
-  const partners = [
-    { hero: "lorion", lane: "Đường giữa", ally: "dyadia" },
-    { hero: "elandorr", lane: "Xạ thủ", ally: "dyadia" },
-    { hero: "bright", lane: "Xạ thủ", ally: "zip" },
-  ];
-
-  // Each profile follows the card for this lane. The first field is its playstyle.
-  const profiles = {
+  // AOV Update VN, Beta 55.2, 13/11/2026. Each row is score, playstyle, then visible traits.
+  const cards = {
     "Tà Thần": {
-      murad: ["Cấu rỉa", "Không thể bị chọn làm mục tiêu"],
-      marja: ["DPS / tích cộng dồn", "Hồi máu", "Không thể bị chọn làm mục tiêu"],
+      murad: [6, "poke", "untargetable"],
+      marja: [6.1, "dps", "heal", "untargetable"],
+      biron: [6.4, "burst", "resistance"],
+      volkath: [5.8, "dps", "resistance", "trueDamage"],
+      airi: [5.5, "dps", "heal", "resistance"],
+      "11596": [5.6, "burst"],
+      "bolt-baron": [5.4, "dps"],
+      richter: [5.1, "control", "resistance", "trueDamage"],
+      zuka: [5.3, "burst"],
+      florentino: [5.1, "dps", "heal", "trueDamage"],
+      bijan: [5.4, "burst", "resistance"],
+      veres: [5.3, "control", "trueDamage", "heal"],
+      ryoma: [5, "burst"],
+      yena: [5.3, "burst", "resistance"],
+      qi: [5.2, "burst", "resistance"],
+      yan: [4.5, "dps", "heal"],
+      allain: [4.9, "dps", "untargetable", "trueDamage"],
+      "ngo-khong": [4.9, "burst", "invisible", "crit"],
+      heino: [4.5, "poke", "heal"],
+      kaine: [4.8, "burst", "invisible", "untargetable"],
+      "lu-bo": [4.4, "dps", "heal"],
+      amily: [4.3, "burst"],
+      maloch: [4.4, "dps", "trueDamage"],
+      skud: [4.7, "buffTank"],
+      omen: [4.9, "dps", "resistance", "trueDamage"],
+      taara: [5.1, "buffTank", "heal"],
+      roxie: [3.9, "control", "percentHp", "heal"],
+      kilgroth: [4.2, "dps", "heal"],
+      dextra: [4.4, "dps", "resistance"],
+      wiro: [4.9, "control", "resistance"],
+      errol: [4.9, "dps", "heal", "untargetable"],
+      charlotte: [4.7, "dps", "resistance"],
+      arthur: [4.8, "dps", "heal"],
     },
     "Đi rừng": {
-      billow: ["Sốc sát thương"],
-      tamyn: ["DPS / tích cộng dồn", "Hồi máu"],
-      zephys: ["Sốc sát thương", "Kháng cao"],
+      billow: [6.5, "burst"],
+      tamyn: [6.3, "dps", "heal"],
+      zephys: [6.1, "burst", "resistance"],
+      "11596": [6.1, "burst"],
+      "trieu-van": [5.8, "burst", "trueDamage"],
+      butterfly: [5.7, "burst", "resistance", "heal"],
+      volkath: [5.7, "dps", "resistance", "trueDamage"],
+      murad: [5.6, "poke", "untargetable"],
+      zuka: [5.7, "burst"],
+      tachi: [5.5, "dps", "resistance", "trueDamage"],
+      keera: [5.7, "burst", "untargetable"],
+      nakroth: [5.7],
+      sinestrea: [5.6, "burst", "invisible", "heal"],
+      astrid: [5.5, "dps", "crit"],
+      quillen: [5.2, "burst", "invisible", "crit"],
+      darcy: [5.4, "burst", "resistance"],
+      "ngo-khong": [5.1, "burst", "invisible", "crit"],
+      elandorr: [5.2, "dps", "crit"],
+      rourke: [5, "burst", "resistance"],
+      paine: [5.3, "burst", "resistance"],
+      aoi: [5.2, "burst", "untargetable"],
+      enzo: [4.8, "control"],
+      tulen: [4.8, "burst"],
+      kriknak: [4.6, "burst"],
+      yan: [4.9, "dps", "resistance", "heal"],
+      "wonder-woman": [4.9, "dps", "resistance", "percentHp"],
+      ryoma: [5, "burst"],
+      zill: [5.1, "burst", "untargetable"],
+      dextra: [4.3, "burst", "resistance"],
+      "lu-bo": [4.4, "dps", "heal"],
     },
     "Đường giữa": {
-      lorion: ["Khống chế", "Hồi máu"],
-      liliana: ["Cấu rỉa"],
-      darcy: ["Khống chế", "Kháng cao"],
-      evita: ["Cấu rỉa"],
-    },
-    "Trợ thủ": {
-      dyadia: ["Cấu rỉa", "Lộ diện", "Hồi máu"],
-      enzo: ["Khống chế"],
-      arthur: ["Khống chế"],
-      ybneth: ["Khống chế", "Hồi máu", "Sát thương theo % máu"],
-      krizzix: ["Khống chế", "Lộ diện", "Tàng hình"],
+      lorion: [6, "control", "heal"],
+      liliana: [6, "poke"],
+      darcy: [6, "control", "resistance"],
+      evita: [6, "poke"],
+      zata: [5.8, "burst", "untargetable"],
+      iggy: [5.6, "poke", "reveal"],
+      yue: [5.8, "poke"],
+      preyta: [5.8, "burst"],
+      erin: [5.9, "poke"],
+      ignis: [5, "poke"],
+      ilumia: [5, "control", "reveal"],
+      bonnie: [5, "poke"],
+      "flowborn-2": [5, "poke"],
+      dirak: [5.1, "dps", "resistance"],
+      goverra: [5.3, "poke"],
+      raz: [5, "burst"],
+      azzenka: [5.2, "poke"],
+      veera: [4.5, "burst"],
+      aleister: [4.7, "control"],
+      heino: [4.7, "poke", "heal"],
+      "the-flash": [4.5, "burst", "untargetable"],
+      kahlii: [4.8, "poke"],
+      mganga: [4.5, "poke", "heal"],
+      rouie: [4.8, "poke"],
+      jinna: [4.2, "dps", "resistance"],
+      lauriel: [4.9, "dps", "untargetable", "trueDamage"],
+      natalya: [4.8, "burst"],
+      krixi: [4.9, "burst"],
+      "dieu-thuyen": [4.9, "control", "resistance", "reveal"],
+      gildur: [4.5, "poke"],
+      annette: [4.7, "poke", "untargetable"],
+      alice: [4.8, "poke", "reveal"],
+      sephera: [4.4, "poke", "heal", "untargetable"],
+      tulen: [4.9, "burst"],
+      ishar: [3.9, "control", "percentHp"],
     },
     "Xạ thủ": {
-      elandorr: ["DPS / tích cộng dồn", "Chí mạng", "Thuần đánh tay", "Lối tốc đánh"],
-      flowborn: ["Cấu rỉa", "Chí mạng", "Lối tốc đánh"],
-      "11596": ["Sốc sát thương"],
-      hayate: ["Cấu rỉa", "Sát thương chuẩn"],
-      elsu: ["Sốc sát thương", "Lộ diện", "Chí mạng", "Kháng cao"],
+      elandorr: [6, "dps", "crit", "normalAttack", "attackSpeed"],
+      flowborn: [6.2, "poke", "crit", "attackSpeed"],
+      "11596": [6.4, "burst"],
+      violet: [5.5, "poke", "crit"],
+      moren: [5.5, "poke"],
+      fennik: [5.5, "burst", "untargetable", "reveal"],
+      "bolt-baron": [5.7, "dps"],
+      wisp: [5.5, "dps", "crit", "reveal", "normalAttack", "attackSpeed"],
+      murad: [5.6, "poke", "untargetable"],
+      preyta: [5.9, "poke"],
+      hayate: [5.3, "poke", "trueDamage"],
+      capheny: [5.2, "dps", "crit", "normalAttack", "attackSpeed"],
+      thorne: [5.1, "dps", "crit", "trueDamage", "normalAttack", "attackSpeed"],
+      slimz: [5.2, "control", "crit", "normalAttack", "attackSpeed"],
+      elsu: [5, "poke", "invisible", "reveal"],
+      stuart: [5.3, "burst", "resistance"],
+      erin: [5.2, "poke"],
+      celica: [4.8, "dps", "crit", "reveal", "normalAttack", "attackSpeed"],
+      lindis: [4.6, "burst", "crit", "reveal", "normalAttack"],
+      yorn: [4.9, "poke", "crit", "reveal", "normalAttack", "attackSpeed"],
+      bright: [4.8, "burst", "resistance", "crit", "reveal", "normalAttack"],
+      laville: [4.6, "dps", "crit", "normalAttack", "attackSpeed"],
+      valhein: [4.8, "dps", "crit", "normalAttack", "attackSpeed"],
+      telannas: [4.9, "dps", "crit", "reveal", "normalAttack", "attackSpeed"],
+      teeri: [4.2, "dps", "crit", "normalAttack", "attackSpeed"],
+    },
+    "Trợ thủ": {
+      dyadia: [6.5, "poke", "reveal", "heal"],
+      enzo: [6, "control"],
+      arthur: [6, "control"],
+      ybneth: [6.1, "control", "heal", "percentHp"],
+      krizzix: [6.4, "control", "reveal", "invisible"],
+      dolia: [5.5, "buffTank", "heal"],
+      richter: [5.5, "control", "resistance", "trueDamage"],
+      teemee: [5.8, "buffTank"],
+      zip: [5.5, "buffTank"],
+      cresht: [5.7, "buffTank"],
+      annette: [5.5, "poke", "untargetable"],
+      rouie: [5.7, "poke"],
+      arduin: [5.3, "control"],
+      grakk: [5, "control"],
+      veres: [5.4, "control", "trueDamage", "heal"],
+      omega: [5.8, "control", "resistance", "percentHp"],
+      volkath: [5.5, "dps", "resistance", "trueDamage"],
+      toro: [5.6, "control", "percentHp"],
+      aya: [5.4, "buffTank", "reveal"],
+      mina: [5.4, "control", "percentHp", "trueDamage"],
+      maloch: [5, "poke", "trueDamage"],
+      thane: [5.2, "control", "resistance", "percentHp", "trueDamage"],
+      lumburr: [5.1, "control"],
+      alice: [5.1, "poke"],
+      ata: [5, "control", "percentHp", "heal"],
+      xeniel: [4.9, "buffTank", "percentHp"],
+      chaugnar: [4.9, "buffTank"],
+      "dieu-thuyen": [4.7, "control", "reveal"],
+      wiro: [4.8, "control", "resistance"],
+      aleister: [4.8, "control", "trueDamage"],
+      arum: [4.6, "control", "heal"],
+      tachi: [5.4, "poke", "heal", "trueDamage"],
+      superman: [4.4, "control", "percentHp"],
+      max: [4.4, "dps", "trueDamage", "reveal"],
+      sephera: [4.4, "poke", "heal", "untargetable"],
+      ming: [4.6, "buffTank", "heal", "trueDamage", "reveal"],
+      ilumia: [4.9, "control", "reveal"],
+      ormarr: [4.9, "control", "percentHp"],
+      baldum: [5.3, "control", "percentHp"],
+      gildur: [4.6, "poke"],
+      helen: [4.9, "buffTank", "heal"],
+      roxie: [3.9, "control", "percentHp"],
     },
   };
 
-  window.DRAFT_VIETNAM_META = { tierFor, counters, risks, partners, profiles };
+  const labels = {
+    burst: "Sốc sát thương",
+    poke: "Cấu rỉa",
+    buffTank: "Hỗ trợ / chống chịu",
+    control: "Khống chế",
+    dps: "DPS / tích cộng dồn",
+    reveal: "Lộ diện",
+    crit: "Chí mạng",
+    heal: "Hồi máu",
+    untargetable: "Không thể bị chọn làm mục tiêu",
+    trueDamage: "Sát thương chuẩn",
+    percentHp: "Sát thương theo % máu",
+    resistance: "Kháng cao",
+    invisible: "Tàng hình",
+    normalAttack: "Thuần đánh tay",
+    attackSpeed: "Lối tốc đánh",
+  };
+
+  // Purple portraits point from the listed hero to that hero's nemeses.
+  const nemeses = {
+    "Tà Thần": {
+      murad: ["biron", "omen"],
+      marja: ["qi"],
+      biron: ["volkath", "florentino"],
+      volkath: ["marja"],
+      airi: ["omen"],
+      "11596": ["florentino", "marja"],
+      richter: ["marja"],
+      florentino: ["murad", "ryoma"],
+      bijan: ["marja", "omen"],
+      veres: ["marja", "florentino"],
+      ryoma: ["marja", "omen"],
+      qi: ["florentino"],
+      yan: ["murad", "omen"],
+      allain: ["florentino", "murad"],
+      "lu-bo": ["marja", "florentino"],
+      maloch: ["marja"],
+      omen: ["kilgroth", "trieu-van"],
+      roxie: ["florentino", "marja"],
+      errol: ["marja", "florentino"],
+      charlotte: ["marja", "volkath"],
+      arthur: ["marja", "florentino"],
+    },
+    "Đi rừng": {
+      billow: ["zephys"],
+      tamyn: ["zephys", "butterfly"],
+      zephys: ["keera", "elandorr"],
+      "11596": ["keera", "marja"],
+      "trieu-van": ["murad", "keera"],
+      butterfly: ["enzo", "keera"],
+      volkath: ["zuka", "keera"],
+      murad: ["ngo-khong"],
+      nakroth: ["sinestrea", "keera"],
+      keera: ["ngo-khong"],
+      sinestrea: ["ngo-khong", "fennik"],
+      astrid: ["zephys", "keera"],
+      darcy: ["billow", "keera"],
+      "ngo-khong": ["rourke"],
+      elandorr: ["ngo-khong"],
+      rourke: ["keera", "zephys"],
+      paine: ["rourke"],
+      ryoma: ["billow", "ngo-khong"],
+      enzo: ["keera"],
+      tulen: ["ngo-khong"],
+      yan: ["keera", "florentino"],
+      dextra: ["tachi"],
+      "lu-bo": ["murad", "keera"],
+    },
+    "Đường giữa": {
+      lorion: ["lauriel"],
+      liliana: ["raz"],
+      darcy: ["sephera", "lauriel"],
+      evita: ["zata"],
+      zata: ["dirak", "veera"],
+      iggy: ["zata"],
+      preyta: ["zata", "lauriel"],
+      erin: ["liliana", "darcy"],
+      ignis: ["iggy", "lauriel"],
+      ilumia: ["azzenka"],
+      bonnie: ["lorion", "zata"],
+      "flowborn-2": ["lorion", "zata"],
+      goverra: ["lorion", "lauriel"],
+      raz: ["veera"],
+      azzenka: ["liliana", "lauriel"],
+      veera: ["dirak", "lauriel"],
+      aleister: ["azzenka", "ilumia"],
+      kahlii: ["liliana", "zata"],
+      mganga: ["iggy"],
+      rouie: ["azzenka", "raz"],
+      jinna: ["zata"],
+      alice: ["azzenka", "lauriel"],
+      sephera: ["liliana"],
+      tulen: ["veera"],
+    },
+    "Xạ thủ": {
+      elandorr: ["valhein", "erin"],
+      violet: ["capheny"],
+      moren: ["stuart"],
+      fennik: ["valhein", "capheny"],
+      wisp: ["violet"],
+      murad: ["stuart"],
+      hayate: ["stuart", "capheny"],
+      capheny: ["valhein", "flowborn"],
+      thorne: ["valhein"],
+      slimz: ["valhein", "capheny"],
+      elsu: ["stuart"],
+      stuart: ["yorn"],
+      erin: ["evita"],
+      celica: ["yorn", "flowborn"],
+      lindis: ["evita", "violet"],
+      yorn: ["flowborn", "elsu"],
+      bright: ["valhein", "elsu"],
+      laville: ["flowborn", "hayate"],
+      valhein: ["evita", "flowborn"],
+      teeri: ["capheny", "flowborn"],
+    },
+    "Trợ thủ": {
+      dyadia: ["grakk", "enzo"],
+      enzo: ["ybneth", "toro"],
+      arthur: ["trieu-van", "maloch"],
+      ybneth: ["baldum", "annette"],
+      krizzix: ["annette", "cresht"],
+      dolia: ["grakk", "enzo"],
+      richter: ["florentino", "dyadia"],
+      teemee: ["grakk", "annette"],
+      zip: ["grakk", "baldum"],
+      cresht: ["maloch", "trieu-van"],
+      annette: ["grakk", "arduin"],
+      rouie: ["grakk"],
+      arduin: ["maloch", "chaugnar"],
+      grakk: ["chaugnar", "toro"],
+      veres: ["gildur", "enzo"],
+      omega: ["baldum", "chaugnar"],
+      volkath: ["dyadia", "annette"],
+      toro: ["chaugnar"],
+      aya: ["grakk"],
+      mina: ["chaugnar", "sinestrea"],
+      maloch: ["grakk", "trieu-van"],
+      thane: ["dyadia", "rouie"],
+      lumburr: ["annette", "cresht"],
+      alice: ["helen", "enzo"],
+      ata: ["maloch", "trieu-van"],
+      xeniel: ["zuka", "florentino"],
+      chaugnar: ["trieu-van", "aya"],
+      "dieu-thuyen": ["enzo", "krizzix"],
+      wiro: ["dyadia", "trieu-van"],
+      aleister: ["ilumia", "grakk"],
+      arum: ["dyadia", "teemee"],
+      tachi: ["krizzix", "maloch"],
+      superman: ["dyadia", "ybneth"],
+      max: ["helen", "teemee"],
+      sephera: ["grakk", "annette"],
+      ming: ["baldum", "grakk"],
+      ilumia: ["baldum", "grakk"],
+      ormarr: ["chaugnar", "sinestrea"],
+      baldum: ["annette", "aya"],
+      gildur: ["chaugnar", "dyadia"],
+      helen: ["enzo", "grakk"],
+      roxie: ["annette", "dieu-thuyen"],
+    },
+  };
+
+  const risks = {
+    "Tà Thần": { marja: ["murad"], "bolt-baron": ["marja"] },
+    "Đi rừng": {},
+    "Đường giữa": { lorion: ["liliana"], liliana: ["veera"] },
+    "Xạ thủ": {
+      flowborn: ["elandorr", "elsu"],
+      "11596": ["stuart"],
+      murad: ["elandorr"],
+      stuart: ["bolt-baron"],
+      telannas: ["violet"],
+    },
+    "Trợ thủ": {},
+  };
+
+  const partners = [
+    { hero: "lorion", lane: "Đường giữa", ally: "dyadia" },
+    { hero: "lauriel", lane: "Đường giữa", ally: "dyadia" },
+    { hero: "elandorr", lane: "Xạ thủ", ally: "dyadia" },
+    { hero: "elandorr", lane: "Đi rừng", ally: "dyadia" },
+    { hero: "bright", lane: "Xạ thủ", ally: "zip" },
+    { hero: "stuart", lane: "Xạ thủ", ally: "dolia" },
+  ];
+
+  // Symbols confirmed against the official item icons. These are separate from draft's situational advice.
+  const equipment = {
+    "Tà Thần": {
+      murad: ["Thương Longinus"],
+      marja: ["Thập Tự Kiếm"],
+      florentino: ["Giáp Gaia", "Thương khung kiếm"],
+      veres: ["Thương Longinus"],
+      taara: ["Giáp Gaia"],
+      skud: ["Nham thuẫn"],
+      yan: ["Thương Longinus"],
+      errol: ["Thương Longinus"],
+    },
+    "Đi rừng": {
+      tamyn: ["Thương Longinus"],
+      volkath: ["Liềm Đoạt Mệnh"],
+      murad: ["Thương Longinus"],
+      astrid: ["Hercule thịnh nộ"],
+      enzo: ["Thương Longinus"],
+    },
+    "Đường giữa": {
+      lorion: ["Mặt nạ Berith"],
+      liliana: ["Trượng bùng nổ"],
+      evita: ["Mặt nạ Berith"],
+      iggy: ["Trượng bùng nổ"],
+      erin: ["Trượng bùng nổ"],
+      goverra: ["Mặt nạ Berith"],
+    },
+    "Xạ thủ": {
+      "11596": ["Nanh Fenrir"],
+      fennik: ["Thương Longinus"],
+      "bolt-baron": ["Thập Tự Kiếm"],
+      murad: ["Thương Longinus"],
+      hayate: ["Liềm Đoạt Mệnh"],
+      stuart: ["Thương khung kiếm", "Liềm Đoạt Mệnh"],
+      erin: ["Trượng bùng nổ"],
+      bright: ["Nanh Fenrir"],
+    },
+    "Trợ thủ": {
+      maloch: ["Thương khung kiếm", "Nanh Fenrir"],
+      volkath: ["Liềm Đoạt Mệnh"],
+    },
+  };
+
+  const deltas = {
+    "Tà Thần": { murad: -0.1, marja: -0.2, biron: 0.8, airi: -0.2, veres: 0.3, ryoma: -0.5,
+      amily: 0.2, roxie: 0.1, dextra: 0.3, arthur: -0.2 },
+    "Đi rừng": { billow: -0.4, tamyn: -0.2, zephys: -0.2, "11596": 0.4, "trieu-van": 1.1,
+      volkath: -0.3, murad: -0.1, keera: 0.4, astrid: -0.3, darcy: 0.6, elandorr: -0.2, yan: 0.2, ryoma: -0.4 },
+    "Đường giữa": { lorion: -0.1, darcy: 1.6, yue: 0.1, preyta: 0.7, ilumia: 0.2, bonnie: -0.2,
+      dirak: 0.1, azzenka: -0.3, heino: -0.1, mganga: -0.3, krixi: 0.2, gildur: -0.2, sephera: 0.5, tulen: -0.1 },
+    "Xạ thủ": { elandorr: -0.2, "11596": 1, violet: 0.2, "bolt-baron": 0.3, murad: -0.2,
+      hayate: -0.6, thorne: -0.1, stuart: -0.2, erin: 1.1, celica: 0.3, yorn: 0.3 },
+    "Trợ thủ": { arthur: -0.1, krizzix: 0.5, grakk: -0.1, toro: -0.3, xeniel: 0.1,
+      baldum: 0.5, superman: 0.1, sephera: 0.9, gildur: -0.2 },
+  };
+
+  // Only clearly distinguishable red/green glows from the chart legend.
+  const priorities = {
+    "Đi rừng": {
+      tamyn: "Hot ban",
+      "11596": "Hot pick",
+      keera: "Hot pick",
+      nakroth: "Hot pick",
+      sinestrea: "Hot pick",
+      astrid: "Hot pick",
+    },
+    "Đường giữa": {
+      darcy: "Hot ban",
+      evita: "Hot ban",
+      zata: "Hot pick",
+      yue: "Hot pick",
+      preyta: "Hot pick",
+    },
+    "Trợ thủ": {
+      dyadia: "Hot ban",
+      krizzix: "Hot ban",
+      dolia: "Hot ban",
+      cresht: "Hot pick",
+    },
+  };
+
+  const source = {
+    name: "AOV Update VN",
+    date: "13/11/2026",
+    post: "https://www.facebook.com/aovupdatevn/posts/1146795281204264/",
+  };
+  const counters = Object.entries(nemeses).flatMap(([lane, byHero]) => {
+    const targets = new Set([...Object.keys(byHero), ...Object.values(byHero).flat()]);
+    return [...targets].map(target => ({
+      lane, target, key: "vn|" + lane + "|" + target, source: source.name, tips: {},
+      pairs: [byHero[target] ?? [], Object.keys(byHero).filter(id => byHero[id].includes(target))],
+    }));
+  });
+
+  function ratingFor(rating) {
+    const tier = rating >= 6.5 ? "S" : rating >= 6 ? "A" : rating >= 5.5 ? "B" :
+      rating >= 5 ? "C" : rating >= 4.5 ? "D" : rating >= 4 ? "E" : "F";
+    return { tier, weight: Math.max(-1.5, rating - 6) };
+  }
+
+  function tierFor(id, lanes = []) {
+    const relevant = lanes.length ? lanes : Object.keys(cards);
+    return relevant.map(lane => {
+      const rating = cards[lane]?.[id]?.[0];
+      if (rating === undefined) return window.QZADD_TIERS.tierFor(id, [lane]);
+      return { lane, rating, source: source.name, ...ratingFor(rating) };
+    }).reduce((best, entry) => !best || entry && (entry.weight ?? -Infinity) > (best.weight ?? -Infinity) ?
+      entry : best, null);
+  }
+
+  const profiles = Object.fromEntries(Object.entries(cards).map(([lane, rows]) => [
+    lane, Object.fromEntries(Object.entries(rows)
+      .filter(([, row]) => row.length > 1)
+      .map(([id, [, ...traits]]) => [id, traits.map(trait => labels[trait])])),
+  ]));
+
+  window.DRAFT_VIETNAM_META = { source, cards, ratingFor, tierFor, counters, nemeses, risks, partners, profiles, equipment, deltas, priorities };
 })();

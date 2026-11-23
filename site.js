@@ -192,24 +192,55 @@
       ["caesar", "Tà Thần"], ["jungle", "Đi rừng"], ["mid", "Đường giữa"],
       ["dragon", "Đường Rồng"], ["support", "Trợ thủ"],
     ];
-    const post = "https://www.facebook.com/aovupdatevn/posts/1146795281204264/";
+    const { source, cards, ratingFor, nemeses, risks, partners, profiles, equipment, deltas, priorities } = window.DRAFT_VIETNAM_META;
+    const heroes = new Map(boot.roster.map(hero => [hero.id, hero]));
+    const heroName = id => [heroes.get(id)?.name, heroes.get(id)?.variant].filter(Boolean).join(" ");
+    const listNames = ids => escape(ids.map(heroName).join(", "));
     let lane = lanes[0][0];
     document.title = "Tier List Việt Nam | Hỗ trợ Ban Pick";
     const container = layout("Tier List Việt Nam", "Beta 55.2 · 13/11/2026 · Cao Thủ 40 sao trở lên hoặc 1.400 điểm Đỉnh Cao");
     container.innerHTML = tierSources("vn") +
       '<section class="panel data-panel qz-board" aria-label="Xếp hạng máy chủ Việt Nam">' +
-      '<div class="qz-tools"><div id="vn-lanes"></div></div><div id="vn-chart"></div>' +
+      '<div class="qz-tools"><div id="vn-lanes"></div>' + search("vn-search", "Tìm tướng trong bảng Việt Nam…") +
+      '</div><p id="vn-count" class="qz-count"></p><div id="vn-profiles" class="reference-grid"></div>' +
+      '<details class="qz-changes"><summary>Xem ảnh bảng gốc</summary><div id="vn-chart"></div></details>' +
       '<div class="qz-source"><p>Ở Tà Thần, AOV Update VN ghi nhận Biron, Ngộ Không và Bijan nổi lên bên cạnh nhóm tướng quen thuộc. ' +
       'Ở đường giữa, bài viết lưu ý khả năng cấu rỉa, dồn sát thương hoặc khống chế của Evita, D’Arcy, Preyta và Erin, đồng thời nhắc đến rủi ro khi gặp sát thủ.</p>' +
-      '<div class="attack-sources"><a class="subtle-link" href="' + post + '">Bài gốc AOV Update VN</a></div></div></section>';
+      '<div class="attack-sources"><a class="subtle-link" href="' + source.post + '">Bài gốc AOV Update VN</a></div></div></section>';
     const tabs = $("vn-lanes");
+    function renderProfiles() {
+      const position = lane === "dragon" ? "Xạ thủ" : lanes.find(([id]) => id === lane)[1];
+      const query = norm($("vn-search").value.trim());
+      const rows = Object.entries(cards[position]).filter(([id]) => norm(heroName(id)).includes(query))
+        .sort(([, a], [, b]) => b[0] - a[0]);
+      $("vn-count").textContent = rows.length + " tướng · " + lanes.find(([id]) => id === lane)[1];
+      $("vn-profiles").innerHTML = rows.map(([id, [score]]) => {
+        const threats = nemeses[position]?.[id] ?? [];
+        const risky = risks[position]?.[id] ?? [];
+        const allies = partners.filter(row => row.lane === position && row.hero === id).map(row => row.ally);
+        const favorable = Object.keys(nemeses[position] ?? {}).filter(hero => nemeses[position][hero].includes(id));
+        const traits = profiles[position]?.[id] ?? [];
+        const gear = equipment[position]?.[id] ?? [];
+        const change = deltas[position]?.[id];
+        const scoreText = score.toFixed(1).replace(".", ",") + (change === undefined ? "" :
+          " (" + (change > 0 ? "+" : "") + change.toFixed(1).replace(".", ",") + " điểm)");
+        const line = (title, value) => value ? '<p><strong>' + title + '</strong> · ' + value + '</p>' : "";
+        return '<article class="panel reference">' + photo(boot.portraits[portraitKey(heroName(id))]) + '<div><h2>' +
+          escape(heroName(id)) + '</h2>' + line(ratingFor(score).tier, scoreText) + line("Ưu tiên trong bảng", priorities[position]?.[id]) +
+          line("Lối chơi", escape(traits.join(" · "))) + line("Bị khắc chế bởi", listNames(threats)) +
+          line("Khắc chế", listNames(favorable)) + line("Cần dè chừng", listNames(risky)) +
+          line("Phối hợp", listNames(allies)) + line("Trang bị nên có", escape(gear.join(", "))) + '</div></article>';
+      }).join("") || empty("Không tìm thấy tướng ở đường này.");
+    }
     function renderLane() {
       tabs.innerHTML = toggleGroup(lanes, lane, "Đường thi đấu");
       const label = lanes.find(([id]) => id === lane)[1];
       $("vn-chart").innerHTML = '<a class="vn-tier-chart" href="/ho-tro-ban-pick/art/vn-beta-55-2/' + lane + '.jpg" target="_blank" rel="noopener">' +
         '<img src="/ho-tro-ban-pick/art/vn-beta-55-2/' + lane + '.jpg" width="960" height="960" alt="Tier List Beta 55.2 · ' + label + '">' +
         '<span>Mở ảnh bảng ' + label + ' để phóng to</span></a>';
+      renderProfiles();
     }
+    $("vn-search").addEventListener("input", renderProfiles);
     tabs.addEventListener("click", event => {
       const tab = event.target.closest("[data-filter]");
       if (!tab || tab.dataset.filter === lane) return;

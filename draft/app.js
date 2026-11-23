@@ -277,7 +277,7 @@
     return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
       pairs: [Object.keys(tips), []], direct: [[], []], tips, tactical: true };
   });
-  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners, profiles: vietnamProfiles } = window.DRAFT_VIETNAM_META;
+  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners, profiles: vietnamProfiles, equipment: vietnamEquipment } = window.DRAFT_VIETNAM_META;
   const counterRows = [...laneCounterRows, ...vietnamRows, ...referenceRows];
 
   const positions = Object.keys(lanePools);
@@ -470,9 +470,9 @@
       entry.threats = new Map([...entry.bad].map(([target, labels]) =>
         [target, tierFor(target, evidenceLanes(labels))]));
       const risk = [...entry.threats.values()].reduce((total, tier) => total + 3 + (tier?.weight ?? 0), 0);
-      const matchup = vietnamRisks[entry.id];
-      entry.softRisks = matchup && (!fitLanes.length || fitLanes.includes(matchup.lane)) ?
-        matchup.opponents.filter(id => opponents.has(id)) : [];
+      const riskLanes = fitLanes.length ? fitLanes : entry.tier ? [entry.tier.lane] : positions;
+      entry.softRisks = [...new Set(riskLanes.flatMap(position => vietnamRisks[position]?.[entry.id] ?? []))]
+        .filter(id => opponents.has(id));
       const softRisk = entry.softRisks.filter(id => !entry.bad.has(id) && !entry.mixed.has(id))
         .reduce((total, id) => total + 1 + (tierFor(id)?.weight ?? 0) / 4, 0);
       const partnerBonus = Math.min(partnerMatches.get(entry.id)?.size ?? 0, 2) * 0.75;
@@ -511,6 +511,7 @@
         displayTier.lane : entry.profiles.keys().next().value);
       const [playstyle, ...traits] = entry.profiles.get(profileLane) ?? [];
       const addsStyle = active && fitLanes.includes(profileLane) && teamStyles.size && !teamStyles.has(playstyle);
+      const chartEquipment = vietnamEquipment[profileLane]?.[id] ?? [];
       const equipmentHint = profileLane === "Trợ thủ" && playstyle === "Hỗ trợ / chống chịu" ?
         "Khiên Thánh Quang khi cần che chắn đồng minh" :
         profileLane === "Xạ thủ" && traits.includes("Lối tốc đánh") ?
@@ -530,6 +531,8 @@
         (playstyle ? '<span class="counter-playstyle" title="AOV Update VN · Beta 55.2">' +
           escapeHtml((addsStyle ? "Bổ sung " : "") + playstyle + " · " + lanePools[profileLane].label) + '</span>' : '') +
         (traits.length ? '<span>' + escapeHtml(traits.join(" · ")) + '</span>' : '') +
+        (chartEquipment.length ? '<span><b>Nên có theo AOV Update VN</b> · ' +
+          escapeHtml(chartEquipment.join(", ")) + '</span>' : '') +
         (equipmentHint ? '<span><b>Trang bị tình huống</b> · ' + escapeHtml(equipmentHint) + '</span>' : '') +
         (synergy ? '<span class="counter-synergy"><b>' + (synergy.complete ? "Hoàn thiện bài " : "Ghép bài ") +
           escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + comboWarning(synergy.combo) + '</span>' : '') +
@@ -980,11 +983,12 @@
   }
 
   $("counter-target").innerHTML = '<option value="">Tự động theo lượt chọn của đối thủ</option>' +
-    [...Object.keys(window.DRAFT_COUNTERS.lanes), "Tham khảo chung"].map(lane => '<optgroup label="' + escapeHtml(lane) + '">' +
+    [...positions, "Tham khảo chung"].map(lane => '<optgroup label="' + escapeHtml(lane) + '">' +
       counterRows.filter(row => row.lane === lane).map(row => '<option value="' + escapeHtml(row.key) + '">' +
         escapeHtml(nameFor(row.target) + (row.source ? " · " + row.source : "")) + '</option>').join("") + '</optgroup>').join("");
   $("counter-sources").innerHTML = Object.entries(window.DRAFT_COUNTERS.sources).map(([lane, post]) =>
-    '<a href="https://www.facebook.com/Qzaddroaming/posts/' + post + '/">' + escapeHtml(lane) + '</a>').join("");
+    '<a href="https://www.facebook.com/Qzaddroaming/posts/' + post + '/">' + escapeHtml(lane) + '</a>').join("") +
+    '<a href="../tier-list/?region=vn" target="_blank" rel="noopener">Bảng AOV Update VN</a>';
   $("counter-target").addEventListener("change", renderDraft);
   $("counter-lineup").addEventListener("click", event => {
     const button = event.target.closest("[data-suggest-lane]");
