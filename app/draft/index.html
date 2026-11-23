@@ -16,7 +16,7 @@
   <script src="./lane-pools.js?v=2" defer></script>
   <script src="./vietnam-meta.js?v=weighted-tier" defer></script>
   <script src="./app.js?v=weighted-tier" defer></script>
-  <script src="./airplay.js?v=stream-restore" defer></script>
+  <script src="./airplay.js?v=local-airplay" defer></script>
   <script src="./vendor/peerjs-1.5.5.min.js" defer></script>
   <script src="./vendor/qrcodejs-1.0.0.min.js" defer></script>
   <script src="./iphone-receiver.js?v=video-health-2" defer></script>
@@ -65,8 +65,8 @@
         <div class="airplay-content">
           <p>Web tự tìm vùng game Rank trong ảnh hoặc màn hình chia sẻ. Nếu khung bị lệch, dùng nút chọn lại vùng game.</p>
           <div class="airplay-actions">
-            <button type="button" class="quiet" id="iphone-receive">Nhận từ iPhone</button>
-            <button type="button" class="quiet" id="airplay-start">Bắt đầu chia sẻ</button>
+            <button type="button" class="quiet" id="iphone-receive">Nhận trực tiếp từ iPhone</button>
+            <button type="button" class="quiet" id="airplay-start">Chọn nguồn trên máy tính</button>
             <button type="button" class="quiet" id="airplay-stop" hidden>Dừng chia sẻ</button>
             <button type="button" class="quiet" id="scan-rotate" hidden>Xoay 90°</button>
             <button type="button" class="quiet" id="scan-auto-rotate" hidden>Về chiều gốc</button>
@@ -75,6 +75,13 @@
             <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn lại vùng game</button>
             <button type="button" class="quiet" id="scan-ocr" disabled>AI đọc tên tướng</button>
           </div>
+          <details>
+            <summary>Dùng AirPlay</summary>
+            <p>Mở bộ nhận AirPlay trên máy tính. Trên iPhone, vào Trung tâm điều khiển, chọn <strong>Phản chiếu màn hình</strong> và chọn máy tính cùng mạng.</p>
+            <p>Khi hình game đã hiện trên máy tính, bấm <strong>Chọn nguồn trên máy tính</strong> rồi chọn cửa sổ phản chiếu. Nếu hình chiếu toàn màn hình, chọn màn hình đang hiển thị game.</p>
+            <p><a href="https://github.com/FDH2/UxPlay#building-uxplay-on-microsoft-windows-using-msys2-with-the-mingw-64-compiler" target="_blank" rel="noopener">UxPlay trên Windows</a> ·
+              <a href="https://support.apple.com/en-mide/guide/iphone/iphd668e80e6/27/ios/27" target="_blank" rel="noopener">Bộ nhận AirPlay trên Mac</a></p>
+          </details>
           <div id="iphone-room" class="iphone-room" hidden>
             <div id="iphone-invite" class="iphone-invite" hidden>
               <div id="iphone-qr" role="img" aria-label="Mã QR ghép nối iPhone"></div>

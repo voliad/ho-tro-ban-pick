@@ -9,15 +9,23 @@
   let stream;
   let stopSource;
   let requesting = false;
+  let localStream;
+
+  function updateStart() {
+    const canCapture = Boolean(devices?.getDisplayMedia);
+    start.disabled = !canCapture || requesting || Boolean(stream && stream !== localStream);
+    start.textContent = stream && stream === localStream ? "Chọn lại nguồn" : "Chọn nguồn trên máy tính";
+  }
 
   function reset(message, manual = false) {
     const cleanup = stopSource;
     stream = null;
+    localStream = null;
     stopSource = null;
     preview.srcObject = null;
     preview.hidden = true;
     stop.hidden = true;
-    start.disabled = requesting || !devices?.getDisplayMedia;
+    updateStart();
     status.textContent = message;
     cleanup?.(manual);
   }
@@ -42,7 +50,7 @@
     preview.srcObject = capture;
     preview.hidden = false;
     stop.hidden = false;
-    start.disabled = true;
+    updateStart();
     await preview.play();
     if (stream === capture) {
       status.textContent = message;
@@ -57,32 +65,50 @@
     },
   };
 
-  start.disabled = !devices?.getDisplayMedia;
+  updateStart();
   start.addEventListener("click", async () => {
+    if (requesting || stream && stream !== localStream) return;
     requesting = true;
-    start.disabled = true;
+    updateStart();
     status.textContent = "Đang chờ bạn chọn cửa sổ chiếu…";
     let capture;
     try {
-      capture = await devices.getDisplayMedia({ video: { displaySurface: "window" }, audio: false });
+      capture = await devices.getDisplayMedia({
+        video: { displaySurface: "window", frameRate: { ideal: 15, max: 30 } },
+        audio: false,
+      });
       const cleanup = () => capture.getTracks().forEach(track => track.stop());
-      if (stream) cleanup();
-      else await show(capture, cleanup, "Đang hiển thị nguồn đã chia sẻ.");
+      if (stream && stream !== localStream) {
+        cleanup();
+        return;
+      }
+      const [track] = capture.getVideoTracks();
+      if (!track || track.readyState === "ended") throw Error("No live video track");
+      const source = track.getSettings().displaySurface;
+      const label = source === "window" ? "cửa sổ" : source === "monitor" ? "màn hình" :
+        source === "browser" ? "thẻ trình duyệt" : "nguồn chia sẻ";
+      await show(capture, cleanup, "Đang đọc hình từ " + label + " trên máy tính.");
+      if (stream === capture) localStream = capture;
     } catch (error) {
       capture?.getTracks().forEach(track => track.stop());
       if (!stream || stream === capture) {
         reset(error.name === "NotAllowedError" || error.name === "AbortError"
           ? "Chưa chia sẻ cửa sổ. Bạn có thể bấm để chọn lại."
           : "Không mở được nguồn chia sẻ. Hãy thử chọn lại.");
+      } else if (stream === localStream) {
+        status.textContent = "Vẫn đang đọc nguồn trước. Bạn có thể chọn lại khi sẵn sàng.";
       }
     } finally {
       requesting = false;
-      start.disabled = Boolean(stream) || !devices?.getDisplayMedia;
+      updateStart();
     }
   });
 
   stop.addEventListener("click", () => reset("Đã dừng chia sẻ màn hình.", true));
-  window.addEventListener("pagehide", () => {
-    if (stream) reset("");
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && localStream && preview.paused) preview.play().catch(() => {});
+  });
+  window.addEventListener("pagehide", event => {
+    if (stream && !event.persisted) reset("");
   });
 })();
