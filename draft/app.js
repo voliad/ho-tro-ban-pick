@@ -511,6 +511,10 @@
         displayTier.lane : entry.profiles.keys().next().value);
       const [playstyle, ...traits] = entry.profiles.get(profileLane) ?? [];
       const addsStyle = active && fitLanes.includes(profileLane) && teamStyles.size && !teamStyles.has(playstyle);
+      const equipmentHint = profileLane === "Trợ thủ" && playstyle === "Hỗ trợ / chống chịu" ?
+        "Khiên Thánh Quang khi cần che chắn đồng minh" :
+        profileLane === "Xạ thủ" && traits.includes("Lối tốc đánh") ?
+          "Vô ảnh tiễn khi cần đổi vị trí hoặc thoát giao tranh" : "";
       const synergy = combosByHero.get(id);
       const partners = partnerMatches.get(id);
       const name = escapeHtml(nameFor(id));
@@ -526,6 +530,7 @@
         (playstyle ? '<span class="counter-playstyle" title="AOV Update VN · Beta 55.2">' +
           escapeHtml((addsStyle ? "Bổ sung " : "") + playstyle + " · " + lanePools[profileLane].label) + '</span>' : '') +
         (traits.length ? '<span>' + escapeHtml(traits.join(" · ")) + '</span>' : '') +
+        (equipmentHint ? '<span><b>Trang bị tình huống</b> · ' + escapeHtml(equipmentHint) + '</span>' : '') +
         (synergy ? '<span class="counter-synergy"><b>' + (synergy.complete ? "Hoàn thiện bài " : "Ghép bài ") +
           escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + comboWarning(synergy.combo) + '</span>' : '') +
         (partners?.size ? '<span class="counter-synergy">Phối hợp với ' +

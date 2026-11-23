@@ -1,796 +1,1373 @@
 {
   "items": [
     {
-      "name": "Áo Choàng Băng Giá",
-      "iconUrl": "/images/items/ao choang bang gia.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Chùy băng sương",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2025/07/Chuy-bang-suong.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2060,
+      "attributes": [
+        "+60 Công vật lý, +30% Tốc đánh, +900 Máu tối đa"
+      ]
     },
     {
-      "name": "Áo Choàng Thần Ra",
-      "iconUrl": "/images/items/ao choang than ra.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Huyết ảnh đao",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2025/07/Huyet-dao.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 830,
+      "attributes": [
+        "+30 Công vật lý, +10% Hút máu"
+      ]
     },
     {
-      "name": "Băng Nhẫn Skadi",
-      "iconUrl": "/images/items/bang nhan skadi.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Thệ ước Carano",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2025/07/The-uoc-Carano.jpg",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2050,
+      "attributes": [
+        "+180 Công phép, +12% Hút máu phép, +5% Tốc chạy"
+      ]
     },
     {
-      "name": "Búa Sức Mạnh",
-      "iconUrl": "/images/items/bua suc manh.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 1"
+      "name": "Ma pháp trường bào",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2025/07/Ma-phap-truong-bao-1.jpg",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2160,
+      "attributes": [
+        "+120 Công phép +900 Máu tối đa"
+      ]
     },
     {
-      "name": "Cầu Chiêm Tinh",
-      "iconUrl": "/images/items/cau chiem tinh.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 1"
+      "name": "Cầu chiêm tinh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/11/cau-chiem-tinh.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 800,
+      "attributes": [
+        "+ 80 Công phép"
+      ]
     },
     {
-      "name": "Chùy Băng Sương",
-      "iconUrl": "/images/items/chuy bang suong.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Diệt thần cung",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/11/diet-than-cung.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2980,
+      "attributes": [
+        "+ 50 Công vật lý",
+        "+ 30% Tốc đánh",
+        "+ 10% Tỷ lệ chí mạng"
+      ]
     },
     {
-      "name": "Chùy Cổ",
-      "iconUrl": "/images/items/chuy co.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 1"
+      "name": "Huyết cung",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/11/huyet-cung.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1100,
+      "attributes": [
+        "+ 40 Công vật lý",
+        "+10% Tốc đánh"
+      ]
     },
     {
-      "name": "Chùy Máu",
-      "iconUrl": "/images/items/chuy mau.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Liệt hoả thần tốc",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16237.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+ 1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Chùy Xích",
-      "iconUrl": "/images/items/chuy xich.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 2"
+      "name": "Liệt hoả mở trói",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16234.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+ 1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Cung Bão Tố",
-      "iconUrl": "/images/items/cung bao to.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Liệt hoả hồi huyết",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16236.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+ 1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Cung Gió Lốc",
-      "iconUrl": "/images/items/cung gio loc.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 2"
+      "name": "Liệt hoả ma nhãn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16232.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+ 1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Cung Tà Ma",
-      "iconUrl": "/images/items/cung ta ma.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Liệt hoả thần khiên",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16231.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+ 1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Đại Địa Hồi Huyết",
-      "iconUrl": "/images/items/dai dia hoi huyet.png",
-      "category": "TRỢ THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Đại địa hồi huyết",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16216.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Đại Địa Ma Nhẫn",
-      "iconUrl": "/images/items/dai dia ma nhan.png",
-      "category": "TRỢ THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Đại địa ma nhãn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16212.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Đại Địa Mở Trời",
-      "iconUrl": "/images/items/dai dia mo troi.png",
-      "category": "TRỢ THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Đại địa thần khiên",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16211.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Đại Địa Thần Khiên",
-      "iconUrl": "/images/items/dai dia than khien.png",
-      "category": "TRỢ THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Đại địa Mở trói",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16214.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Đại Địa Thần Tốc",
-      "iconUrl": "/images/items/dai dia than toc.png",
-      "category": "TRỢ THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Đại địa thần tốc",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16217.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+1200 Máu tối đa",
+        "+8% Tốc chạy"
+      ]
     },
     {
-      "name": "Đại Kháng Phép",
-      "iconUrl": "/images/items/dai khang phep.png",
-      "category": "THỦ",
-      "type": "Khác",
-      "level": "Cấp 2"
+      "name": "Hoả hệ bảo thạch",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/2級輔助裝-法.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 900,
+      "attributes": [
+        "+600 Máu tối đâ",
+        "+5% Tốc chạy"
+      ]
     },
     {
-      "name": "Dao Găm",
-      "iconUrl": "/images/items/dao gam.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 1"
+      "name": "Thổ hệ bảo thạch",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/2級輔助裝-坦.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 900,
+      "attributes": [
+        "+600 Máu tối đâ",
+        "+5% Tốc chạy"
+      ]
     },
     {
-      "name": "Dao Truy Hồn",
-      "iconUrl": "/images/items/dao truy hon.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Dao Truy Kích",
-      "iconUrl": "/images/items/dao truy kich.png",
-      "category": "ĐI RỪNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Dây Chuyền Hồng Ngọc",
-      "iconUrl": "/images/items/day chuyen hong ngoc.png",
-      "category": "THỦ",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Dây Chuyền Lục Bảo",
-      "iconUrl": "/images/items/day chuyen luc bao.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Dây Chuyền Ma Thuật",
-      "iconUrl": "/images/items/day chuyen ma thuat.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Diệt Thần Cung",
-      "iconUrl": "/images/items/diet-than-cung.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Găng Bạch Kim",
-      "iconUrl": "/images/items/gang bach kim.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Găng Giác Đấu",
-      "iconUrl": "/images/items/gang giac dau.png",
-      "category": "TỐC ĐỘ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Găng Tay",
-      "iconUrl": "/images/items/gang tay.png",
-      "category": "TỐC ĐỘ",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Giáp Chắn",
-      "iconUrl": "/images/items/giap chan.png",
-      "category": "THỦ",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Giáp Cuồng Nộ",
-      "iconUrl": "/images/items/giap cuong no.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Giáp Gaia",
-      "iconUrl": "/images/items/giap gaia.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Giáp Hiệp Sĩ",
-      "iconUrl": "/images/items/giap hiep si.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Giáp Hộ Mệnh",
-      "iconUrl": "/images/items/giap ho menh.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Giáp Nhẹ",
-      "iconUrl": "/images/items/giap nhe.png",
-      "category": "THỦ",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Giáp Thống Khổ",
-      "iconUrl": "/images/items/giap thong kho.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Giày Du Mục",
-      "iconUrl": "/images/items/giay du muc.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 2"
+      "name": "Nguyên tố bảo thạch",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icona78636f147efe1ac850a5495c044a9565ef2df9dd61a31.png",
+      "category": "Trợ thủ",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 300,
+      "attributes": [
+        "+ 5% Tốc chạy"
+      ]
     },
     {
       "name": "Giày Hermes",
-      "iconUrl": "/images/items/giay hermes.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 2"
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/b86b4a1e5a5c3801f0c11fd76a8cbe0c5875f18bcc5ec1.png",
+      "category": "Tốc độ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+300 Máu tối đa",
+        "+70 Tốc chạy – Nội tại duy nhất: Gia tốc"
+      ]
     },
     {
-      "name": "Giày Hộ Vệ",
-      "iconUrl": "/images/items/giay ho ve.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 2"
+      "name": "Giày du mục",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/3ff001f7078fc0b3f77e9ec7b283e2735875f14d9d0a31.png",
+      "category": "Tốc độ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+20% Tốc đánh",
+        "+60 Tốc chạy – Nội tại duy nhất: Gia tốc"
+      ]
     },
     {
-      "name": "Giày Kiên Cường",
-      "iconUrl": "/images/items/giay kien cuong.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 2"
+      "name": "Giày phù thủy",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/85bfb0396118e0b32f1e3f4b34911d235875f11c6208c1.png",
+      "category": "Tốc độ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+60 tốc chạy – Nội tại duy nhất",
+        "+100 Xuyên giáp phép – Nội tại duy nhất"
+      ]
     },
     {
-      "name": "Giày Phù Thủy",
-      "iconUrl": "/images/items/giay phu thuy.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 2"
+      "name": "Giày thuật sĩ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/114e22fe9d424beb6fe4aca5c456c5c35875f0f2d82ec1.png",
+      "category": "Tốc độ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+15% Giảm hồi chiêu",
+        "+60 Tốc chạy – Nội tại duy nhất: Gia tốc"
+      ]
     },
     {
-      "name": "Giày Thép",
-      "iconUrl": "/images/items/giay thep.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 1"
+      "name": "Giày kiên cường",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/3a856551539a716067add52f8fc65bc65875f0c7db9e51.png",
+      "category": "Tốc độ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+90 Giáp phép",
+        "+60 Tốc chạy – Nội tại duy nhất: Gia tốc",
+        "+35% Kháng hiệu ứng – Nội tại duy nhất (kháng hiệu ứng là giảm thời gian chịu các loại khống chế)"
+      ]
     },
     {
-      "name": "Giày Thuật Sĩ",
-      "iconUrl": "/images/items/giay thuat si.png",
-      "category": "TỐC ĐỘ",
-      "type": "Giày",
-      "level": "Cấp 2"
+      "name": "Giày hộ vệ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/0b2a528cdd009437b1635def58e353675875f09318ffd1.png",
+      "category": "Tốc độ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+110 Giáp",
+        "+60 Tốc chạy – Nội tại duy nhất: Gia tốc"
+      ]
     },
     {
-      "name": "Gươm Hiến Tế",
-      "iconUrl": "/images/items/guom hien te.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Giày thép",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/de8cb12606b2dd64c2a2ae53225453395875f0551a9091.png",
+      "category": "Tốc độ",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 250,
+      "attributes": [
+        "+30 Tốc chạy – Nội tại duy nhất: Gia tốc"
+      ]
     },
     {
-      "name": "Gươm Hiền Triết",
-      "iconUrl": "/images/items/guom hien triet.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Gươm Loki",
-      "iconUrl": "/images/items/guom loki.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Gươm Nguyên Tố",
-      "iconUrl": "/images/items/guom nguyen to.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Gươm Sấm Sét",
-      "iconUrl": "/images/items/guom sam set.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Gươm Tận Thế",
-      "iconUrl": "/images/items/guom tan the.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Gươm Uriel",
-      "iconUrl": "/images/items/guom uriel.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Hercule Thịnh Nộ",
-      "iconUrl": "/images/items/hercule thinh no.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Hỏa Hệ Bảo Thạch",
-      "iconUrl": "/images/items/hoa he bao thach.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Huân Chương Troy",
-      "iconUrl": "/images/items/huan chuong troy.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Huyết Cung",
-      "iconUrl": "/images/items/huyet cung.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Huyết Đao",
-      "iconUrl": "/images/items/huyet dao.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Huyết Trượng",
-      "iconUrl": "/images/items/huyet truong.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Khiên Huyền Thoại",
-      "iconUrl": "/images/items/khien huyen thoai.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Khiên Thánh Quang",
-      "iconUrl": "/art/khien-thanh-quang.webp",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
+      "name": "Nham thuẫn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icone5253595746abc893db9abe7568410315ef414f03aac11.png",
+      "category": "Thủ",
       "level": "Cấp 3",
-      "description": "+1.000 máu tối đa, +180 giáp vật lý và +10% giảm hồi chiêu."
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1980,
+      "attributes": [
+        "+1200 Máu tối đa",
+        "+240 Giáp"
+      ]
     },
     {
-      "name": "Khiên Thất Truyền",
-      "iconUrl": "/images/items/khien that truyen.png",
-      "category": "THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Phù chú trường sinh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icond155d1aa807b4022dd22a16cfa171d5f5853665105cd41.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2190,
+      "attributes": [
+        "+150 giáp",
+        "+100 giáp phép",
+        "+1500 máu tối đa"
+      ]
     },
     {
-      "name": "Kiếm Dài",
-      "iconUrl": "/images/items/kiem dai.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 1"
+      "name": "Áo choàng băng giá",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon55eaf54151e5f99b1442aceb380cb3cf58536633305011.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1970,
+      "attributes": [
+        "+10% Giảm hồi chiêu",
+        "+200 Giáp",
+        "+800 Máu tối đa"
+      ]
     },
     {
-      "name": "Kiếm Fafnir",
-      "iconUrl": "/images/items/kiem fafnir.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Giáp hộ mệnh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon6b6c892834f3b9840bec892627dbeedb5b87c72793cd01.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2400,
+      "attributes": [
+        "+120 Giáp"
+      ]
     },
     {
-      "name": "Kiếm Muramasa",
-      "iconUrl": "/images/items/kiem muramasa.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Huân chương Troy",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/7c7e5cbc16a0a12b0363ffec0dd4bbe0583eb735ebea21.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2320,
+      "attributes": [
+        "+200 Giáp phép",
+        "+1000 Máu tối đa",
+        "+10% Giảm hồi chiêu"
+      ]
     },
     {
-      "name": "Kiếm Ngắn",
-      "iconUrl": "/images/items/kiem ngan.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 1"
+      "name": "Giáp Gaia",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/9f2d442bf8b0f7597bd23de1af9c1ba9583eb6859264b1.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2180,
+      "attributes": [
+        "+200 Giáp phép",
+        "+1200 Máu tối đa"
+      ]
     },
     {
-      "name": "Kiếm Truy Hồn",
-      "iconUrl": "/images/items/kiem truy hon.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Khiên huyền thoại",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/22878b0202ea24b883044a9c642d5536583eb618cf2971.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2180,
+      "attributes": [
+        "+360 Giáp",
+        "+400 Năng lượng",
+        "+20% Giảm hồi chiêu"
+      ]
     },
     {
-      "name": "Liềm Đoạt Mệnh",
-      "iconUrl": "/images/items/liem doat menh.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Khiên thất truyền",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/098ae164502918650b6334ce885d7d71583eb5aa4f7e31.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2100,
+      "attributes": [
+        "+275 Giáp",
+        "+1200 Máu tối đa"
+      ]
     },
     {
-      "name": "Liệt Hỏa Hồi Huyết",
-      "iconUrl": "/images/items/liet hoa hoi huyet.png",
-      "category": "ĐI RỪNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Áo choàng thần Ra",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconc412f57b9e56e33473ff1a7c87f64c3c5c8b6e31b77f71.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2060,
+      "attributes": [
+        "+1000 Máu tối đa",
+        "+225 Giáp",
+        "+60 Hồi máu/5s"
+      ]
     },
     {
-      "name": "Liệt Hỏa Ma Nhẫn",
-      "iconUrl": "/images/items/liet hoa ma nhan.png",
-      "category": "ĐI RỪNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Giáp cuồng nộ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/f1221bb1919f19d0ffd7aa3b9d521248583eb5022028c1.png",
+      "category": "Thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+225 Giáp",
+        "+1200 Máu tối đa",
+        "+5% Tốc chạy"
+      ]
     },
     {
-      "name": "Liệt Hỏa Mở Trời",
-      "iconUrl": "/images/items/liet hoa mo troi.png",
-      "category": "ĐI RỪNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Hercule thịnh nộ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconce863be5ae7f9884727b453959c033e159eebee5cca801.png",
+      "category": "Thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+80 Công vật lý",
+        "+240 Giáp"
+      ]
     },
     {
-      "name": "Liệt Hỏa Thần Khiên",
-      "iconUrl": "/images/items/liet hoa than khien.png",
-      "category": "ĐI RỪNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Giáp thống khổ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2026/09/unnamed-6.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-vet-nut-thoi-khong-29-09-2026/#dieu-chinh-trang-bi",
+      "attributes": [
+        "+50 công vật lý",
+        "+300 giáp",
+        "+700 máu tối đa"
+      ],
+      "description": "Phản phệ: Phản 5% sát thương trước giảm trừ thành sát thương chuẩn, hiệu lực giảm theo khoảng cách tối đa 50%. Phản Pháo (75 giây) nâng tỷ lệ phản lên 25% trong 3 giây."
     },
     {
-      "name": "Liệt Hỏa Thần Tốc",
-      "iconUrl": "/images/items/liet hoa than toc.png",
-      "category": "ĐI RỪNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Giáp hiệp sĩ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/8126b39e85bcfef53fad3131bafc2cd5583eb36918dac1.png",
+      "category": "Thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 730,
+      "attributes": [
+        "+210 Giáp"
+      ]
     },
     {
-      "name": "Ma Pháp Trượng Bão",
-      "iconUrl": "/images/items/ma phap truong bao.jpg",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Găng bạch kim",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/f38b144529e66db02a901c175847440b583eb3271e7d01.png",
+      "category": "Thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 660,
+      "attributes": [
+        "+10% giảm hồi chiêu",
+        "+110 Giáp"
+      ]
     },
     {
-      "name": "Mặt Nạ Berith",
-      "iconUrl": "/images/items/mat na berith.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Mặt Nạ Ma Quái",
-      "iconUrl": "/images/items/mat na ma quai.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Nanh Fenrir",
-      "iconUrl": "/images/items/nanh fenrir.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Ngọc Đại Pháp Sư",
-      "iconUrl": "/images/items/ngoc dai phap su.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Nguyên Tố Bảo Thạch",
-      "iconUrl": "/images/items/nguyen to bao thach.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Nhẫm Thuẫn",
-      "iconUrl": "/images/items/nham thuan.png",
-      "category": "THỦ",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Nhẫn Hồng Ngọc",
-      "iconUrl": "/images/items/nhan hong ngoc.png",
-      "category": "THỦ",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Nhẫn Lapis",
-      "iconUrl": "/images/items/nhan lapis.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Nhẫn Ma Pháp",
-      "iconUrl": "/images/items/nhan ma phap.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Phi Tiêu",
-      "iconUrl": "/images/items/phi tieu.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Phù Chú Trường Sinh",
-      "iconUrl": "/images/items/phu chu truong sinh.png",
-      "category": "TRỢ THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Phức Hợp Kiếm",
-      "iconUrl": "/images/items/phuc hop kiem.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Phượng Hoàng Lệ",
-      "iconUrl": "/images/items/phuong hoang le.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Quả Cầu Băng Sương",
-      "iconUrl": "/images/items/qua cau bang suong.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Quỷ Kiếm",
-      "iconUrl": "/images/items/quy kiem.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Quyền Trượng Rhea",
-      "iconUrl": "/images/items/quyen truong rhea.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Rìu Gnoll",
-      "iconUrl": "/images/items/riu gnoll.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Rìu Leviathan",
-      "iconUrl": "/images/items/riu leviathan.png",
-      "category": "ĐI RỪNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Rùa Thợ Săn",
-      "iconUrl": "/images/items/rua tho san.jpg",
-      "category": "ĐI RỪNG",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Sách Cổ",
-      "iconUrl": "/images/items/sach co.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 1"
-    },
-    {
-      "name": "Sách Phép",
-      "iconUrl": "/images/items/sach phep.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Sách Thánh",
-      "iconUrl": "/images/items/sach thanh.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Sách Truy Hồn",
-      "iconUrl": "/images/items/sach truy hon.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Sổ Ma Thuật",
-      "iconUrl": "/images/items/so ma thuat.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Song Đao Bão Táp",
-      "iconUrl": "/images/items/song dao bao tap.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Song Đao",
-      "iconUrl": "/images/items/song dao.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Thanh Kiếm",
-      "iconUrl": "/images/items/thanh kiem.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Thập Tự Kiếm",
-      "iconUrl": "/images/items/thap tu kiem.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Thẻ Ước Carano",
-      "iconUrl": "/images/items/the uoc carano.jpg",
-      "category": "TRỢ THỦ",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Thổ Hệ Bảo Thạch",
-      "iconUrl": "/images/items/tho he bao thach.png",
-      "category": "THỦ",
-      "type": "Khác",
-      "level": "Cấp 2"
-    },
-    {
-      "name": "Thương Đấu Sĩ",
-      "iconUrl": "/images/items/thuong dau si.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Thương Khung Kiếm",
-      "iconUrl": "/images/items/thuong khung kiem.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Thương Longinus",
-      "iconUrl": "/images/items/thuong longinus.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
-    },
-    {
-      "name": "Thương Xuyên Phá",
-      "iconUrl": "/images/items/thuong xuyen pha.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Đai kháng phép",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/72ed5eddefd9d571f0db1fc9527d2f22583eb2fa338c81.png",
+      "category": "Thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1000,
+      "attributes": [
+        "+700 Máu tối đa",
+        "+110 Giáp phép"
+      ]
     },
     {
       "name": "Tim Incubus",
-      "iconUrl": "/images/items/tim incubus.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/d0d241f0a2a236806b000ff5241f9802583eb2a658eed1.png",
+      "category": "Thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 720,
+      "attributes": [
+        "+150 Giáp"
+      ]
     },
     {
-      "name": "Trượng Băng",
-      "iconUrl": "/images/items/truong bang.png",
-      "category": "PHÉP",
-      "type": "Khác",
-      "level": "Cấp 2"
+      "name": "Giáp chân",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/b776c4c957f4e6f1e947e06686743a8c583eb243203f71.png",
+      "category": "Thủ",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 900,
+      "attributes": [
+        "+1000 Máu tối đa"
+      ]
     },
     {
-      "name": "Trượng Bùng Nổ",
-      "iconUrl": "/images/items/truong bung no.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Dây chuyền hồng ngọc",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconc297c6ca61d3e8715eea595918f2b1d15ef49a36db0c01.png",
+      "category": "Thủ",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 540,
+      "attributes": [
+        "+600 Máu tối đa"
+      ]
     },
     {
-      "name": "Trượng Hồn Mang",
-      "iconUrl": "/images/items/truong hon mang.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Bùa sức mạnh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon9b4b623c7f5f3db68735401591039e6e59eec0dfee3aa1.png",
+      "category": "Thủ",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 140,
+      "attributes": [
+        "+30 Hồi máu/5s"
+      ]
     },
     {
-      "name": "Vòng Đức Hạnh",
-      "iconUrl": "/images/items/vong duc hanh.png",
-      "category": "TRỢ THỦ",
-      "type": "Khác",
-      "level": "Cấp 2"
+      "name": "Găng giác đấu",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon60c31461246a65b82f647310a13cc35b5ef41468c818d1.png",
+      "category": "Thủ",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 220,
+      "attributes": [
+        "+90 Giáp phép"
+      ]
     },
     {
-      "name": "Vương Miện Hecate",
-      "iconUrl": "/images/items/vuong mien hecate.png",
-      "category": "PHÉP",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Giáp nhẹ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/1e01e847498a4e8ac12a56b22189783d583eb1929d05a1.png",
+      "category": "Thủ",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 220,
+      "attributes": [
+        "+ 90 Giáp"
+      ]
     },
     {
-      "name": "Vuốt Hung Tàn",
-      "iconUrl": "/images/items/vuot hung tan.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "name": "Nhẫn hồng ngọc",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon84752d478c1737c85f2eb77a063cb11a5ef4145c956231.png",
+      "category": "Thủ",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 300,
+      "attributes": [
+        "+300 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Xuyên tâm lệnh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/a93be23a737e4619fa8539820f25a8725e453576be69c1.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1980,
+      "attributes": [
+        "+140 Công phép",
+        "+500 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Băng nhẫn Skadi",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/ff28203912b57f6855013cad060d0f8f5e45355793b4d1.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2100,
+      "attributes": [
+        "+140 Công phép",
+        "+ 600 Máu tối đa",
+        "+5% Giảm Hồi chiêu"
+      ]
+    },
+    {
+      "name": "Quả cầu băng sương",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconf30f58d64f6de018d472a24497b8e8475ef414dc8c8931.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2200,
+      "attributes": [
+        "+220 Công phép",
+        "+ 12% Hút máu phép"
+      ]
+    },
+    {
+      "name": "Mặt nạ Berith",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/722dfa95e17bc0ae4fca1370b39db24e583eb4a552d901.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1800,
+      "attributes": [
+        "+140 Công phép",
+        "+10% Giảm hồi chiêu",
+        "+600 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Trượng băng",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/18a94ba7877043520ad478e08bc4b0bc583eb43f03b4d1.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2020,
+      "attributes": [
+        "+140 Công phép",
+        "+850 Máu tối đa",
+        "+5% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Thập Tự Kiếm",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icona69219340114945bffc9ee0648b76df659eebed145bd21.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+180 Công phép",
+        "+20% Tốc đánh",
+        "+5% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Quyền trượng Rhea",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/2eabc8620f02b21582e3b88ea1f95f40583eb3ad4c2941.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2050,
+      "attributes": [
+        "+160 Công phép",
+        "+800 Máu tối đa",
+        "+25% Hút máu phép"
+      ]
+    },
+    {
+      "name": "Ngọc đại pháp sư",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/5e2bc1f8eb06b085df149928bb6db37f583eb34e349451.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1800,
+      "attributes": [
+        "+140 Công phép",
+        "+10% Giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Vương miện Hecate",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/29845a83cf9ddd3d17e0fcd07aabe61e583eb2e7b1a651.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2400,
+      "attributes": [
+        "+240 Công phép"
+      ]
+    },
+    {
+      "name": "Trượng bùng nổ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/3cdbf8caaf2dc260fd962f5d31c074c5583eb2abdcb021.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1800,
+      "attributes": [
+        "+200 Công phép",
+        "+5% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Sách thánh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/13b087b42ee35a7138a782d260cff7c9583eb099e321d1.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2610,
+      "attributes": [
+        "+350 Công phép",
+        "+10% Giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Gươm hiền triết",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/a9f9ae5e132e65a1711d6c59bb616dff583eb0417f88d1.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2100,
+      "attributes": [
+        "+140 Công phép",
+        "+600 Máu tối đa",
+        "+10% Giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Gươm tận thế",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/fae96e865899f2e3e2cda185b58aee12583eafaae4a281.png",
+      "category": "Phép",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1800,
+      "attributes": [
+        "+180 Công phép",
+        "+10% Giảm hồi chiêu",
+        "+5% tốc chạy"
+      ]
+    },
+    {
+      "name": "Sách Truy Hồn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/c9420fcfd346612dd10cfc7cc3ca9b575965da11b6b361.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+140 Công phép",
+        "+600 Máu tối đa",
+        "+ 10% Giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Dây chuyền lục bảo",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon8103b0d6e1a14ff19e46c13910e854115976f9749f2ac1.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1800,
+      "attributes": [
+        "+160 Công phép",
+        "+15% Giảm hồi chiêu",
+        "+ 25 Hồi năng lượng/5s"
+      ]
+    },
+    {
+      "name": "Trượng hỗn mang",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconb1d589bb71a28a6cb2c3f9f5bbb2e5a05976f9dd872e81.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2050,
+      "attributes": [
+        "+180 Công phép",
+        "+10% Giảm hồi chiêu",
+        "+40% Xuyên giáp phép – Nội tại duy nhất"
+      ]
+    },
+    {
+      "name": "Huyết trượng",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/d9e5acef68f2f58e65fbb98a8be457ff583eb23412f3a1.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 800,
+      "attributes": [
+        "+80 Công phép",
+        "+12% Hút máu phép"
+      ]
+    },
+    {
+      "name": "Vòng đức hạnh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/87e8108995142053f4c9404279233a20583eb207e77931.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 720,
+      "attributes": [
+        "+60 Công phép",
+        "+20 Hồi năng lượng/5s",
+        "+5% Giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Phượng hoàng lệ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/16bdc639fcd2451b890a545c4b09f6e1583eb1c5c672e1.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 500,
+      "attributes": [
+        "+50 Công phép"
+      ]
+    },
+    {
+      "name": "Mặt nạ ma quái",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/77650eb45ea686167327f9128590dc53583eb194634c31.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 960,
+      "attributes": [
+        "+100 Công phép"
+      ]
+    },
+    {
+      "name": "Gươm nguyên tố",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/73bcd25e5a2f1139dec8c7b09c8b8650583eb15c7cce91.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 820,
+      "attributes": [
+        "+ 40 Công phép",
+        "+10% Giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Sớ ma thuật",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/585ee3fa8a1f94fd26d8e0336e534609583eb11f66eac1.png",
+      "category": "Phép",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 820,
+      "attributes": [
+        "+120 Công phép"
+      ]
+    },
+    {
+      "name": "Nhẫn ma pháp",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/447da6386d8e761eea825726bd9bf224583eb1046a87b1.png",
+      "category": "Phép",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 300,
+      "attributes": [
+        "+5% giảm hồi chiêu – Nội tại duy nhất"
+      ]
+    },
+    {
+      "name": "Sách cổ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/a1f23877567b4d9b450624aa7b6a99f9583eb0df82d641.png",
+      "category": "Phép",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 540,
+      "attributes": [
+        "+80 Công phép"
+      ]
+    },
+    {
+      "name": "Dây chuyền ma thuật",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon43d3c483d428cf8f1e7a4b03fff7356b5ef4143e8db341.png",
+      "category": "Phép",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 120,
+      "attributes": [
+        "+10 Hồi năng lượng/5s"
+      ]
+    },
+    {
+      "name": "Nhẫn Lapis",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icona33a692bf196ac687212c8bd472e4a655ef4142a343721.png",
+      "category": "Phép",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 220,
+      "attributes": [
+        "+300 Năng lượng tối đa"
+      ]
+    },
+    {
+      "name": "Sách phép",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/1108678613455e7b64ca9507065db8d5583eb07ed42e91.png",
+      "category": "Phép",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 300,
+      "attributes": [
+        "+40 Công phép"
+      ]
+    },
+    {
+      "name": "Cung Bão Tố",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/8f835e52d8078207bb955bc2657867ba5ac48dd56f1791.png",
+      "category": "Đi rừng",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+30% Tốc đánh",
+        "+15% Hút máu",
+        "+7% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Kiếm truy hồn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/962f75587871dfe385b2eed0071fd80f5875efc662a801.png",
+      "category": "Đi rừng",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+90 Công vật lý",
+        "+5% Giảm hồi chiêu",
+        "+8% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Rìu Leviathan",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/5cbcea0c03cb8fbcffef6706943b59095875ef42bc1b91.png",
+      "category": "Đi rừng",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+1200 Máu tối đa",
+        "+5% Giảm hồi chiêu",
+        "+6% Tốc cháy"
+      ]
+    },
+    {
+      "name": "Gươm Loki",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/e0c0df64d8c799425e512a41035121625875eeb337a461.png",
+      "category": "Đi rừng",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+150 Công phép",
+        "+5% Giảm hồi chiêu",
+        "+7% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Cung Gió Lốc",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/3e4d4da0fbaef18cc27b280233abd8585ac48ccdb8a361.png",
+      "category": "Đi rừng",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+12% Tốc đánh"
+      ]
+    },
+    {
+      "name": "Đao truy kích",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/65a0e3833daa8a27a33a72e7e4e7494e5875ed8cb51931.png",
+      "category": "Đi rừng",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+25 Công vật lý"
+      ]
+    },
+    {
+      "name": "Rìu Gnoll",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/059cb0940752f504cfa9c07a88362cf45875ed3ea79971.png",
+      "category": "Đi rừng",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+400 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Gươm hiến tế",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/13ecad971cf548f39cbf6d46243665725875ecda3ef671.png",
+      "category": "Đi rừng",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 700,
+      "attributes": [
+        "+40 Công phép"
+      ]
+    },
+    {
+      "name": "Rựa thợ săn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconfaba84adb480e565d9815a2b898bb8995bcd9218e940c1.jpg",
+      "category": "Đi rừng",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 250
     },
     {
       "name": "Xạ Nhật Cung",
-      "iconUrl": "/images/items/xa nhat cung.png",
-      "category": "CÔNG",
-      "type": "Trang bị lớn",
-      "level": "Cấp 3"
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon6bc7c27ebfd950b0fe16493db552c983658d55e7787b81.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+30% Tốc đánh",
+        "+10% Tỷ lệ chí mạng",
+        "+ 5% Tốc chạy"
+      ]
     },
     {
-      "name": "Xuyên Tâm Lệnh",
-      "iconUrl": "/images/items/xuyen tam lenh.png",
-      "category": "CÔNG",
-      "type": "Khác",
-      "level": "Cấp 2"
+      "name": "Thương Xuyên Phá",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/b3d3556b6bd3eaf5e90b966647b6d8a75976bb54845d91.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+110 Công vật lý"
+      ]
+    },
+    {
+      "name": "Vuốt Hung Tàn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/c65bf282a71890970ac6880b773460945965d91139a151.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1960,
+      "attributes": [
+        "+30% Tốc đánh",
+        "+20% Tỷ lệ chí mạng",
+        "+5% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Cung tà ma",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconcaa38dc0fdd84ce09ed77e83e1cfb2eb5ef414c91c8131.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2250,
+      "attributes": [
+        "+90 Công vật lý",
+        "+10% Hút máu",
+        "+10% Tỷ lệ chí mạng"
+      ]
+    },
+    {
+      "name": "Thương khung kiếm",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/6db8867b63ea27f159d706fc6a85783e658d54fc54c591.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2120,
+      "attributes": [
+        "+100 Công vật lý",
+        "+10% Giảm hồi chiêu",
+        "+ 500 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Nanh Fenrir",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/7ccbeb5a9d92d6616b38fb9f8a6d697f583eb0099ad9e1.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2800,
+      "attributes": [
+        "+180 công vật lý",
+        "+5% giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Song đao bão táp",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/42d4233ea5d7ed2db0af6ae09c5686d9583eafd6a6f201.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1920,
+      "attributes": [
+        "+35% Tốc đánh",
+        "+25% Tỷ lệ chí mạng",
+        "+7% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Gươm sấm sét",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/f2ae054a4509ca5bfbf6c1246d6a0e7d583eaf9d711da1.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1840,
+      "attributes": [
+        "+35% Tốc đánh",
+        "+8% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Phức hợp kiếm",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/2ed0a1b9762b0eaed6ef8c26f69fabb0583eaf5e888731.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2150,
+      "attributes": [
+        "+70 Công vật lý",
+        "+15% Tốc đánh",
+        "+10% Giảm hồi chiêu",
+        "+600 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Quỷ Kiếm",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/dac326474d6d7eb4b8f77074edb8b8cf583eaefc61eff1.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1800,
+      "attributes": [
+        "+100 Công vật lý",
+        "+25% Hút máu",
+        "+600 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Kiếm Muramasa",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icone607457dda37172782dc9180e3cd036a59eebe79887cd1.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2020,
+      "attributes": [
+        "+80 Công vật lý",
+        "+10% Giảm hồi chiêu",
+        "+500 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Thánh kiếm",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon48a62735ee508f6a920e823fafd9b21159eebea8e613f1.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2120,
+      "attributes": [
+        "+100 Công vật lý",
+        "+25% Tỷ lệ chí mạng – Nội tại Duy nhất"
+      ]
+    },
+    {
+      "name": "Kiếm Fafnir",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/96fd7b63339a3f0e510781f375eb356d583ead06b76221.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2040,
+      "attributes": [
+        "+60 Công vật lý",
+        "+30% Tốc đánh",
+        "+10% Hút máu"
+      ]
+    },
+    {
+      "name": "Thương Longinus",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/e31c3c90f650c04ebdb29ea2ca200265583eacda186ed1.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2030,
+      "attributes": [
+        "+80 Công vật lý",
+        "+15% Giảm hồi chiêu",
+        "+500 Máu tối đa",
+        "+60 Xuyên giáp – Phá giáp – Nội tại duy nhất"
+      ]
+    },
+    {
+      "name": "Đao Truy Hồn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon39afcfcf7b6f28bebbf64b598f7f586b59f0056b0a4811.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 1900,
+      "attributes": [
+        "+80 Công vật lý",
+        "+ 800 Máu tối đa",
+        "+ 10% Giảm hồi chiêu"
+      ]
+    },
+    {
+      "name": "Liềm Đoạt Mệnh",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/6e4830c854d7f71dd8ad51b25d9abffd5965d8cb4027d1.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+75 Công vật lý",
+        "+15% Tốc đánh",
+        "+500 Máu tối đa"
+      ]
+    },
+    {
+      "name": "Gươm Uriel",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icone8e8d84ac94fa585c3a9661cce80fbf159eebe5b292891.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 2000,
+      "attributes": [
+        "+80 Công vật lý",
+        "+25% Tốc đánh",
+        "+200 Giáp phép"
+      ]
+    },
+    {
+      "name": "Phi tiêu",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/2621c9b1fed23acd4be27b91dfa78e38583eac94287361.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 750,
+      "attributes": [
+        "+20% Tốc đánh"
+      ]
+    },
+    {
+      "name": "Thương đấu sĩ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/90f53ba831f13f5a01df70376b561701583eabc0c7d101.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 830,
+      "attributes": [
+        "+50 Công vật lý"
+      ]
+    },
+    {
+      "name": "Song đao",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/a1f25b14e89dff8b8512abda77f54c3c583eab9aa21001.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 780,
+      "attributes": [
+        "+25% Tốc đánh",
+        "+5% Tốc chạy"
+      ]
+    },
+    {
+      "name": "Chùy cổ",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/184d423b3a6e763b0238f31b0f9b28f5583eab794ea9b1.png",
+      "category": "Công",
+      "level": "Cấp 2",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 740,
+      "attributes": [
+        "+25 Công vật lý",
+        "+15% Tốc đánh"
+      ]
+    },
+    {
+      "name": "Kiếm dài",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/05beffe85dbc5379e596f4719db29918583eab4bd2b8b1.png",
+      "category": "Công",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 910,
+      "attributes": [
+        "+80 Công vật lý"
+      ]
+    },
+    {
+      "name": "Chùy xích",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/a888ca6d4b74729819ffa78263621f7c583eab330ef401.png",
+      "category": "Công",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 450,
+      "attributes": [
+        "+40 Công vật lý"
+      ]
+    },
+    {
+      "name": "Chùy máu",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon3b486c0c20f8e67265b3ccd88aa0cc615ef413d98e41b1.png",
+      "category": "Công",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 410,
+      "attributes": [
+        "+10 Công vật lý",
+        "+8% Hút máu"
+      ]
+    },
+    {
+      "name": "Găng tay",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/iconad6ef58a9c119afbe9fce74b3025b1c95ef413c1a087b1.png",
+      "category": "Công",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 300,
+      "attributes": [
+        "+8% Tỷ lệ chí mạng"
+      ]
+    },
+    {
+      "name": "Dao găm",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/d0892f500e089e6e24d02a65ba5fe048583eaaa57aa961.png",
+      "category": "Công",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 290,
+      "attributes": [
+        "+10% Tốc đánh"
+      ]
+    },
+    {
+      "name": "Kiếm ngắn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2024/05/icon2e47616ebfaf6569b90f705b86600dc55ef41367e43541.png",
+      "category": "Công",
+      "level": "Cấp 1",
+      "sourceUrl": "https://lienquan.garena.vn/hoc-vien/trang-bi/",
+      "price": 250,
+      "attributes": [
+        "+20 Công vật lý"
+      ]
+    },
+    {
+      "name": "Vô ảnh tiễn",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2026/09/unnamed-5.png",
+      "category": "Công",
+      "level": "Cấp 3",
+      "attributes": [
+        "+40 công vật lý",
+        "+20% tốc đánh",
+        "+20% chí mạng",
+        "+650 máu tối đa"
+      ],
+      "description": "Vô hình (75 giây): Tàng hình 2,5 giây với tướng đánh xa hoặc 1 giây với tướng cận chiến. Trong lúc đó, nhận 30% tốc chạy và hồi 130–260 máu mỗi 0,5 giây. Đòn đánh hoặc kỹ năng kết thúc tàng hình.",
+      "sourceUrl": "https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-vet-nut-thoi-khong-29-09-2026/#dieu-chinh-trang-bi"
+    },
+    {
+      "name": "Khiên Thánh Quang",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2026/09/unnamed-4.png",
+      "category": "Thủ",
+      "level": "Cấp 3",
+      "attributes": [
+        "+10% giảm hồi chiêu",
+        "+180 giáp",
+        "+1.000 máu tối đa"
+      ],
+      "description": "Quang thuẫn: Đánh trúng tướng địch bằng đòn đánh hoặc kỹ năng tạo khiên trong 3 giây cho bản thân và đồng minh gần có máu thấp nhất. Lá chắn bằng 250–500 + 4% máu tối đa, mạnh hơn 50% nếu đứng một mình. Hồi chiêu 10 giây khi đánh gần hoặc 12,5 giây khi đánh xa.",
+      "sourceUrl": "https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-vet-nut-thoi-khong-29-09-2026/#dieu-chinh-trang-bi"
     }
   ],
   "arcana": [
@@ -933,6 +1510,359 @@
       "name": "Xanh - Tốc đánh, xuyên giáp phép",
       "iconUrl": "/images/arcana/xanh toc danh  xuyen giap phep.png",
       "category": "Xanh"
+    }
+  ],
+  "spells": [
+    {
+      "name": "Bộc phá",
+      "slug": "boc-pha",
+      "iconUrl": "/images/spells/boc-pha.png",
+      "description": null
+    },
+    {
+      "name": "Cấp cứu",
+      "slug": "cap-cuu",
+      "iconUrl": "/images/spells/cap-cuu.png",
+      "description": null
+    },
+    {
+      "name": "Gầm thét",
+      "slug": "gam-thet",
+      "iconUrl": "/images/spells/gam-thet.png",
+      "description": null
+    },
+    {
+      "name": "Lá chắn sinh mệnh",
+      "slug": "la-chan-sinh-menh",
+      "iconUrl": "/images/spells/la-chan-sinh-menh.png",
+      "description": null
+    },
+    {
+      "name": "Ngất ngư",
+      "slug": "ngat-ngu",
+      "iconUrl": "/images/spells/ngat-ngu.png",
+      "description": null
+    },
+    {
+      "name": "Suy nhược",
+      "slug": "suy-nhuoc",
+      "iconUrl": "/images/spells/suy-nhuoc.png",
+      "description": null
+    },
+    {
+      "name": "Thanh tẩy",
+      "slug": "thanh-tay",
+      "iconUrl": "/images/spells/thanh-tay.png",
+      "description": null
+    },
+    {
+      "name": "Tốc biến",
+      "slug": "toc-bien",
+      "iconUrl": "/images/spells/toc-bien.png",
+      "description": null
+    },
+    {
+      "name": "Tốc hành",
+      "slug": "toc-hanh",
+      "iconUrl": "/images/spells/toc-hanh.png",
+      "description": null
+    },
+    {
+      "name": "Trừng trị",
+      "slug": "trung-tri",
+      "iconUrl": "/images/spells/trung-tri.png",
+      "description": null
+    },
+    {
+      "name": "Tự bạo bổn",
+      "slug": "tu-bao-bon",
+      "iconUrl": "/images/spells/tu-bao-bon.png",
+      "description": null
+    },
+    {
+      "name": "Viện binh liên hiệp",
+      "slug": "vien-binh-lien-hiep",
+      "iconUrl": "/images/spells/vien-binh-lien-hiep.png",
+      "description": null
+    },
+    {
+      "name": "Dịch chuyển",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2026/09/unnamed.png",
+      "sourceUrl": "https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-vet-nut-thoi-khong-29-09-2026/",
+      "description": "Hồi chiêu 90 giây. Niệm 2 giây để đến lính hoặc công trình đồng minh, kể cả trụ đã mất. Đơn vị đích miễn sát thương trong lúc niệm. Hủy phép hoặc dùng trong vòng 30 giây sau Cổng dịch chuyển sẽ giảm hồi chiêu 30 giây."
+    },
+    {
+      "name": "Ma chủng hắc ám",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2026/09/unnamed-1.png",
+      "type": "Giới hạn mùa",
+      "sourceUrl": "https://lienquan.garena.vn/dieu-chinh-giua-mua-pb-vet-nut-thoi-khong-17-11-2026/",
+      "description": "Hồi chiêu 100 giây. Giảm một nửa hồi chiêu còn lại của các kỹ năng. Tạo lá chắn và triệu hồi Ma vật gây sát thương phép, mỗi hiệu ứng có giá trị 350 + 25 × cấp tướng theo bản 17/11. Mục tiêu bị làm chậm 30% trong 1 giây."
+    }
+  ],
+  "enchantments": [
+    {
+      "name": "Quả cầu băng sương",
+      "slug": "qua-cau-bang-suong",
+      "iconUrl": "/images/enchantments/thanh-khoi-nguyen/qua-cau-bang-suong.webp",
+      "description": null,
+      "branch": "Thành khởi nguyên",
+      "level": 1
+    },
+    {
+      "name": "Siêu hồi máu",
+      "slug": "sieu-hoi-mau",
+      "iconUrl": "/images/enchantments/thanh-khoi-nguyen/sieu-hoi-mau.webp",
+      "description": null,
+      "branch": "Thành khởi nguyên",
+      "level": 1
+    },
+    {
+      "name": "Mật ngữ",
+      "slug": "mat-ngu",
+      "iconUrl": "/images/enchantments/thanh-khoi-nguyen/mat-ngu.webp",
+      "description": null,
+      "branch": "Thành khởi nguyên",
+      "level": 1
+    },
+    {
+      "name": "Uy áp",
+      "slug": "uy-ap",
+      "iconUrl": "/images/enchantments/thanh-khoi-nguyen/uy-ap.webp",
+      "description": null,
+      "branch": "Thành khởi nguyên",
+      "level": 2
+    },
+    {
+      "name": "Thợ săn",
+      "slug": "tho-san",
+      "iconUrl": "/images/enchantments/thanh-khoi-nguyen/tho-san.webp",
+      "description": null,
+      "branch": "Thành khởi nguyên",
+      "level": 2
+    },
+    {
+      "name": "Chuyển sinh",
+      "slug": "chuyen-sinh",
+      "iconUrl": "/images/enchantments/thanh-khoi-nguyen/chuyen-sinh.webp",
+      "description": null,
+      "branch": "Thành khởi nguyên",
+      "level": 3
+    },
+    {
+      "name": "Luyện kim",
+      "slug": "luyen-kim",
+      "iconUrl": "/images/enchantments/thanh-khoi-nguyen/luyen-kim.webp",
+      "description": null,
+      "branch": "Thành khởi nguyên",
+      "level": 3
+    },
+    {
+      "name": "Tương phản",
+      "slug": "tuong-phan",
+      "iconUrl": "/images/enchantments/thap-quang-minh/tuong-phan.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 1
+    },
+    {
+      "name": "Sung mãn",
+      "slug": "sung-man",
+      "iconUrl": "/images/enchantments/thap-quang-minh/sung-man.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 1
+    },
+    {
+      "name": "Thánh châu",
+      "slug": "thanh-chau",
+      "iconUrl": "/images/enchantments/thap-quang-minh/thanh-chau.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 1
+    },
+    {
+      "name": "Xuyên tâm",
+      "slug": "xuyen-tam",
+      "iconUrl": "/images/enchantments/thap-quang-minh/xuyen-tam.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 2
+    },
+    {
+      "name": "Bí quyết",
+      "slug": "bi-quyet",
+      "iconUrl": "/images/enchantments/thap-quang-minh/bi-quyet.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 2
+    },
+    {
+      "name": "Thánh thuẫn",
+      "slug": "thanh-thuan",
+      "iconUrl": "/images/enchantments/thap-quang-minh/thanh-thuan.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 3
+    },
+    {
+      "name": "Thần quang",
+      "slug": "than-quang",
+      "iconUrl": "/images/enchantments/thap-quang-minh/than-quang.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 3
+    },
+    {
+      "name": "Tinh linh",
+      "slug": "tinh-linh",
+      "iconUrl": "/images/enchantments/thap-quang-minh/tinh-linh.webp",
+      "description": null,
+      "branch": "Tháp quang minh",
+      "level": 3
+    },
+    {
+      "name": "Ma hỏa",
+      "slug": "ma-hoa",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/ma-hoa.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 1
+    },
+    {
+      "name": "Dư ảnh",
+      "slug": "du-anh",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/du-anh.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 1
+    },
+    {
+      "name": "Hấp huyết",
+      "slug": "hap-huyet",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/hap-huyet.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 1
+    },
+    {
+      "name": "Cố thủ",
+      "slug": "co-thu",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/co-thu.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 2
+    },
+    {
+      "name": "Cường công",
+      "slug": "cuong-cong",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/cuong-cong.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 2
+    },
+    {
+      "name": "Ma tính",
+      "slug": "ma-tinh",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/ma-tinh.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 3
+    },
+    {
+      "name": "Ma chú",
+      "slug": "ma-chu",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/ma-chu.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 3
+    },
+    {
+      "name": "Đấu khí",
+      "slug": "dau-khi",
+      "iconUrl": "/images/enchantments/vuc-hon-mang/dau-khi.webp",
+      "description": null,
+      "branch": "Vực hỗn mang",
+      "level": 3
+    },
+    {
+      "name": "Canh gác",
+      "slug": "canh-gac",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/canh-gac.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 1
+    },
+    {
+      "name": "Ám kích",
+      "slug": "am-kich",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/am-kich.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 1
+    },
+    {
+      "name": "Nhạy bén",
+      "slug": "nhay-ben",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/nhay-ben.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 1
+    },
+    {
+      "name": "Sinh tồn",
+      "slug": "sinh-ton",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/sinh-ton.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 2
+    },
+    {
+      "name": "Bơm máu",
+      "slug": "bom-mau",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/bom-mau.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 2
+    },
+    {
+      "name": "Du hiệp",
+      "slug": "du-hiep",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/du-hiep.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 3
+    },
+    {
+      "name": "Mộc giáp",
+      "slug": "moc-giap",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/moc-giap.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 3
+    },
+    {
+      "name": "Trói buộc",
+      "slug": "troi-buoc",
+      "iconUrl": "/images/enchantments/rung-nguyen-sinh/troi-buoc.webp",
+      "description": null,
+      "branch": "Rừng nguyên sinh",
+      "level": 3
+    },
+    {
+      "name": "Sân nhà",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2026/09/unnamed-2.png",
+      "branch": "Vực hỗn mang",
+      "level": 2,
+      "sourceUrl": "https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-vet-nut-thoi-khong-29-09-2026/",
+      "description": "Tăng 3% sát thương và 3% tốc chạy khi đứng ở nửa bản đồ phe mình."
+    },
+    {
+      "name": "Cứu viện",
+      "iconUrl": "https://lienquan.garena.vn/wp-content/uploads/2026/09/unnamed-3.png",
+      "branch": "Rừng nguyên sinh",
+      "level": 2,
+      "sourceUrl": "https://lienquan.garena.vn/chi-tiet-ban-cap-nhat-vet-nut-thoi-khong-29-09-2026/",
+      "description": "Mỗi 15 giây hồi 210 + 15 × cấp tướng máu cho bản thân và tướng đồng minh ở gần."
     }
   ]
 }

@@ -31,7 +31,10 @@
     if (typeof source === "string" && /^\/(?:draft\/portraits|teams|art)\/[-\w]+\.(?:jpe?g|png|webp|gif)$/.test(source)) return "/ho-tro-ban-pick" + source;
     try {
       const url = new URL(source || "", original + "/");
-      return source && url.protocol === "https:" && url.origin === original && url.pathname.startsWith("/images/")
+      return source && url.protocol === "https:" && (
+        url.origin === original && url.pathname.startsWith("/images/") ||
+        url.origin === "https://lienquan.garena.vn" && url.pathname.startsWith("/wp-content/uploads/")
+      )
         ? url.href : "";
     } catch {
       return "";
@@ -393,7 +396,7 @@
       '<a href="/ho-tro-ban-pick/wiki/hieu-qua-vang">Hiệu quả vàng</a></nav>';
     try {
       const kind = tab === "hero" || tab === "heroes" ? "heroes" : tab;
-      const catalog = ["items", "arcana"].includes(kind);
+      const catalog = ["items", "arcana", "spells", "enchantments"].includes(kind);
       const response = catalog ? await fetch("/ho-tro-ban-pick/catalog.json")
         .then(r => {
           if (!r.ok) throw Error("Danh mục chưa sẵn sàng.");
@@ -402,28 +405,38 @@
       const heroes = kind === "heroes";
       const groups = [...new Set(response.data.map(item => item.category || item.branch).filter(Boolean))];
       if (heroes) heroList = response.data;
+      const initialQuery = new URLSearchParams(location.search).get("q") ?? "";
+      const gear = kind === "items";
       container.innerHTML = nav + sourceNote(response) + '<div class="toolbar">' +
         search("wiki-search", "Tìm trong danh mục…") + (heroes ?
         '<label class="field plain"><span>Vị trí</span><select id="wiki-lane"><option value="">Tất cả</option>' +
         Object.entries(lanes).map(([k, name]) => '<option value="' + k + '">' + name + '</option>').join("") + '</select></label>' : "") +
         (groups.length ? '<label class="field plain"><span>Nhóm</span><select id="wiki-group"><option value="">Tất cả</option>' +
           groups.map(name => '<option value="' + escape(name) + '">' + escape(name) + '</option>').join("") + '</select></label>' : "") +
+        (gear ? '<label class="field plain"><span>Cấp</span><select id="wiki-level"><option value="">Tất cả</option>' +
+          ['Cấp 1', 'Cấp 2', 'Cấp 3'].map(level => '<option>' + level + '</option>').join("") + '</select></label>' : "") +
         '</div><div id="wiki-list" class="' + (heroes ? "wiki-heroes" : "reference-grid") + '"></div>';
       function render() {
         const q = norm($("wiki-search").value);
         const lane = $("wiki-lane")?.value;
         const group = $("wiki-group")?.value;
-        const filtered = response.data.filter(item => norm(item.name).includes(q) && (!lane || item.roles?.includes(lane)) &&
+        const level = $("wiki-level")?.value;
+        const filtered = response.data.filter(item => norm(item.name).includes(q) && (!level || item.level === level) && (!lane || item.roles?.includes(lane)) &&
           (!group || (item.category || item.branch) === group));
         $("wiki-list").innerHTML = filtered.map(item => heroes ? heroButton(item, "wiki-tile") :
           '<article class="panel reference">' + photo(item.iconUrl ?? item.imageUrl) + '<div><h2>' +
-          escape(item.name) + '</h2>' + (typeof item.description === "string" ? '<p>' + escape(item.description) + '</p>' : "") +
-          ([item.category, item.type, item.level].filter(Boolean).length ?
-            '<p>' + [item.category, item.type, item.level].filter(Boolean).map(escape).join(" / ") + '</p>' : "") +
+          escape(item.name) + '</h2>' + (item.price ? '<p><strong>' + number(item.price) + ' vàng</strong></p>' : "") +
+          (item.attributes?.length ? '<p class="reference-attributes">' + item.attributes.map(escape).join('<br>') + '</p>' : "") +
+          (typeof item.description === "string" ? '<p>' + escape(item.description) + '</p>' : "") +
+          ([item.category || item.branch, item.type, typeof item.level === "number" ? "Cấp " + item.level : item.level].filter(Boolean).length ?
+            '<p>' + [item.category || item.branch, item.type, typeof item.level === "number" ? "Cấp " + item.level : item.level].filter(Boolean).map(escape).join(" / ") + '</p>' : "") +
+          (item.sourceUrl ? '<a class="subtle-link" href="' + escape(item.sourceUrl) + '">Nguồn Garena</a>' : "") +
           (item.name === "Khiên Thánh Quang" ? '<a class="subtle-link" href="/ho-tro-ban-pick/wiki/hieu-qua-vang#khien-thanh-quang">Xem chỉ số và nội tại</a>' : "") +
           '</div></article>').join("") || empty("Không tìm thấy mục phù hợp.");
       }
+      $("wiki-search").value = initialQuery;
       $("wiki-search").addEventListener("input", render);
+      $("wiki-level")?.addEventListener("change", render);
       $("wiki-lane")?.addEventListener("change", render);
       $("wiki-group")?.addEventListener("change", render);
       render();
