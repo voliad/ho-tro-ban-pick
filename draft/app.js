@@ -6,15 +6,11 @@
   const heroesById = new Map(roster.map(hero => [hero.id, hero]));
   const lanePools = window.AOV_LANE_POOLS;
   const roleIcons = { 28: "dau-si", 29: "phap-su", 30: "tro-thu", 31: "do-don", 32: "sat-thu", 33: "xa-thu" };
-  const laneGlyphs = {
-    "": "M3 4h5m3 0h6M3 10h14M3 16h5m3 0h6",
-    "Tà Thần": "M4 16V4h12M4 4l3 3m9 7v2h-2",
-    "Đi rừng": "M10 2l5 6h-2l4 6h-6v4H9v-4H3l4-6H5z",
-    "Đường giữa": "M4 16L16 4M4 10v6h6m0-12h6v6",
-    "Trợ thủ": "M10 3l6 3v4c0 3-3 6-6 8-3-2-6-5-6-8V6zM7 10h6m-3-3v6",
-    "Xạ thủ": "M4 16h12V4m0 12l-3-3M4 6V4h2",
+  const laneIcons = {
+    "": "all", "Tà Thần": "slayer", "Đi rừng": "jungle", "Đường giữa": "mid",
+    "Trợ thủ": "support", "Xạ thủ": "dragon",
   };
-  const filterGlyph = path => '<svg class="filter-icon" aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="' + path + '"/></svg>';
+  const filterIcon = id => '<img class="filter-icon" alt="" src="./icons/' + id + '.png">';
   const $ = id => document.getElementById(id);
   const isRank = new URLSearchParams(location.search).get("mode") === "rank";
   const storeKey = isRank ? "aov-rank-draft-v1" : "aov-draft-desk-v1";
@@ -204,8 +200,7 @@
     }
     $("roles").innerHTML = roleOptions.map(([id, label]) => {
       return '<button type="button" data-role="' + id + '" aria-pressed="' + (String(id) === role) +
-        '">' + (id ? '<img class="filter-icon" alt="" src="./icons/' + roleIcons[id] + '.png">' :
-          filterGlyph("M3 3h5v5H3zm9 0h5v5h-5zM3 12h5v5H3zm9 0h5v5h-5z")) + label + '</button>';
+        '">' + filterIcon(id ? roleIcons[id] : "lane-all") + label + '</button>';
     }).join("");
     $("pool-count").textContent = rosterFiltered.length === roster.length
       ? roster.length + " mục tướng"
@@ -826,7 +821,7 @@
   const laneOptions = [["", "Mọi đường"], ...Object.entries(lanePools).map(([key, { label }]) => [key, label])];
   laneFilter.innerHTML = laneOptions.map(([key, label]) =>
     '<button type="button" data-lane="' + escapeHtml(key) + '" aria-pressed="false">' +
-      filterGlyph(laneGlyphs[key]) + escapeHtml(label) + '</button>').join("");
+      filterIcon("lane-" + laneIcons[key]) + escapeHtml(label) + '</button>').join("");
   laneFilter.addEventListener("click", event => {
     const button = event.target.closest("[data-lane]");
     if (!button) return;
