@@ -163,6 +163,11 @@
   }
 
   calibrate.addEventListener("click", beginCalibration);
+  video.addEventListener("draft-share-ready", () => {
+    if (imageUrl) clearImage();
+    file.value = "";
+    beginCalibration();
+  });
 
   function clearImage() {
     if (!imageUrl) return;
