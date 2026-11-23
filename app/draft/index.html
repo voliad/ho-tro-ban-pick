@@ -6,7 +6,7 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=lineup">
+  <link rel="stylesheet" href="./style.css?v=video-rotation">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=filter-rows" defer></script>
   <script src="./counters.js?v=cross-match" defer></script>
@@ -21,7 +21,7 @@
   <script src="./iphone-receiver.js?v=1" defer></script>
   <script src="./scan-samples.js?v=5" defer></script>
   <script src="./draft-ocr.js?v=1" defer></script>
-  <script src="./draft-scan.js?v=iphone-room" defer></script>
+  <script src="./draft-scan.js?v=video-rotation" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -67,6 +67,8 @@
             <button type="button" class="quiet" id="iphone-receive">Nhận từ iPhone</button>
             <button type="button" class="quiet" id="airplay-start">Bắt đầu chia sẻ</button>
             <button type="button" class="quiet" id="airplay-stop" hidden>Dừng chia sẻ</button>
+            <button type="button" class="quiet" id="scan-rotate" hidden>Xoay 90°</button>
+            <button type="button" class="quiet" id="scan-auto-rotate" hidden>Tự xoay</button>
             <label class="scan-file">Tải ảnh để thử <input type="file" id="scan-file" accept="image/png,image/jpeg,image/webp"></label>
             <button type="button" class="quiet" id="scan-clear" hidden>Bỏ ảnh</button>
             <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn lại vùng game</button>
@@ -87,6 +89,7 @@
           <div id="scan-results" aria-live="polite"></div>
           <p id="scan-ocr-status" role="status"></p>
           <video id="airplay-preview" aria-label="Xem màn hình đang chia sẻ" autoplay muted playsinline hidden></video>
+          <canvas id="scan-video-preview" aria-label="Màn hình chia sẻ đã xoay" hidden></canvas>
           <img id="scan-preview" alt="Ảnh cấm/chọn đang thử nhận diện" hidden>
         </div>
       </details>
