@@ -277,14 +277,14 @@
     return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
       pairs: [Object.keys(tips), []], direct: [[], []], tips, tactical: true };
   });
-  const counterRows = [...laneCounterRows, ...referenceRows];
+  const { tierFor, counters: vietnamRows } = window.DRAFT_VIETNAM_META;
+  const counterRows = [...laneCounterRows, ...vietnamRows, ...referenceRows];
 
   const positions = Object.keys(lanePools);
   const fitsLane = (id, position) => lanePools[position].main.has(id) || lanePools[position].extra.has(id);
 
   function assignLineup(ids) {
     // Keep the best assignment for each set of occupied lanes.
-    const { tierFor } = window.QZADD_TIERS;
     let assignments = new Map([[0, { score: 0, byLane: {} }]]);
     for (const id of ids) {
       const next = new Map(assignments);
@@ -380,8 +380,8 @@
           const lanes = matchups.get(row.target) ?? [];
           const fromUser = index === 0 ? row.contributed?.[row.target]?.includes(id) :
             row.contributed?.[id]?.includes(row.target);
-          const source = fromUser ? "người dùng bổ sung" : row.direct[index].includes(id) ? "Qzadd" :
-            row.tips[id] && index === 0 ? "theo cơ chế" : "tra chéo";
+          const source = row.source ?? (fromUser ? "người dùng bổ sung" : row.direct[index].includes(id) ? "Qzadd" :
+            row.tips[id] && index === 0 ? "theo cơ chế" : "tra chéo");
           lanes.push(row.lane + " · " + source);
           matchups.set(row.target, lanes);
         }
@@ -436,7 +436,7 @@
       subset(a.mixed, b.mixed) && (a.good.size > b.good.size || a.bad.size < b.bad.size || a.mixed.size < b.mixed.size);
     const dominated = new Set(recommendations.filter(entry =>
       recommendations.some(other => dominates(other, entry))));
-    const { board, tierFor } = window.QZADD_TIERS;
+    const { board } = window.QZADD_TIERS;
     const evidenceLanes = labels => [...new Set(labels.map(label => label.split(" · ")[0]))]
       .filter(lane => Object.hasOwn(board, lane));
     for (const entry of recommendations) {
@@ -465,7 +465,9 @@
       return threats.length ? '<br><span class="counter-risk">Đối thủ có ' +
         escapeHtml(threats.join(", ")) + ' · Giảm ưu tiên bài này.</span>' : "";
     };
-    const tierLabel = tier => tier.tier === "Draft" ? "Theo đội hình" : tier.tier;
+    const tierLabel = entry => entry.rating !== undefined ?
+      entry.tier + " (" + entry.rating.toFixed(1).replace(".", ",") + " · VN)" :
+      entry.tier === "Draft" ? "Theo đội hình" : entry.tier;
     const riskDetails = ({ bad, threats }) => [...bad].map(([target, labels]) => {
       const threat = threats.get(target);
       const level = threat?.weight > 0 ? "counter-threat-high" : threat?.weight < 0 ? "counter-threat-low" : "";
@@ -935,7 +937,7 @@
   $("counter-target").innerHTML = '<option value="">Tự động theo lượt chọn của đối thủ</option>' +
     [...Object.keys(window.DRAFT_COUNTERS.lanes), "Tham khảo chung"].map(lane => '<optgroup label="' + escapeHtml(lane) + '">' +
       counterRows.filter(row => row.lane === lane).map(row => '<option value="' + escapeHtml(row.key) + '">' +
-        escapeHtml(nameFor(row.target)) + '</option>').join("") + '</optgroup>').join("");
+        escapeHtml(nameFor(row.target) + (row.source ? " · " + row.source : "")) + '</option>').join("") + '</optgroup>').join("");
   $("counter-sources").innerHTML = Object.entries(window.DRAFT_COUNTERS.sources).map(([lane, post]) =>
     '<a href="https://www.facebook.com/Qzaddroaming/posts/' + post + '/">' + escapeHtml(lane) + '</a>').join("");
   $("counter-target").addEventListener("change", renderDraft);
