@@ -277,7 +277,7 @@
     return { target: id, lane: "Tham khảo chung", key: "reference|" + id,
       pairs: [Object.keys(tips), []], direct: [[], []], tips, tactical: true };
   });
-  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners } = window.DRAFT_VIETNAM_META;
+  const { tierFor, counters: vietnamRows, risks: vietnamRisks, partners: vietnamPartners, profiles: vietnamProfiles } = window.DRAFT_VIETNAM_META;
   const counterRows = [...laneCounterRows, ...vietnamRows, ...referenceRows];
 
   const positions = Object.keys(lanePools);
@@ -406,6 +406,7 @@
     const focus = suggestedLane || lane;
     const needed = active && picks.length < 5 ? (focus ? [focus] : missing) : [];
     const allies = new Set(picks);
+    const teamStyles = new Set(Object.entries(assigned).map(([position, id]) => vietnamProfiles[position]?.[id]?.[0]).filter(Boolean));
     const combosByHero = new Map();
     const completeCombos = [];
     const partnerMatches = new Map();
@@ -458,6 +459,14 @@
       entry.tier = tierFor(entry.id, fitLanes.length ? fitLanes :
         evidenceLanes([...entry.good.values(), ...entry.mixed.values()].flat()));
       entry.fitLanes = fitLanes;
+      const profileLanes = fitLanes.length ? fitLanes : entry.tier ? [entry.tier.lane] : [];
+      entry.profiles = new Map(profileLanes
+        .map(position => [position, vietnamProfiles[position]?.[entry.id]])
+        .filter(([, profile]) => profile));
+      // Reward a verified new playstyle for a lane the team is filling.
+      const styleBonus = active && teamStyles.size &&
+        [...entry.profiles].some(([position, [playstyle]]) =>
+          fitLanes.includes(position) && !teamStyles.has(playstyle)) ? 0.5 : 0;
       entry.threats = new Map([...entry.bad].map(([target, labels]) =>
         [target, tierFor(target, evidenceLanes(labels))]));
       const risk = [...entry.threats.values()].reduce((total, tier) => total + 3 + (tier?.weight ?? 0), 0);
@@ -468,7 +477,7 @@
         .reduce((total, id) => total + 1 + (tierFor(id)?.weight ?? 0) / 4, 0);
       const partnerBonus = Math.min(partnerMatches.get(entry.id)?.size ?? 0, 2) * 0.75;
       entry.score = 2 * entry.good.size - risk - softRisk + (entry.tier?.weight ?? 0) +
-        (combosByHero.get(entry.id)?.points ?? 0) + partnerBonus;
+        (combosByHero.get(entry.id)?.points ?? 0) + partnerBonus + styleBonus;
     }
     recommendations.sort((a, b) => b.score - a.score ||
       Number(dominated.has(a)) - Number(dominated.has(b)) ||
@@ -498,6 +507,10 @@
       const { id, good, bad, mixed, tier, fitLanes } = entry;
       const featuredLane = featuredLanes.get(id);
       const displayTier = featuredLane ? tierFor(id, [featuredLane]) : tier;
+      const profileLane = featuredLane ?? (entry.profiles.has(displayTier?.lane) ?
+        displayTier.lane : entry.profiles.keys().next().value);
+      const [playstyle, ...traits] = entry.profiles.get(profileLane) ?? [];
+      const addsStyle = active && fitLanes.includes(profileLane) && teamStyles.size && !teamStyles.has(playstyle);
       const synergy = combosByHero.get(id);
       const partners = partnerMatches.get(id);
       const name = escapeHtml(nameFor(id));
@@ -510,6 +523,9 @@
           tierLabel(displayTier) + ' · ' + lanePools[displayTier.lane].label + '</span>' : '') +
         (fitLanes.length ? '<span class="counter-balance" data-fit-lane="' + escapeHtml(featuredLane ?? fitLanes[0]) + '">' +
           (featuredLane ? lanePools[featuredLane].label : fitLanes.map(position => lanePools[position].label).join(" / ")) + '</span>' : '') +
+        (playstyle ? '<span class="counter-playstyle" title="AOV Update VN · Beta 55.2">' +
+          escapeHtml((addsStyle ? "Bổ sung " : "") + playstyle + " · " + lanePools[profileLane].label) + '</span>' : '') +
+        (traits.length ? '<span>' + escapeHtml(traits.join(" · ")) + '</span>' : '') +
         (synergy ? '<span class="counter-synergy"><b>' + (synergy.complete ? "Hoàn thiện bài " : "Ghép bài ") +
           escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + comboWarning(synergy.combo) + '</span>' : '') +
         (partners?.size ? '<span class="counter-synergy">Phối hợp với ' +

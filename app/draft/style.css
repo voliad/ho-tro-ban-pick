@@ -356,3 +356,4 @@ dialog::backdrop { background: var(--color-blackout); }
   .history-team + .history-team { border-top: 1px solid var(--color-rule); }
 }
 
+.counter-copy .counter-playstyle { color: #c5dafa; font-weight: 650; }
