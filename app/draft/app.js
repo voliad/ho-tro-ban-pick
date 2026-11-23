@@ -273,25 +273,75 @@
   });
   const counterRows = [...laneCounterRows, ...referenceRows];
 
-  function missingLanes(ids) {
-    const positions = Object.entries(lanePools);
+  const positions = Object.keys(lanePools);
+  const fitsLane = (id, position) => lanePools[position].main.has(id) || lanePools[position].extra.has(id);
+
+  function assignLineup(ids) {
     // Keep the best assignment for each set of occupied lanes.
-    let assignments = new Map([[0, 0]]);
+    const { tierFor } = window.QZADD_TIERS;
+    let assignments = new Map([[0, { score: 0, byLane: {} }]]);
     for (const id of ids) {
       const next = new Map(assignments);
-      for (const [mask, score] of assignments) {
-        for (const [index, [, pool]] of positions.entries()) {
+      for (const [mask, assignment] of assignments) {
+        for (const [index, position] of positions.entries()) {
           const bit = 1 << index;
-          if (mask & bit || !(pool.main.has(id) || pool.extra.has(id))) continue;
-          const value = score + (pool.main.has(id) ? 7 : 6);
-          next.set(mask | bit, Math.max(next.get(mask | bit) ?? 0, value));
+          if (mask & bit || !fitsLane(id, position)) continue;
+          const tier = tierFor(id, [position])?.weight ?? 0;
+          const score = assignment.score + (lanePools[position].main.has(id) ? 7 : 6) + .05 * tier;
+          if (score > (next.get(mask | bit)?.score ?? 0)) {
+            next.set(mask | bit, { score, byLane: { ...assignment.byLane, [position]: id } });
+          }
         }
       }
       assignments = next;
     }
-    const best = Math.max(...assignments.values());
-    return positions.filter((_, index) => [...assignments].some(([mask, score]) =>
-      score === best && !(mask & (1 << index)))).map(([key]) => key);
+    return [...assignments.values()].reduce((best, entry) => entry.score > best.score ? entry : best).byLane;
+  }
+
+  function featuredByLane(recommendations) {
+    const byLane = new Map();
+    function place(entry, visited) {
+      for (const position of entry.fitLanes) {
+        if (visited.has(position)) continue;
+        visited.add(position);
+        const previous = byLane.get(position);
+        if (!previous || place(previous, visited)) {
+          byLane.set(position, entry);
+          return true;
+        }
+      }
+      return false;
+    }
+    for (const entry of recommendations) {
+      place(entry, new Set());
+      if (byLane.size === 3) break;
+    }
+    return new Map([...byLane].map(([position, entry]) => [entry.id, position]));
+  }
+
+  let suggestedLane = "";
+  let lineupSide;
+
+  function renderLineup(picks, assigned, side, team, active) {
+    const current = $("counter-lineup");
+    const focused = current.contains(document.activeElement) ? document.activeElement.dataset.suggestLane : undefined;
+    const filled = Object.values(assigned);
+    const unassigned = picks.filter(id => !filled.includes(id));
+    current.innerHTML = '<div class="lineup-head"><h4>Vị trí đội ' + escapeHtml(team) + '</h4><span>' +
+      filled.length + '/5 vị trí · Dự kiến theo tướng đã chốt</span></div><ul class="lineup-grid">' +
+      positions.map(position => {
+        const id = assigned[position];
+        const label = lanePools[position].label;
+        const title = filterIcon("lane-" + laneIcons[position]) + '<strong>' + escapeHtml(label) + '</strong>';
+        if (id) return '<li class="lineup-filled">' + title + '<span>' + escapeHtml(nameFor(id)) + '</span></li>';
+        const empty = title + '<span>Thiếu tướng</span>';
+        return active ? '<li><button type="button" class="lineup-missing" data-suggest-lane="' +
+          escapeHtml(position) + '" aria-pressed="' + (suggestedLane === position) + '">' + empty +
+          '</button></li>' : '<li class="lineup-missing">' + empty + '</li>';
+      }).join("") + '</ul>' + (unassigned.length ? '<p class="counter-note">Chưa xếp được vị trí cho ' +
+        escapeHtml(unassigned.map(nameFor).join(", ")) + '.</p>' : "");
+    if (focused) current.querySelector('[data-suggest-lane="' + CSS.escape(focused) + '"]')?.focus({ preventScroll: true });
+    lineupSide = side;
   }
 
   let scannedDraft = null;
@@ -338,10 +388,15 @@
         entry.verified.delete(target);
       }
     }
-    const picks = scanned ? observedPicks("blue") : active ? game.turns.filter(row => row.kind === "pick" && row.side === turn.side)
-      .flatMap(row => row.ids) : [];
-    const needed = active ? (lane ? [lane] : picks.length ? missingLanes(picks) : []) : [];
-    const fits = (id, position) => lanePools[position].main.has(id) || lanePools[position].extra.has(id);
+    const side = scanned ? $("draft-perspective").value : turn?.side ?? $("draft-perspective").value;
+    const picks = scanned ? observedPicks("blue") : game.turns
+      .filter(row => row.kind === "pick" && row.side === side).flatMap(row => row.ids);
+    const assigned = assignLineup(picks);
+    const missing = positions.filter(position => !assigned[position]);
+    if (lineupSide !== side || !missing.includes(suggestedLane)) suggestedLane = "";
+    renderLineup(picks, assigned, side, nameOf(rules.onSide(game, side)), active && picks.length < 5);
+    const focus = suggestedLane || lane;
+    const needed = active && picks.length < 5 ? (focus ? [focus] : missing) : [];
     const allies = new Set(picks);
     const combosByHero = new Map();
     const completeCombos = [];
@@ -363,8 +418,8 @@
         if (!candidates.has(id)) candidates.set(id, { id, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() });
       }
     }
-    const recommendations = needed.length ? roster.filter(({ id }) =>
-      !reason(id) && needed.some(position => fits(id, position))).map(({ id }) =>
+    const recommendations = picks.length >= 5 && !selectedTarget ? [] : needed.length ? roster.filter(({ id }) =>
+      !reason(id) && needed.some(position => fitsLane(id, position))).map(({ id }) =>
       candidates.get(id) ?? { id, good: new Map(), bad: new Map(), mixed: new Map(), verified: new Set() }) :
       [...candidates.values()].filter(entry => (entry.good.size || entry.mixed.size || combosByHero.has(entry.id)) &&
         (!turn || !reason(entry.id)));
@@ -377,7 +432,9 @@
     const evidenceLanes = labels => [...new Set(labels.map(label => label.split(" · ")[0]))]
       .filter(lane => Object.hasOwn(board, lane));
     for (const entry of recommendations) {
-      const fitLanes = needed.filter(position => fits(entry.id, position));
+      const fitLanes = needed.filter(position => fitsLane(entry.id, position)).sort((a, b) =>
+        Number(lanePools[b].main.has(entry.id)) - Number(lanePools[a].main.has(entry.id)) ||
+        (tierFor(entry.id, [b])?.weight ?? 0) - (tierFor(entry.id, [a])?.weight ?? 0));
       entry.tier = tierFor(entry.id, fitLanes.length ? fitLanes :
         evidenceLanes([...entry.good.values(), ...entry.mixed.values()].flat()));
       entry.fitLanes = fitLanes;
@@ -390,6 +447,9 @@
       Number(dominated.has(a)) - Number(dominated.has(b)) ||
       a.bad.size - b.bad.size || a.mixed.size - b.mixed.size ||
       b.verified.size - a.verified.size || b.good.size - a.good.size || nameFor(a.id).localeCompare(nameFor(b.id), "vi"));
+    const featuredLanes = needed.length > 1 ? featuredByLane(recommendations) : new Map();
+    if (featuredLanes.size) recommendations.sort((a, b) =>
+      Number(featuredLanes.has(b.id)) - Number(featuredLanes.has(a.id)));
     const evidence = map => [...map].map(([target, lanes]) => nameFor(target) + " (" + lanes.join(", ") + ")").join(", ");
     const comboName = combo => Object.keys(combo.heroes).map(nameFor).join(" + ");
     const comboWarning = combo => {
@@ -407,6 +467,8 @@
     featuredHeroes = new Map(active && !scanned ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
     const cards = recommendations.map((entry, index) => {
       const { id, good, bad, mixed, tier, fitLanes } = entry;
+      const featuredLane = featuredLanes.get(id);
+      const displayTier = featuredLane ? tierFor(id, [featuredLane]) : tier;
       const synergy = combosByHero.get(id);
       const name = escapeHtml(nameFor(id));
       const featured = index < 3;
@@ -414,9 +476,10 @@
       const body = '<span class="counter-avatar">' + portrait(heroesById.get(id)) +
         (featured ? '<span class="counter-rank" aria-hidden="true">' + (index + 1) + '</span>' : "") +
         '</span><span class="counter-copy"><strong>' + name +
-        '</strong>' + (tier ? '<span class="counter-tier" data-tier="' + tier.tier + '">' +
-          tierLabel(tier) + ' · ' + tier.lane + '</span>' : '') +
-        (fitLanes.length ? '<span class="counter-balance">' + fitLanes.map(position => lanePools[position].label).join(" / ") + '</span>' : '') +
+        '</strong>' + (displayTier ? '<span class="counter-tier" data-tier="' + displayTier.tier + '">' +
+          tierLabel(displayTier) + ' · ' + lanePools[displayTier.lane].label + '</span>' : '') +
+        (fitLanes.length ? '<span class="counter-balance" data-fit-lane="' + escapeHtml(featuredLane ?? fitLanes[0]) + '">' +
+          (featuredLane ? lanePools[featuredLane].label : fitLanes.map(position => lanePools[position].label).join(" / ")) + '</span>' : '') +
         (synergy ? '<span class="counter-synergy"><b>' + (synergy.complete ? "Hoàn thiện bài " : "Ghép bài ") +
           escapeHtml(comboName(synergy.combo)) + '</b><br>' + escapeHtml(synergy.combo.plan) + comboWarning(synergy.combo) + '</span>' : '') +
         '<span class="counter-balance">' + (good.size || bad.size || mixed.size ? good.size + ' thuận · ' + bad.size + ' bất lợi' : 'Chưa có dữ liệu kèo với đối thủ') +
@@ -431,7 +494,8 @@
         '<span class="counter-action">' + (selection.includes(id) ? "Đã chọn" : "Chọn") + '</span></button>' :
         '<div class="' + cardClass + '">' + body + '</div>';
     });
-    const status = needed.length ? (lane ? "Đang lọc theo " : "Vị trí đội hình có thể còn thiếu: ") +
+    const status = picks.length >= 5 && !selectedTarget ? (missing.length ? "Đã chốt đủ 5 tướng, còn vị trí chưa xếp được." :
+      "Đội hình đã đủ 5 vị trí.") : needed.length ? (focus ? "Đang gợi ý cho " : "Vị trí đội hình còn thiếu: ") +
       needed.map(position => lanePools[position].label).join(", ") : scanned ? "Nhận diện từ màn hình · bên trái là đội bạn" : selectedTarget ? "Tra cứu kèo đã chọn" :
       combosByHero.size && !opponents.size ? "Gợi ý phối hợp với tướng đồng đội đã chốt" : turn && opponents.size ?
       "Gợi ý cho bên " + sideLabel[turn.side].toLowerCase() + " đang thao tác" : "Chờ đối thủ chốt tướng để gợi ý tự động";
@@ -441,7 +505,7 @@
       completeCombos.map(combo => '<p class="counter-note counter-synergy"><strong>Đã ghép ' +
         escapeHtml(comboName(combo)) + '</strong>. ' + escapeHtml(combo.plan) + comboWarning(combo) + '</p>').join("") +
       (cards.length ? '<div class="counter-cards">' + cards.slice(0, 3).join("") + '</div>' :
-        '<p class="counter-note">' + unavailable + '</p>') +
+        (picks.length >= 5 && !selectedTarget ? "" : '<p class="counter-note">' + unavailable + '</p>')) +
       (cards.length > 3 ? '<details class="counter-more"' + (expanded ? ' open' : '') + '><summary>Xem thêm ' + (cards.length - 3) +
         ' gợi ý</summary><div class="counter-cards">' + cards.slice(3).join("") + '</div></details>' : "") +
       (selectedTarget && rows.length ? '<p class="counter-note">Bất lợi khi gặp tướng này: ' +
@@ -867,6 +931,13 @@
   $("counter-sources").innerHTML = Object.entries(window.DRAFT_COUNTERS.sources).map(([lane, post]) =>
     '<a href="https://www.facebook.com/Qzaddroaming/posts/' + post + '/">' + escapeHtml(lane) + '</a>').join("");
   $("counter-target").addEventListener("change", renderDraft);
+  $("counter-lineup").addEventListener("click", event => {
+    const button = event.target.closest("[data-suggest-lane]");
+    if (!button) return;
+    const position = button.dataset.suggestLane;
+    suggestedLane = suggestedLane === position ? "" : position;
+    renderDraft();
+  });
   $("counter-results").addEventListener("click", event => {
     const choice = event.target.closest("[data-counter-pick]");
     if (choice && rules.activeTurn(state)?.kind === "pick") {
@@ -883,7 +954,7 @@
   }
   perspective.addEventListener("change", () => {
     applyPerspective(perspective.value);
-    if (scannedDraft) renderDraft();
+    renderDraft();
     try { localStorage.setItem(perspectiveKey, perspective.value); } catch {}
   });
   restore();
