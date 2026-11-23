@@ -7,50 +7,69 @@
   const preview = document.getElementById("airplay-preview");
   const devices = navigator.mediaDevices;
   let stream;
+  let stopSource;
+  let requesting = false;
 
   function reset(message) {
-    const previous = stream;
+    const cleanup = stopSource;
     stream = null;
-    previous?.getTracks().forEach(track => track.stop());
+    stopSource = null;
     preview.srcObject = null;
     preview.hidden = true;
     stop.hidden = true;
-    start.disabled = false;
+    start.disabled = requesting || !devices?.getDisplayMedia;
     status.textContent = message;
+    cleanup?.();
   }
 
-  if (!devices?.getDisplayMedia) {
+  async function show(capture, cleanup, message) {
+    const [track] = capture.getVideoTracks();
+    if (!track || track.readyState === "ended") throw Error("No live video track");
+    if (stream) reset("");
+    stream = capture;
+    stopSource = cleanup;
+    track.addEventListener("ended", () => {
+      if (stream === capture) reset("Đã dừng chia sẻ màn hình.");
+    }, { once: true });
+    preview.srcObject = capture;
+    preview.hidden = false;
+    stop.hidden = false;
     start.disabled = true;
-    status.textContent = "Trình duyệt hiện tại chưa hỗ trợ chia sẻ màn hình.";
-    return;
+    await preview.play();
+    if (stream === capture) {
+      status.textContent = message;
+      preview.dispatchEvent(new Event("draft-share-ready"));
+    }
   }
 
+  window.DRAFT_SCREEN = {
+    show,
+    clear(capture) {
+      if (stream === capture) reset("");
+    },
+  };
+
+  start.disabled = !devices?.getDisplayMedia;
   start.addEventListener("click", async () => {
+    requesting = true;
     start.disabled = true;
     status.textContent = "Đang chờ bạn chọn cửa sổ chiếu…";
+    let capture;
     try {
-      const capture = await devices.getDisplayMedia({ video: { displaySurface: "window" }, audio: false });
-      stream = capture;
-      const [track] = capture.getVideoTracks();
-      if (!track || track.readyState === "ended") {
-        reset("Cửa sổ chiếu không còn khả dụng. Hãy chọn lại cửa sổ.");
-        return;
-      }
-      track.addEventListener("ended", () => {
-        if (stream === capture) reset("Đã dừng chia sẻ cửa sổ.");
-      }, { once: true });
-      preview.srcObject = capture;
-      preview.hidden = false;
-      stop.hidden = false;
-      await preview.play();
-      if (stream === capture) {
-        status.textContent = "Đang hiển thị nguồn đã chia sẻ.";
-        preview.dispatchEvent(new Event("draft-share-ready"));
-      }
+      capture = await devices.getDisplayMedia({ video: { displaySurface: "window" }, audio: false });
+      const cleanup = () => capture.getTracks().forEach(track => track.stop());
+      if (stream) cleanup();
+      else await show(capture, cleanup, "Đang hiển thị nguồn đã chia sẻ.");
     } catch (error) {
-      reset(error.name === "NotAllowedError" || error.name === "AbortError"
-        ? "Chưa chia sẻ cửa sổ. Bạn có thể bấm để chọn lại."
-        : "Không mở được nguồn chia sẻ. Hãy thử chọn lại.");
+      capture?.getTracks().forEach(track => track.stop());
+      if (!stream || stream === capture) {
+        reset(error.name === "NotAllowedError" || error.name === "AbortError"
+          ? "Chưa chia sẻ cửa sổ. Bạn có thể bấm để chọn lại."
+          : "Không mở được nguồn chia sẻ. Hãy thử chọn lại.");
+      }
+    } finally {
+      requesting = false;
+      start.disabled = Boolean(stream) || !devices?.getDisplayMedia;
     }
   });
 
