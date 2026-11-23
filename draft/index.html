@@ -21,7 +21,7 @@
   <script src="./iphone-receiver.js?v=1" defer></script>
   <script src="./scan-samples.js?v=5" defer></script>
   <script src="./draft-ocr.js?v=1" defer></script>
-  <script src="./draft-scan.js?v=video-rotation" defer></script>
+  <script src="./draft-scan.js?v=scan-confidence" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -86,6 +86,7 @@
             <button type="button" class="quiet" id="iphone-close">Đóng kết nối</button>
           </div>
           <p id="airplay-status" role="status"></p>
+          <p id="scan-feed-status" role="status"></p>
           <div id="scan-results" aria-live="polite"></div>
           <p id="scan-ocr-status" role="status"></p>
           <video id="airplay-preview" aria-label="Xem màn hình đang chia sẻ" autoplay muted playsinline hidden></video>
