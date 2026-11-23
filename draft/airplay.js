@@ -43,7 +43,10 @@
       preview.hidden = false;
       stop.hidden = false;
       await preview.play();
-      if (stream === capture) status.textContent = "Đang hiển thị cửa sổ đã chia sẻ.";
+      if (stream === capture) {
+        status.textContent = "Đang hiển thị nguồn đã chia sẻ.";
+        preview.dispatchEvent(new Event("draft-share-ready"));
+      }
     } catch (error) {
       reset(error.name === "NotAllowedError" || error.name === "AbortError"
         ? "Chưa chia sẻ cửa sổ. Bạn có thể bấm để chọn lại."
