@@ -59,7 +59,7 @@
     return sum;
   }
 
-  function identify(patches, refs) {
+  function identify(patches, refs, threshold = 31, margin = 5) {
     let bestId, secondId;
     let best = 36 ** 2 * 192;
     let second = best;
@@ -77,7 +77,7 @@
         secondId = id;
       }
     }
-    return best < 31 ** 2 * 192 && (!secondId || Math.sqrt(second / 192) - Math.sqrt(best / 192) >= 5)
+    return best < threshold ** 2 * 192 && (!secondId || Math.sqrt(second / 192) - Math.sqrt(best / 192) >= margin)
       ? bestId : null;
   }
 
@@ -135,7 +135,9 @@
         const original = sample(banX, 137, 34);
         const adjusted = offset
           ? sample(banX + offset.dx, 137 + offset.dy, 34) : sample(banX + 3, 140, 34);
-        const ban = identify([original, sample(banX + 3, 140, 34)], references.bans) ??
+        const aligned = [original, sample(banX + 3, 140, 34)];
+        const ban = identify(aligned, references.bans) ??
+          (offset && identify([original, adjusted], samples.bans, 30, 4)) ??
           identify([original, adjusted], references.bans);
         if (ban) rows.push({ side, kind: "ban", index, id: ban, confirmed: Boolean(offset) });
 
@@ -169,7 +171,9 @@
     signature = key;
     output.replaceChildren();
     const summary = document.createElement("p");
+    const namedBans = stable.filter(row => row.kind === "ban" && row.confirmed).length;
     summary.textContent = "Quét " + elapsed + " ms · Biểu tượng khóa: " + locks + "/10." +
+      " Nhận diện tên tướng đã cấm: " + namedBans + "/10." +
       (locks < 10 ? " Chưa đủ dấu hiệu để xác nhận các lượt chọn." : "");
     output.append(summary);
     for (const side of colors) {
@@ -213,12 +217,18 @@
       const img = new Image();
       img.src = hero.image;
       img.decode().then(() => {
-        const size = Math.min(img.width, img.height) * .65;
-        ctx.clearRect(0, 0, 8, 8);
-        ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, 8, 8);
-        const portrait = [hero.id, rgb()];
-        references.bans.push(portrait);
-        references.picks.push(portrait);
+        for (const [scale, vertical] of [[.65, .5], [.82, .5], [.53, .4]]) {
+          const size = Math.min(img.width, img.height) * scale;
+          ctx.clearRect(0, 0, 8, 8);
+          ctx.drawImage(img, (img.width - size) / 2, (img.height - size) * vertical, size, size, 0, 0, 8, 8);
+          const pixels = rgb();
+          references.picks.push([hero.id, pixels]);
+          references.bans.push([hero.id, pixels], [hero.id, pixels.map((value, index) => {
+            const i = index - index % 3;
+            const gray = .299 * pixels[i] + .587 * pixels[i + 1] + .114 * pixels[i + 2];
+            return .7 * value + .3 * gray;
+          })]);
+        }
         portraitCount++;
       }).catch(() => {}).finally(loadNext);
     }
