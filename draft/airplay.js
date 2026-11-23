@@ -21,7 +21,7 @@
 
   if (!devices?.getDisplayMedia) {
     start.disabled = true;
-    status.textContent = "Hãy mở Ban Pick bằng Chrome hoặc Edge trên máy tính qua HTTPS để chia sẻ cửa sổ.";
+    status.textContent = "Trình duyệt hiện tại chưa hỗ trợ chia sẻ màn hình.";
     return;
   }
 
@@ -47,7 +47,7 @@
     } catch (error) {
       reset(error.name === "NotAllowedError" || error.name === "AbortError"
         ? "Chưa chia sẻ cửa sổ. Bạn có thể bấm để chọn lại."
-        : "Không mở được cửa sổ chiếu. Hãy kiểm tra iPhoneMirror rồi thử lại.");
+        : "Không mở được nguồn chia sẻ. Hãy thử chọn lại.");
     }
   });
 
