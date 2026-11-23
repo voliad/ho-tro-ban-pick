@@ -219,11 +219,18 @@
     const rows = [];
     slots = [];
     let locks = 0;
+    const lockedBans = [];
     const locksBySide = { blue: 0, red: 0 };
     for (const side of colors) {
       const left = side === "blue";
       for (let index = 0; index < 5; index++) {
         const banX = (left ? 370 : 2161) + 84 * index;
+        const original = sample(banX, 137, 34);
+        const shifted = sample(banX + 3, 140, 34);
+        const emptyBanLimit = 13 ** 2 * 192;
+        if (samples.emptyBans.some(ref =>
+          squaredDistance(original, ref, emptyBanLimit) < emptyBanLimit ||
+          squaredDistance(shifted, ref, emptyBanLimit) < emptyBanLimit)) continue;
         let offset;
         const limit = 30 ** 2 * 192;
         for (const dx of [0, -4, 4, -8, 8, -12, 12, -16, 16]) {
@@ -236,12 +243,12 @@
           }
           if (offset) break;
         }
+        if (offset) lockedBans.push({ side, index });
         locks += Number(Boolean(offset));
         locksBySide[side] += Number(Boolean(offset));
-        const original = sample(banX, 137, 34);
         const adjusted = offset
           ? sample(banX + offset.dx, 137 + offset.dy, 34) : sample(banX + 3, 140, 34);
-        const aligned = [original, sample(banX + 3, 140, 34)];
+        const aligned = [original, shifted];
         const ban = identify(aligned, references.bans) ??
           (offset ? identify([original, adjusted], samples.bans, 30, 4) : null) ??
           identify([original, adjusted], references.bans);
@@ -308,7 +315,7 @@
     if (locks >= 2 || stable.some(row => row.kind === "pick")) lastGameEvidence = performance.now();
     elapsed = Math.round(performance.now() - started);
     ocr.disabled = readingText;
-    const key = JSON.stringify([locks, stable]);
+    const key = JSON.stringify([lockedBans, stable]);
     if (key === signature) return;
     signature = key;
     output.replaceChildren();
@@ -316,10 +323,18 @@
     const namedBans = stable.filter(row => row.kind === "ban" && row.confirmed).length;
     const unreadSlots = pickPhase ? slots.filter(slot => slot.unresolved).length : 0;
     summary.textContent = "Quét " + elapsed + " ms · Biểu tượng khóa: " + locks + "/10." +
-      " Nhận diện tên tướng đã cấm: " + namedBans + "/10." +
+      " Nhận diện tên tướng đã cấm: " + namedBans + "/" + Math.max(locks, namedBans) + " ô có khóa." +
       (!pickPhase ? " Chưa đủ dấu hiệu để xác nhận các lượt chọn." : "") +
       (unreadSlots ? " Có " + unreadSlots + " ô chọn cần đối chiếu thêm." : "");
     output.append(summary);
+    const unreadBans = lockedBans.filter(({ side, index }) =>
+      !stable.some(row => row.side === side && row.kind === "ban" && row.index === index && row.confirmed));
+    if (unreadBans.length) {
+      const line = document.createElement("p");
+      line.textContent = "Ô đã khóa chưa rõ tướng: " + unreadBans.map(({ side, index }) =>
+        (side === "blue" ? "trái " : "phải ") + (index + 1)).join(", ") + ".";
+      output.append(line);
+    }
     for (const side of colors) {
       const items = stable.filter(row => row.side === side);
       if (!items.length) continue;
