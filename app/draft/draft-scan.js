@@ -100,6 +100,19 @@
     return hits >= 4;
   }
 
+  function uniqueHeroes(rows) {
+    const groups = Map.groupBy(rows, row =>
+      window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id));
+    const accepted = new Set();
+    for (const matches of groups.values()) {
+      const locked = matches.filter(row => row.kind === "ban" && row.confirmed);
+      const confirmed = matches.filter(row => row.confirmed);
+      const preferred = locked.length ? locked : confirmed.length ? confirmed : matches;
+      if (preferred.length === 1) accepted.add(preferred[0]);
+    }
+    return rows.filter(row => accepted.has(row));
+  }
+
   function scan() {
     if (!crop || (imageUrl ? !image.naturalWidth : video.readyState < 2)) return;
     if (imageUrl ? scannedPortraitCount === portraitCount : lastVideoTime === video.currentTime) return;
@@ -145,6 +158,8 @@
         const glow = shining(side, y);
         const pickX = left ? (glow ? 530 : 500) : (glow ? 2338 : 2368);
         const portrait = sample(pickX, y, 65);
+        const emptyLimit = 18 ** 2 * 192;
+        if (samples.emptyPicks.some(ref => squaredDistance(portrait, ref, emptyLimit) < emptyLimit)) continue;
         const slot = side + "|" + index;
         const fallback = textMatches.get(slot);
         const textId = fallback && squaredDistance(fallback.portrait, portrait) < 13 ** 2 * 192 ? fallback.id : null;
@@ -154,8 +169,8 @@
       }
     }
     // Require the five locked ban slots on each side before treating clean pick rows as confirmed.
-    const visible = rows.filter(row => row.kind === "ban" || row.pending || locks === 10).map(row =>
-      row.kind === "pick" ? { ...row, confirmed: !row.pending } : row);
+    const visible = uniqueHeroes(rows.filter(row => row.kind === "ban" || row.pending || locks === 10).map(row =>
+      row.kind === "pick" ? { ...row, confirmed: !row.pending } : row));
     const next = new Map();
     const stable = [];
     for (const row of visible) {
