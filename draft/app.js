@@ -761,6 +761,31 @@
     const button = event.target.closest("[data-hero]");
     if (button) chooseHero(button.dataset.hero);
   });
+  document.addEventListener("keydown", event => {
+    if (event.defaultPrevented || event.isComposing || route().view !== "draft") return;
+    const key = event.key.toLowerCase();
+    const ctrl = event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
+    const dialogOpen = Boolean(document.querySelector("dialog[open]"));
+    if (ctrl && key === "r") {
+      event.preventDefault();
+      if (!event.repeat && !dialogOpen) openRestart();
+      return;
+    }
+    if (dialogOpen) return;
+    const field = event.target.closest?.("input, textarea, select, [contenteditable]:not([contenteditable='false'])");
+    if (ctrl && key === "z" && !field) {
+      event.preventDefault();
+      if (!event.repeat && !$("undo").disabled) undo();
+      return;
+    }
+    if (key !== "enter" || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    const otherControl = event.target.closest?.("button, a, summary, video");
+    if (field && field !== $("search")) return;
+    if (otherControl && !otherControl.matches("#commit, #heroes [data-hero], [data-counter-pick]")) return;
+    if (!rules.activeTurn(state) || $("commit").disabled) return;
+    event.preventDefault();
+    if (!event.repeat) commit();
+  });
   document.addEventListener("error", event => {
     if (event.target instanceof HTMLImageElement) event.target.hidden = true;
   }, true);
