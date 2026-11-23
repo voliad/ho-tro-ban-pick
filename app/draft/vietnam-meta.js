@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  // Legible ratings and nemesis portraits in AOV Update VN, Beta 55.2 (13/11/2026).
+  // Legible ratings and matchup portraits in AOV Update VN, Beta 55.2 (13/11/2026).
   const ratings = {
     "Tà Thần": { murad: 6, marja: 6.1 },
     "Đi rừng": { billow: 6.5, tamyn: 6.3, zephys: 6.1, "11596": 6.1 },
@@ -34,5 +34,16 @@
       !best || (entry.weight ?? -Infinity) > (best.weight ?? -Infinity) ? entry : best, null);
   }
 
-  window.DRAFT_VIETNAM_META = { tierFor, counters };
+  const risks = {
+    marja: { lane: "Tà Thần", opponents: ["murad"] },
+    lorion: { lane: "Đường giữa", opponents: ["liliana"] },
+    stuart: { lane: "Xạ thủ", opponents: ["bolt-baron"] },
+  };
+  const partners = [
+    { hero: "lorion", lane: "Đường giữa", ally: "dyadia" },
+    { hero: "elandorr", lane: "Xạ thủ", ally: "dyadia" },
+    { hero: "bright", lane: "Xạ thủ", ally: "zip" },
+  ];
+
+  window.DRAFT_VIETNAM_META = { tierFor, counters, risks, partners };
 })();
