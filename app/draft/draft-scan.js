@@ -109,9 +109,10 @@
     const playing = !imageUrl && Boolean(video.srcObject);
     rotateButton.hidden = !playing;
     autoRotateButton.hidden = !playing || !manualRotation;
-    video.toggleAttribute("data-rotated", playing && rotation !== 0);
-    rotatedVideo.hidden = !playing || rotation === 0;
-    if (!rotatedVideo.hidden && video.readyState >= 2) rotateFrame(rotatedVideo, rotation);
+    const showRotated = playing && manualRotation && rotation !== 0;
+    video.toggleAttribute("data-rotated", showRotated);
+    rotatedVideo.hidden = !showRotated;
+    if (playing && rotation && video.readyState >= 2) rotateFrame(rotatedVideo, rotation);
   }
 
   function squaredDistance(a, b, limit = Infinity) {
@@ -437,7 +438,15 @@
     scanSafely();
   }
 
-  calibrate.addEventListener("click", beginCalibration);
+  calibrate.addEventListener("click", () => {
+    if (!imageUrl && !manualRotation && rotation) {
+      rotation = 0;
+      manualRotation = true;
+      videoBounds = undefined;
+      updateVideoPreview();
+    }
+    beginCalibration();
+  });
   function lockEvidence(drawable, region) {
     const sx = region.width / 2346, sy = region.height / 1086;
     const limit = 30 ** 2 * 192;
