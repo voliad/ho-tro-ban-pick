@@ -109,6 +109,7 @@
   let geminiRows = [];
   geminiAccess.addEventListener("change", () => completeBansWithGemini());
   let signature = "";
+  const extraPortraits = { bans: [], picks: [] };
   const references = { bans: [...samples.bans], picks: [...samples.picks] };
   let portraitCount = 0;
   let scannedPortraitCount = -1;
@@ -239,7 +240,8 @@
       sample(x + dx, 137 + dy + 4, 34),
     ];
     return identify([...aligned, ...anchored], samples.bans, 30, 4) ??
-      identify([aligned[0], anchored[0]], references.bans);
+      identify([aligned[0], anchored[0]], references.bans) ??
+      identify(anchored, extraPortraits.bans, 23, 7);
   }
 
   function sample(x, y, width, height = width) {
@@ -362,7 +364,9 @@
         }
         const a = identify([patches[0], patches[0]], references.picks, 27, 6);
         const b = identify([patches[1], patches[1]], references.picks, 27, 6);
-        const visual = known ?? (a === b ? a : null);
+        const extraA = !known && !a && !b ? identify([patches[0]], extraPortraits.picks, 23, 7) : null;
+        const extraB = extraA && identify([patches[1]], extraPortraits.picks, 23, 7);
+        const visual = known ?? (a === b ? a : null) ?? (extraA === extraB ? extraA : null);
         const pick = visual && textId && visual !== textId ? null : visual ?? textId;
         slots.push({ side, index, portrait, unresolved: !pick && !glow });
         if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known),
@@ -499,6 +503,19 @@
             const i = index - index % 3;
             const gray = .299 * pixels[i] + .587 * pixels[i + 1] + .114 * pixels[i + 2];
             return .7 * value + .3 * gray;
+          })]);
+        }
+        // Small portrait slots can show a tighter or higher crop than the roster card.
+        for (const [scale, vertical] of [[.44, .35], [.60, .32], [.72, .42]]) {
+          const size = Math.min(img.width, img.height) * scale;
+          ctx.clearRect(0, 0, 8, 8);
+          ctx.drawImage(img, (img.width - size) / 2, (img.height - size) * vertical, size, size, 0, 0, 8, 8);
+          const pixels = rgb();
+          extraPortraits.picks.push([hero.id, pixels]);
+          extraPortraits.bans.push([hero.id, pixels.map((value, index) => {
+            const i = index - index % 3;
+            const gray = .299 * pixels[i] + .587 * pixels[i + 1] + .114 * pixels[i + 2];
+            return .8 * value + .2 * gray;
           })]);
         }
         portraitCount++;
