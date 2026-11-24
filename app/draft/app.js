@@ -606,7 +606,7 @@
       $("opponent-list").innerHTML = opponentSelection.map(id => '<button type="button" class="quiet" data-opponent="' +
         escapeHtml(id) + '" aria-label="Bỏ ' + escapeHtml(nameFor(id)) + '"><span class="opponent-avatar">' +
         portrait(heroesById.get(id)) + '</span>' + escapeHtml(nameFor(id)) + '<span aria-hidden="true">×</span></button>').join("");
-      $("pool-note").textContent = "Chọn tướng đối thủ trong kho. Danh sách gợi ý được cập nhật ngay.";
+      $("pool-note").textContent = "";
       renderCounters(game, null, false);
       renderRoster(null);
       return;
@@ -703,10 +703,10 @@
       else if (existing) opponentSelection = opponentSelection.map(other => other === existing ? id : other);
       else if (opponentSelection.length < 5) opponentSelection.push(id);
       else {
-        tell("Đã đủ 5 tướng đối thủ. Bỏ một tướng để thay thế.");
+        $("opponent-limit").textContent = "Đã đủ 5 tướng. Bỏ một tướng để thay thế.";
         return;
       }
-      tell("");
+      $("opponent-limit").textContent = "";
       renderDraft();
       return;
     }
@@ -964,6 +964,15 @@
     $("opponent-mode").setAttribute("aria-pressed", String(opponentOnly));
     $("view-draft").classList.toggle("opponent-mode", opponentOnly);
     $("opponent-picks").hidden = !opponentOnly;
+    $("opponent-picker-actions").hidden = !opponentOnly;
+    $("opponent-view-results").hidden = !opponentOnly;
+    $("opponent-back").hidden = !opponentOnly;
+    $("opponent-limit").textContent = "";
+    $("pool-title").textContent = opponentOnly ? "Kho tướng đối thủ" : "Kho tướng";
+    $("search").placeholder = opponentOnly ? "Tìm tướng đối thủ…" : "Tìm tướng…";
+    const panel = $("counter-panel");
+    if (opponentOnly) $("heroes").closest(".board").append(panel);
+    else $("heroes").before(panel);
     tell("");
     renderDraft();
   });
@@ -975,10 +984,13 @@
   });
   $("opponent-clear").addEventListener("click", () => {
     opponentSelection = [];
+    $("opponent-limit").textContent = "";
     tell("");
     renderDraft();
     $("search").focus();
   });
+  $("opponent-view-results").addEventListener("click", () => $("counter-title").focus());
+  $("opponent-back").addEventListener("click", () => $("search").focus());
   document.addEventListener("keydown", event => {
     if (event.defaultPrevented || event.isComposing || opponentOnly || route().view !== "draft") return;
     const key = event.key.toLowerCase();
