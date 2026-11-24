@@ -6,7 +6,7 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=vn-playstyles">
+  <link rel="stylesheet" href="./style.css?v=turn-layout">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=filter-rows" defer></script>
   <script src="./counters.js?v=qzadd-five-lanes" defer></script>
@@ -76,12 +76,19 @@
             <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn lại vùng game</button>
             <button type="button" class="quiet" id="scan-ocr" disabled>AI đọc tên tướng</button>
           </div>
-          <details>
+          <details class="turn-settings">
             <summary>Đường truyền dự phòng TURN</summary>
-            <p>Nhập mã truy cập để bật Cloudflare TURN. Để trống để kết nối trực tiếp.</p>
-            <label>Mã truy cập <input id="iphone-turn-access" type="password" autocomplete="off"></label>
-            <label><input id="iphone-turn-only" type="checkbox"> Chỉ truyền qua TURN</label>
-            <label><input id="iphone-turn-remember" type="checkbox"> Nhớ mã trên thiết bị này</label>
+            <div class="turn-settings-fields">
+              <label class="turn-access-field">
+                <span>Mã truy cập</span>
+                <input id="iphone-turn-access" type="password" autocomplete="off" aria-describedby="turn-access-help">
+              </label>
+              <p id="turn-access-help">Để trống để kết nối trực tiếp.</p>
+              <div class="turn-options">
+                <label><input id="iphone-turn-only" type="checkbox"><span>Chỉ truyền qua TURN</span></label>
+                <label><input id="iphone-turn-remember" type="checkbox"><span>Nhớ mã trên thiết bị này</span></label>
+              </div>
+            </div>
           </details>
           <details>
             <summary>Dùng AirPlay</summary>
