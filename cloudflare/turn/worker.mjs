@@ -20,11 +20,11 @@ export default {
     if (route === "/gemini") {
       if (!env.GEMINI_API_KEY?.trim()) return respond(503, { error: "missing_key" });
       const length = Number(request.headers.get("Content-Length"));
-      if (length > 150000) return respond(413, { error: "image_too_large" });
+      if (length > 300000) return respond(413, { error: "image_too_large" });
       try {
         const reader = request.body?.getReader();
         if (!reader) return respond(400, { error: "invalid_image" });
-        const buffer = new Uint8Array(150000);
+        const buffer = new Uint8Array(300000);
         let size = 0;
         for (;;) {
           const { value, done } = await reader.read();
@@ -36,22 +36,42 @@ export default {
           buffer.set(value, size);
           size += value.length;
         }
-        let portrait;
+        let portrait, candidates, nameplate;
         try {
-          ({ portrait } = JSON.parse(new TextDecoder().decode(buffer.subarray(0, size))));
+          ({ portrait, candidates, nameplate } = JSON.parse(new TextDecoder().decode(buffer.subarray(0, size))));
         } catch {
           return respond(400, { error: "invalid_image" });
         }
         if (typeof portrait !== "string" || portrait.length > 140000 ||
           !/^[A-Za-z0-9+/]+={0,2}$/.test(portrait)) return respond(400, { error: "invalid_image" });
+        const validImage = value => typeof value === "string" && value.length <= 40000 &&
+          /^[A-Za-z0-9+/]+={0,2}$/.test(value);
+        if (candidates !== undefined && (!Array.isArray(candidates) || candidates.length < 2 ||
+          candidates.length > 4 || candidates.some(row => !row ||
+            typeof row.id !== "string" || !/^[a-z0-9-]{1,60}$/.test(row.id) ||
+            typeof row.name !== "string" || row.name.length > 60 || !validImage(row.portrait)) ||
+          new Set(candidates.map(row => row.id)).size !== candidates.length))
+          return respond(400, { error: "invalid_candidates" });
+        if (nameplate !== undefined && !validImage(nameplate)) return respond(400, { error: "invalid_nameplate" });
+        const parts = candidates ? [
+          { text: 'Compare the target Arena of Valor hero portrait to the labeled reference portraits below. A skin, lighting, border or lock can differ. Use facial features and any hero-name line. Do not treat a player name or skin name as a hero name. Select only a listed candidate when supported, otherwise return null. Return JSON {"candidateId":"listed id"} or {"candidateId":null}.' },
+          { text: "Target portrait" },
+          { inlineData: { mimeType: "image/jpeg", data: portrait } },
+          ...(nameplate ? [{ text: "Hero-name line from the target slot" },
+            { inlineData: { mimeType: "image/jpeg", data: nameplate } }] : []),
+          ...candidates.flatMap(row => [
+            { text: JSON.stringify({ candidateId: row.id, hero: row.name }) },
+            { inlineData: { mimeType: "image/jpeg", data: row.portrait } },
+          ]),
+        ] : [
+          { text: 'Identify the Arena of Valor hero portrait. Return JSON {"hero":"hero name"} or {"hero":null} if uncertain.' },
+          { inlineData: { mimeType: "image/jpeg", data: portrait } },
+        ];
         const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent", {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY.trim() },
           body: JSON.stringify({
-            contents: [{ parts: [
-              { text: 'Identify the Arena of Valor hero portrait. Return JSON {"hero":"hero name"} or {"hero":null} if uncertain.' },
-              { inlineData: { mimeType: "image/jpeg", data: portrait } },
-            ] }],
+            contents: [{ parts }],
             generationConfig: { responseMimeType: "application/json" },
           }),
           signal: AbortSignal.timeout(12000),
@@ -70,6 +90,9 @@ export default {
           .map(part => part.text ?? "").join("").trim();
         if (!content) return respond(502, { error: "empty_answer" });
         const answer = JSON.parse(content.replace(/^```(?:json)?\s*|\s*```$/gi, ""));
+        if (candidates) return respond(200, {
+          candidateId: candidates.some(row => row.id === answer.candidateId) ? answer.candidateId : null,
+        });
         return respond(200, { hero: typeof answer.hero === "string" ? answer.hero.slice(0, 60) : null });
       } catch (error) {
         return respond(502, { error: error.name === "TimeoutError" ? "google_timeout" : "invalid_answer" });

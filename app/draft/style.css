@@ -364,3 +364,14 @@ dialog::backdrop { background: var(--color-blackout); }
 }
 
 .counter-copy .counter-playstyle { color: #c5dafa; font-weight: 650; }
+
+.scan-library-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:12px 0; }
+.scan-library-actions label { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+#scan-review-grid, #scan-saved-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; }
+.scan-review-card { border:1px solid #3d4644; padding:10px; display:grid; gap:8px; min-width:0; }
+.scan-review-card img { width:72px; height:72px; object-fit:contain; }
+.scan-review-card select { width:100%; }
+#scan-saved-grid { margin-top:14px; }
+
+#scan-library-panel input, #scan-library-panel select { color:var(--color-ink); background:var(--color-paper-2); border:1px solid var(--color-input-edge); min-height:40px; padding:6px; max-width:100%; }
+#scan-review-grid { max-height:500px; overflow:auto; }
