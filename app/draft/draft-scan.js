@@ -44,28 +44,33 @@
   let corner;
   let choosing = false;
   let previous = new Map();
-  const gemini = $("scan-gemini");
+  const geminiAccess = $("iphone-turn-access");
   const geminiResult = $("scan-gemini-result");
   let geminiSlots = [];
-  gemini.addEventListener("click", async () => {
-    const access = $("iphone-turn-access").value.trim();
+  let geminiAttempt;
+  let geminiTimer;
+  async function completeBansWithGemini() {
+    if (!imageUrl || !geminiSlots.length) return;
+    const access = geminiAccess.value.trim();
     if (!access) {
       geminiResult.textContent = "Nhập mã truy cập TURN để dùng Gemini.";
       return;
     }
     const currentCrop = crop;
+    if (geminiAttempt?.crop === currentCrop && geminiAttempt.access === access) return;
+    const attempt = { crop: currentCrop, access };
+    geminiAttempt = attempt;
     const portraits = geminiSlots.slice(0, 4).map(({ side, index }) => {
       const patch = document.createElement("canvas");
       patch.width = patch.height = 128;
       const x = ((side === "blue" ? 370 : 2161) + 84 * index - 261 - 28) * frame.width / 2346;
       patch.getContext("2d").drawImage(frame, x, 21 * frame.height / 1086,
         56 * frame.width / 2346, 60 * frame.height / 1086, 0, 0, 128, 128);
-      return { label: (side === "blue" ? "Trái " : "Phải ") + (index + 1),
+      return { side, index, label: (side === "blue" ? "Trái " : "Phải ") + (index + 1),
         portrait: patch.toDataURL("image/jpeg").split(",")[1] };
     });
-    gemini.disabled = true;
     geminiResult.textContent = "Đang gửi ảnh các ô cấm chưa rõ đến Gemini…";
-    const results = await Promise.all(portraits.map(async ({ label, portrait }) => {
+    const results = await Promise.all(portraits.map(async ({ side, index, label, portrait }) => {
       try {
         const response = await fetch("https://aov-ban-pick-turn.checkin-license-server.workers.dev/gemini", {
           method: "POST",
@@ -77,18 +82,32 @@
         if (response.status === 429) return label + " · Gemini hết hạn mức";
         if (!response.ok) return label + " · Gemini chưa phản hồi";
         const { hero } = await response.json();
-        const name = typeof hero === "string" && [...names.values()].find(entry =>
-          entry.toLowerCase() === hero.trim().toLowerCase());
-        return label + " · " + (name || "Chưa rõ");
+        const normalize = name => name.normalize("NFKC").replace(/[’‘]/g, "'").trim().toLowerCase();
+        const matches = typeof hero === "string" ? [...names].filter(([, name]) =>
+          normalize(name) === normalize(hero)) : [];
+        return matches.length === 1
+          ? { side, index, id: matches[0][0], kind: "ban", confirmed: true }
+          : label + " · Chưa rõ";
       } catch {
         return label + " · Không kết nối được Gemini";
       }
     }));
-    gemini.disabled = false;
-    if (crop === currentCrop) {
-      geminiResult.textContent = "Gợi ý Gemini (đối chiếu trước khi điền) · " + results.join(" | ");
-    }
-  });
+    if (geminiAttempt !== attempt || crop !== currentCrop || !imageUrl) return;
+    const used = new Set(latestLocalRows.map(row =>
+      window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)));
+    const suggestions = results.filter(row => typeof row !== "string");
+    const accepted = uniqueHeroes(suggestions).filter(row =>
+      !used.has(window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)) &&
+      geminiSlots.some(slot => slot.side === row.side && slot.index === row.index));
+    geminiRows = accepted;
+    scanEvent([...latestLocalRows, ...accepted]);
+    const errors = results.filter(row => typeof row === "string");
+    geminiResult.textContent = "Gemini đã điền " + accepted.length + "/" + portraits.length + " ô cấm." +
+      (errors.length ? " " + errors.join(" | ") : "");
+  }
+  let latestLocalRows = [];
+  let geminiRows = [];
+  geminiAccess.addEventListener("change", () => completeBansWithGemini());
   let signature = "";
   const references = { bans: [...samples.bans], picks: [...samples.picks] };
   let portraitCount = 0;
@@ -405,7 +424,7 @@
     const unreadBans = lockedBans.filter(({ side, index }) =>
       !stable.some(row => row.side === side && row.kind === "ban" && row.index === index && row.confirmed));
     geminiSlots = unreadBans;
-    gemini.hidden = !imageUrl || !unreadBans.length;
+
     if (unreadBans.length) {
       const line = document.createElement("p");
       line.textContent = "Ô đã khóa chưa rõ tướng: " + unreadBans.map(({ side, index }) =>
@@ -426,11 +445,21 @@
       ? "Chưa đọc rõ ô tướng. Vùng game chỉ rộng " + Math.round(crop.width) +
         " px. Hãy phóng lớn game trước khi chụp hoặc chia sẻ."
       : "Chưa đọc rõ ô tướng. Hãy kiểm tra vùng game đã chọn.");
-    scanEvent(stable);
+    latestLocalRows = stable;
+    const observed = new Set(stable.map(row => window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)));
+    geminiRows = geminiRows.filter(row => !observed.has(
+      window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)) &&
+      unreadBans.some(slot => slot.side === row.side && slot.index === row.index));
+    scanEvent([...stable, ...geminiRows]);
+    clearTimeout(geminiTimer);
+    if (imageUrl && unreadBans.length) geminiTimer = setTimeout(completeBansWithGemini, 600);
   }
 
   function resetScan() {
-    gemini.hidden = true;
+    clearTimeout(geminiTimer);
+    geminiAttempt = null;
+    latestLocalRows = [];
+    geminiRows = [];
     geminiSlots = [];
     geminiResult.textContent = "";
     crop = corner = null;
