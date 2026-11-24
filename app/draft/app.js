@@ -31,6 +31,10 @@
   let state = isRank ? rules.start({ ...structuredClone(rules.defaults), format: 1, mode: "rank", alternate: false }) : rules.start();
   let clock = initialClock();
   let selection = [];
+  let opponentOnly = false;
+  let opponentSelection = [];
+  const opponentHas = id => opponentSelection.some(other =>
+    rules.heroKey(state.settings, other) === rules.heroKey(state.settings, id));
   let role = "";
   let lane = "";
   let restrictions = new Set();
@@ -188,7 +192,7 @@
   function renderRoster(turn = rules.activeTurn(state)) {
     const keyword = norm($("search").value.trim());
     const onlyAvailable = $("available").checked;
-    const reasonFor = rules.eligibility(state, turn, true);
+    const reasonFor = opponentOnly ? () => "" : rules.eligibility(state, turn, true);
     const pool = lanePools[lane];
     const rosterFiltered = roster.filter(hero => {
       return (!role || hero.roles.includes(Number(role))) && norm(heroLabel(hero)).includes(keyword)
@@ -216,7 +220,7 @@
     } else {
       const tile = hero => {
         const reason = reasonFor(hero.id);
-        const selected = selection.includes(hero.id);
+        const selected = (opponentOnly ? opponentSelection : selection).includes(hero.id);
         const recommendation = !reason && featuredHeroes.get(hero.id);
         const status = reason && turn ? '<span class="hero-status" aria-hidden="true">×</span>' :
           recommendation ? '<span class="hero-recommendation" aria-hidden="true">' + recommendation + '</span>' : "";
@@ -333,6 +337,14 @@
   function renderLineup(picks, assigned, side, team, active) {
     const current = $("counter-lineup");
     const focused = current.contains(document.activeElement) ? document.activeElement.dataset.suggestLane : undefined;
+    if (opponentOnly) {
+      current.innerHTML = '<div class="lineup-head"><h4>Gợi ý theo đường</h4></div><div class="role-bar" role="group" aria-label="Đường gợi ý">' +
+        positions.map(position => '<button type="button" data-suggest-lane="' + escapeHtml(position) +
+          '" aria-pressed="' + (suggestedLane === position) + '">' + filterIcon("lane-" + laneIcons[position]) +
+          escapeHtml(lanePools[position].label) + '</button>').join("") + '</div>';
+      if (focused) current.querySelector('[data-suggest-lane="' + CSS.escape(focused) + '"]')?.focus({ preventScroll: true });
+      return;
+    }
     const filled = Object.values(assigned);
     const unassigned = picks.filter(id => !filled.includes(id));
     current.innerHTML = '<div class="lineup-head"><h4>Vị trí đội ' + escapeHtml(team) + '</h4><span>' +
@@ -360,16 +372,16 @@
 
   function renderCounters(game, turn, hidden) {
     const expanded = $("counter-results").querySelector("details")?.open;
-    const selectedTarget = $("counter-target").value;
-    const scanned = scannedDraft !== null;
+    const selectedTarget = opponentOnly ? "" : $("counter-target").value;
+    const scanned = !opponentOnly && scannedDraft !== null;
     const observed = (scannedDraft ?? []).filter(row => row.confirmed);
     const observedPicks = side => [...new Set(observed.filter(row => row.kind === "pick" && row.side === side).map(row => row.id))];
-    const active = scanned ? observed.some(row => row.kind === "pick") : turn?.kind === "pick";
-    const opponents = new Set(scanned ? observedPicks("red") : !turn || hidden ? [] : game.turns
+    const active = opponentOnly || (scanned ? observed.some(row => row.kind === "pick") : turn?.kind === "pick");
+    const opponents = new Set(opponentOnly ? opponentSelection : scanned ? observedPicks("red") : !turn || hidden ? [] : game.turns
       .filter(entry => entry.kind === "pick" && entry.side !== turn.side).flatMap(entry => entry.ids));
     const rows = counterRows.filter(row => selectedTarget ? row.key === selectedTarget : opponents.has(row.target));
     const unavailableIds = new Set(observed.map(row => rules.heroKey(state.settings, row.id)));
-    const reason = scanned ? id => unavailableIds.has(rules.heroKey(state.settings, id)) : rules.eligibility(state, turn, true);
+    const reason = opponentOnly ? opponentHas : scanned ? id => unavailableIds.has(rules.heroKey(state.settings, id)) : rules.eligibility(state, turn, true);
     const candidates = new Map();
     for (const row of rows) {
       for (const [index, ids] of row.pairs.entries()) {
@@ -399,11 +411,12 @@
       }
     }
     const side = scanned ? $("draft-perspective").value : turn?.side ?? $("draft-perspective").value;
-    const picks = scanned ? observedPicks("blue") : game.turns
+    const picks = opponentOnly ? [] : scanned ? observedPicks("blue") : game.turns
       .filter(row => row.kind === "pick" && row.side === side).flatMap(row => row.ids);
     const assigned = assignLineup(picks);
     const missing = positions.filter(position => !assigned[position]);
-    if (lineupSide !== side || !missing.includes(suggestedLane)) suggestedLane = "";
+    if (opponentOnly) suggestedLane ||= positions[0];
+    else if (lineupSide !== side || !missing.includes(suggestedLane)) suggestedLane = "";
     renderLineup(picks, assigned, side, nameOf(rules.onSide(game, side)), active && picks.length < 5);
     const focus = suggestedLane || lane;
     const needed = active && picks.length < 5 ? (focus ? [focus] : missing) : [];
@@ -513,7 +526,8 @@
       return '<span class="' + level + '" title="' + escapeHtml(evidenceByLane(labels)) + '">' +
         escapeHtml(nameFor(target)) + (threat ? ' · ' + tierLabel(threat) + ' ' + threat.lane : "") + '</span>';
     }).join(", ");
-    featuredHeroes = new Map(active && !scanned ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
+    const canPick = active && !scanned && !opponentOnly;
+    featuredHeroes = new Map(canPick ? recommendations.slice(0, 3).map(({ id }, index) => [id, index + 1]) : []);
     const cards = recommendations.map((entry, index) => {
       const { id, good, bad, mixed, tier, fitLanes } = entry;
       const featuredLane = featuredLanes.get(id);
@@ -561,7 +575,7 @@
           '<span>' + escapeHtml(row.tips[id]) + '</span>').join("") +
         (bad.size ? '<span class="counter-risk">Bất lợi trước ' + riskDetails(entry) + '</span>' : "") +
         (mixed.size ? '<span class="counter-risk">Kèo trái chiều với ' + escapeHtml(evidence(mixed)) + '</span>' : "") + '</span>';
-      return active && !scanned ? '<button type="button" class="' + cardClass + '" data-counter-pick="' + id +
+      return canPick ? '<button type="button" class="' + cardClass + '" data-counter-pick="' + id +
         '" aria-pressed="' + selection.includes(id) + '">' + body +
         '<span class="counter-action">' + (selection.includes(id) ? "Đã chọn" : "Chọn") + '</span></button>' :
         '<div class="' + cardClass + '">' + body + '</div>';
@@ -586,6 +600,17 @@
 
   function renderDraft() {
     const game = state.games.at(-1);
+    if (opponentOnly) {
+      $("opponent-count").textContent = opponentSelection.length + "/5";
+      $("opponent-clear").disabled = !opponentSelection.length;
+      $("opponent-list").innerHTML = opponentSelection.map(id => '<button type="button" class="quiet" data-opponent="' +
+        escapeHtml(id) + '" aria-label="Bỏ ' + escapeHtml(nameFor(id)) + '"><span class="opponent-avatar">' +
+        portrait(heroesById.get(id)) + '</span>' + escapeHtml(nameFor(id)) + '<span aria-hidden="true">×</span></button>').join("");
+      $("pool-note").textContent = "Chọn tướng đối thủ trong kho. Danh sách gợi ý được cập nhật ngay.";
+      renderCounters(game, null, false);
+      renderRoster(null);
+      return;
+    }
     const number = state.games.length;
     const settings = state.settings;
     const score = rules.score(state);
@@ -672,6 +697,19 @@
   }
 
   function chooseHero(id) {
+    if (opponentOnly) {
+      const existing = opponentSelection.find(other => rules.heroKey(state.settings, other) === rules.heroKey(state.settings, id));
+      if (existing === id) opponentSelection = opponentSelection.filter(other => other !== id);
+      else if (existing) opponentSelection = opponentSelection.map(other => other === existing ? id : other);
+      else if (opponentSelection.length < 5) opponentSelection.push(id);
+      else {
+        tell("Đã đủ 5 tướng đối thủ. Bỏ một tướng để thay thế.");
+        return;
+      }
+      tell("");
+      renderDraft();
+      return;
+    }
     if (scannedDraft?.some(row => row.confirmed)) return;
     const turn = rules.activeTurn(state);
     if (!turn || !heroesById.has(id)) return;
@@ -920,8 +958,29 @@
     const button = event.target.closest("[data-hero]");
     if (button) chooseHero(button.dataset.hero);
   });
+  $("opponent-mode").addEventListener("click", () => {
+    opponentOnly = !opponentOnly;
+    suggestedLane = "";
+    $("opponent-mode").setAttribute("aria-pressed", String(opponentOnly));
+    $("view-draft").classList.toggle("opponent-mode", opponentOnly);
+    $("opponent-picks").hidden = !opponentOnly;
+    tell("");
+    renderDraft();
+  });
+  $("opponent-list").addEventListener("click", event => {
+    const button = event.target.closest("[data-opponent]");
+    if (!button) return;
+    chooseHero(button.dataset.opponent);
+    ($("opponent-list").querySelector("button") ?? $("search")).focus();
+  });
+  $("opponent-clear").addEventListener("click", () => {
+    opponentSelection = [];
+    tell("");
+    renderDraft();
+    $("search").focus();
+  });
   document.addEventListener("keydown", event => {
-    if (event.defaultPrevented || event.isComposing || route().view !== "draft") return;
+    if (event.defaultPrevented || event.isComposing || opponentOnly || route().view !== "draft") return;
     const key = event.key.toLowerCase();
     const ctrl = event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
     const dialogOpen = Boolean(document.querySelector("dialog[open]"));

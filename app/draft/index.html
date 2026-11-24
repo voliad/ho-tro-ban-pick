@@ -6,7 +6,7 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=scan-library">
+  <link rel="stylesheet" href="./style.css?v=opponent-only">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=shared-pick-order" defer></script>
   <script src="./counters.js?v=qzadd-five-lanes" defer></script>
@@ -15,7 +15,7 @@
   <script src="./qzadd-tiers.js?v=weighted-tier" defer></script>
   <script src="./lane-pools.js?v=2" defer></script>
   <script src="./vietnam-meta.js?v=weighted-tier" defer></script>
-  <script src="./app.js?v=rank-pick-pair" defer></script>
+  <script src="./app.js?v=opponent-only" defer></script>
   <script src="./airplay.js?v=keep-confirmed" defer></script>
   <script src="./vendor/peerjs-1.5.5.min.js" defer></script>
   <script src="./vendor/qrcodejs-1.0.0.min.js" defer></script>
@@ -56,6 +56,7 @@
           <p>Điều phối ban/pick và theo dõi tướng đã dùng trong series.</p>
         </div>
         <div class="series-strip">
+          <button type="button" id="opponent-mode" class="quiet" aria-pressed="false">Chỉ chọn tướng đối thủ</button>
           <label class="perspective-control" for="draft-perspective">Tôi ở bên
             <select id="draft-perspective"><option value="blue">Xanh</option><option value="red">Đỏ</option></select>
           </label>
@@ -150,6 +151,15 @@
         <div class="match-team red"><strong id="score-red">0</strong><span id="match-red">Đội B</span></div>
       </div>
 
+      <section id="opponent-picks" class="opponent-picks" aria-labelledby="opponent-title" hidden>
+        <div class="opponent-head">
+          <h2 id="opponent-title">Tướng đối thủ <span id="opponent-count"></span></h2>
+          <button type="button" id="opponent-clear" class="quiet">Xóa danh sách</button>
+        </div>
+        <p id="opponent-help">Bấm tướng trong kho để thêm vào danh sách. Bấm tướng đã thêm để bỏ chọn.</p>
+        <div id="opponent-list" class="opponent-list" aria-label="Tướng đối thủ đã chọn"></div>
+      </section>
+
       <div class="board">
         <section id="team-blue" class="team blue" aria-label="Bên xanh"></section>
         <section class="pool" aria-labelledby="pool-title">
@@ -172,8 +182,7 @@
             <p class="counter-note">Phối hợp đội hình dựa trên ảnh của @laihungtv. Tướng giúp ghép bài được cộng 1 điểm, tướng hoàn thiện bài được cộng 2 điểm. Nếu đối thủ đã chốt tướng gây khó cho bài, điểm phối hợp giảm 1. Mỗi tướng chỉ nhận điểm từ một bài phù hợp nhất.</p>
             <p class="counter-note">Mỗi đối thủ được tính một lần. Kèo thuận cộng 2 điểm. Kèo bất lợi trừ từ 1,5 điểm (B−) đến 4,5 điểm (SSS), mặc định trừ 3 điểm. Tier của tướng gợi ý điều chỉnh tối đa 1,5 điểm. Kèo trái chiều không cộng hoặc trừ điểm kèo.</p>
             <p class="counter-note">Tier chung tính theo đường, với trọng số AOV Update VN : Qzadd là 3:1 trong rank và 2:1 trong đấu giải. Nếu chỉ có điểm từ một nguồn, công cụ dùng điểm đó. <a href="/tier-list">Xem bảng Qzadd</a></p>
-            <label for="counter-target">Tướng đối thủ</label>
-            <select id="counter-target"></select>
+            <label class="counter-single-target">Tướng đối thủ <select id="counter-target"></select></label>
             <p class="counter-note">Tra chéo đọc kèo theo chiều ngược từ bảng Qzadd. Gợi ý theo cơ chế dựa trên kỹ năng và tình huống trong trận.</p>
             <p class="counter-note">Gợi ý theo cơ chế là nhận định chiến thuật, không phải tỷ lệ thắng.</p>
             <p class="counter-note"><a href="https://lienquan.garena.vn/hoc-vien/tuong-skin/d/ata/">Kỹ năng Ata</a> · <a href="https://lienquan.garena.vn/hoc-vien/tuong-skin/d/aya/">Kỹ năng Aya</a></p>

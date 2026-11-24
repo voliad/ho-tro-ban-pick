@@ -128,6 +128,17 @@ h1 { font-size: 2.1rem; line-height: 1.15; font-weight: 750; letter-spacing: -.0
 .turn-status span { color: var(--color-muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
 .turn-status strong { color: var(--color-accent); font-size: 1.03rem; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .board { display: grid; grid-template-columns: var(--lane) minmax(0, 1fr) var(--lane); gap: var(--board-gap); align-items: stretch; margin-top: var(--board-gap); }
+#view-draft.opponent-mode .board { grid-template-columns: minmax(0, 1fr); }
+#view-draft.opponent-mode .pool { grid-column: 1; grid-row: auto; }
+.opponent-mode :is(.team, .matchbar, .controlbar, .airplay-panel, .perspective-control, .series-info, .game-strip, .counter-single-target, .available) { display: none; }
+.opponent-picks { border: 1px solid var(--color-rule); background: var(--color-paper-2); margin-top: var(--board-gap); padding: .7rem .85rem; }
+.opponent-head, .opponent-list { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.opponent-head { justify-content: space-between; }
+.opponent-head h2 { font-size: 1rem; }
+.opponent-picks p { color: var(--color-muted); margin: .35rem 0; }
+.opponent-list button { display: inline-flex; align-items: center; gap: .45rem; padding: .25rem .55rem .25rem .25rem; }
+.opponent-avatar { position: relative; display: block; width: 2rem; height: 2rem; }
+.opponent-avatar img { position: relative; display: block; width: 100%; height: 100%; object-fit: cover; }
 .team, .pool { background: var(--color-paper-2); border: 1px solid var(--color-rule); min-width: 0; }
 .team { display: flex; flex-direction: column; }
 .team-head { display: flex; align-items: center; justify-content: space-between; gap: .35rem; min-height: 4.25rem; padding: .62rem .8rem; border-top: 3px solid var(--team-rule); background: var(--team-bg); }
