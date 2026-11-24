@@ -19,8 +19,8 @@
   <script src="./airplay.js?v=local-airplay" defer></script>
   <script src="./vendor/peerjs-1.5.5.min.js" defer></script>
   <script src="./vendor/qrcodejs-1.0.0.min.js" defer></script>
-  <script src="./turn.js?v=1" defer></script>
-  <script src="./iphone-receiver.js?v=turn-fallback" defer></script>
+  <script src="./turn.js?v=2" defer></script>
+  <script src="./iphone-receiver.js?v=turn-route" defer></script>
   <script src="./scan-samples.js?v=ban-portraits" defer></script>
   <script src="./draft-ocr.js?v=pick-label" defer></script>
   <script src="./draft-scan.js?v=ban-portraits" defer></script>
@@ -80,6 +80,7 @@
             <summary>Đường truyền dự phòng TURN</summary>
             <p>Nhập mã truy cập để bật Cloudflare TURN. Để trống để kết nối trực tiếp.</p>
             <label>Mã truy cập <input id="iphone-turn-access" type="password" autocomplete="off"></label>
+            <label><input id="iphone-turn-only" type="checkbox"> Chỉ truyền qua TURN</label>
           </details>
           <details>
             <summary>Dùng AirPlay</summary>
@@ -97,6 +98,7 @@
               </div>
             </div>
             <p id="iphone-room-status" role="status"></p>
+            <p id="iphone-video-route" class="counter-note"></p>
             <p id="iphone-video-health" class="counter-note"></p>
             <p id="iphone-last-issue" class="counter-note"></p>
             <button type="button" class="quiet" id="iphone-recover" hidden>Khôi phục hình</button>

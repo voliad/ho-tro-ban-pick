@@ -5,6 +5,7 @@
   const start = $("iphone-receive");
   const turnEndpoint = "https://aov-ban-pick-turn.checkin-license-server.workers.dev/ice";
   const turnAccess = $("iphone-turn-access");
+  const forceRelay = $("iphone-turn-only");
   const panel = $("iphone-room");
   const invite = $("iphone-invite");
   const qr = $("iphone-qr");
@@ -12,6 +13,7 @@
   const recover = $("iphone-recover");
   const lastIssue = $("iphone-last-issue");
   const health = $("iphone-video-health");
+  const routeStatus = $("iphone-video-route");
   function reportIssue(message) {
     lastIssue.textContent = "Lần gián đoạn gần nhất · " + message;
   }
@@ -34,6 +36,7 @@
     panel.hidden = !message;
     status.textContent = message;
     health.textContent = "";
+    routeStatus.textContent = "";
   }
 
   start.addEventListener("click", async () => {
@@ -49,6 +52,11 @@
     const attempt = {};
     room = attempt;
     let relay;
+    const relayOnly = forceRelay.checked;
+    if (relayOnly && !turnAccess.value.trim()) {
+      close("Nhập mã truy cập TURN trước khi dùng chế độ chỉ qua TURN.");
+      return;
+    }
     if (turnAccess.value.trim()) {
       try {
         const response = await fetch(turnEndpoint, {
@@ -72,7 +80,7 @@
     if (room !== attempt) return;
     const receiver = crypto.randomUUID();
     const sender = crypto.randomUUID();
-    const peer = new window.Peer(receiver, relay ? window.DRAFT_TURN.options(relay.username, relay.credential) : undefined);
+    const peer = new window.Peer(receiver, relay ? window.DRAFT_TURN.options(relay.username, relay.credential, relayOnly) : undefined);
     const current = { peer, timer: setTimeout(() => close("Kết nối đã hết hạn. Hãy tạo mã mới."), 180000) };
     room = current;
 
@@ -83,11 +91,12 @@
         return;
       }
       const url = new URL("./iphone/", location.href);
-      url.searchParams.set("v", "adaptive-video");
+      url.searchParams.set("v", "turn-route");
       const inviteParams = new URLSearchParams({ to: receiver, from: sender });
       if (relay) {
         inviteParams.set("u", relay.username);
         inviteParams.set("p", relay.credential);
+        if (relayOnly) inviteParams.set("relay", "1");
       }
       url.hash = inviteParams.toString();
       current.link = url.href;
@@ -125,6 +134,7 @@
       }
       clearInterval(current.watch);
       health.textContent = "";
+      routeStatus.textContent = "";
       const previousCall = current.call;
       current.call = call;
       current.captureEnded = false;
@@ -185,6 +195,7 @@
             const linkState = connection.connectionState ?? connection.iceConnectionState;
             const linkLost = ["disconnected", "failed", "closed"].includes(linkState);
             const stalled = now - lastFrame > 6000;
+            if (linkLost) health.textContent = "";
             let reason = linkLost ? "Đường truyền video bị gián đoạn." :
               track.muted ? "Luồng iPhone tạm ngừng gửi video." : "";
             if (!reason && !checkingStats && connection.getStats && now - lastStatsAt >= 2000) {
@@ -193,6 +204,8 @@
               try {
                 const stats = await connection.getStats();
                 if (room !== current || current.call !== call) return;
+                const route = window.DRAFT_TURN.route(stats);
+                if (route) routeStatus.textContent = "Đường truyền video · " + route;
                 const inbound = [...stats.values()].find(row =>
                   row.type === "inbound-rtp" && (row.kind ?? row.mediaType) === "video");
                 if (inbound && previousVideo && previousVideo.id === inbound.id) {
@@ -229,7 +242,7 @@
               if (reason && current.channel?.open && now - lastRequest > 15000) {
                 lastRequest = now;
                 reportIssue(reason);
-                current.channel.send({ type: "restart-video" });
+                current.channel.send({ type: "restart-video", network: linkLost });
               }
             }
           }, 1000);
