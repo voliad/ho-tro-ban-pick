@@ -6,6 +6,36 @@
   const turnEndpoint = "https://aov-ban-pick-turn.checkin-license-server.workers.dev/ice";
   const turnAccess = $("iphone-turn-access");
   const forceRelay = $("iphone-turn-only");
+  const rememberTurn = $("iphone-turn-remember");
+  const turnStorageKey = "aov-draft-turn-settings-v1";
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(turnStorageKey));
+    if (typeof saved?.access === "string" && saved.access) {
+      turnAccess.value = saved.access;
+      forceRelay.checked = saved.force === true;
+      rememberTurn.checked = true;
+    }
+  } catch {
+    // Storage can be unavailable in private browsing.
+  }
+
+  function saveTurnSettings() {
+    try {
+      const access = turnAccess.value.trim();
+      if (rememberTurn.checked && access) {
+        localStorage.setItem(turnStorageKey, JSON.stringify({ access, force: forceRelay.checked }));
+      } else {
+        localStorage.removeItem(turnStorageKey);
+      }
+    } catch {
+      rememberTurn.checked = false;
+    }
+  }
+  turnAccess.addEventListener("input", saveTurnSettings);
+  forceRelay.addEventListener("change", saveTurnSettings);
+  rememberTurn.addEventListener("change", saveTurnSettings);
+
   const panel = $("iphone-room");
   const invite = $("iphone-invite");
   const qr = $("iphone-qr");
