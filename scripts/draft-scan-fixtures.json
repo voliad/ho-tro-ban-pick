@@ -656,7 +656,7 @@
       "file": "aov-fourth.jpg",
       "matchId": "match-4",
       "split": "calibration",
-      "note": "Promoted to calibration after 10 readable on-screen hero labels were used for new skin references. Red ban index 1 remains unlabeled.",
+      "note": "Florentino in red ban index 1 explicitly confirmed by user. Skin portrait references are calibration data.",
       "expected": [
         {
           "side": "blue",
@@ -775,6 +775,13 @@
           "kind": "pick",
           "index": 4,
           "id": "marja",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 1,
+          "id": "florentino",
           "confirmed": true
         }
       ]
