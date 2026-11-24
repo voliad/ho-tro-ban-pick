@@ -6,7 +6,7 @@
   <meta name="description" content="Bàn cấm chọn và ghi kết quả thi đấu Liên Quân Mobile cho trọng tài, ban tổ chức và huấn luyện viên.">
   <meta name="theme-color" content="#101213">
   <title>Draft Desk | Liên Quân Mobile</title>
-  <link rel="stylesheet" href="./style.css?v=turn-layout">
+  <link rel="stylesheet" href="./style.css?v=scan-library">
   <script src="./heroes.js" defer></script>
   <script src="./rules.js?v=filter-rows" defer></script>
   <script src="./counters.js?v=qzadd-five-lanes" defer></script>
@@ -21,9 +21,11 @@
   <script src="./vendor/qrcodejs-1.0.0.min.js" defer></script>
   <script src="./turn.js?v=2" defer></script>
   <script src="./iphone-receiver.js?v=remember-turn" defer></script>
-  <script src="./scan-samples.js?v=zip-ban-correction" defer></script>
-  <script src="./draft-ocr.js?v=multi-pass-names" defer></script>
-  <script src="./draft-scan.js?v=normalized-ban-check" defer></script>
+  <script src="./scan-samples.js?v=reviewed-library" defer></script>
+  <script src="./scan-consensus.js?v=1" defer></script>
+  <script src="./scan-library.js?v=1" defer></script>
+  <script src="./draft-ocr.js?v=name-line-only" defer></script>
+  <script src="./draft-scan.js?v=temporal-reference-v1" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -117,6 +119,21 @@
           <p id="scan-feed-status" role="status"></p>
           <div id="scan-results" aria-live="polite"></div>
           <p id="scan-ocr-status" role="status"></p>
+          <details id="scan-library-panel">
+            <summary>Kiểm tra và lưu mẫu tướng</summary>
+            <p>Kiểm tra tên dưới từng ảnh rồi lưu. Mẫu được lưu trên trình duyệt này. Ảnh kiểm thử được giữ riêng để đo khả năng nhận diện.</p>
+            <div class="scan-library-actions">
+              <button type="button" class="quiet" id="scan-capture">Lấy các ô đang xem</button>
+              <label>Dùng ảnh cho <select id="scan-sample-use"><option value="reference">Bổ sung kho mẫu</option><option value="evaluation">Kiểm thử độc lập</option></select></label>
+              <label>Mã ván <input id="scan-match-id" maxlength="80" placeholder="Đặt cùng mã cho ảnh cùng ván"></label>
+              <button type="button" class="quiet" id="scan-library-export">Xuất dữ liệu</button>
+              <label>Nhập dữ liệu <input id="scan-library-import" type="file" accept=".json,application/json"></label>
+              <button type="button" class="quiet" id="scan-evaluate">Đánh giá ảnh kiểm thử</button>
+            </div>
+            <p id="scan-library-status" role="status"></p>
+            <div id="scan-review-grid"></div>
+            <div id="scan-saved-grid"></div>
+          </details>
           <video id="airplay-preview" aria-label="Xem màn hình đang chia sẻ" autoplay muted playsinline hidden></video>
           <canvas id="scan-video-preview" aria-label="Màn hình chia sẻ đã xoay" hidden></canvas>
           <img id="scan-preview" alt="Ảnh cấm/chọn đang thử nhận diện" hidden>

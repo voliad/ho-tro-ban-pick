@@ -43,71 +43,143 @@
   let crop;
   let corner;
   let choosing = false;
-  let previous = new Map();
+  const consensus = window.DRAFT_SCAN_CONSENSUS();
+  const userReferences = { bans: [], picks: [] };
+  let sourceHash = "";
+  let slotObservations = [];
+  let ocrGeneration = 0;
+  function refreshUserReferences() {
+    userReferences.bans = [];
+    userReferences.picks = [];
+    for (const row of window.DRAFT_SCAN_LIBRARY.list()) {
+      if (row.use === "reference") userReferences[row.kind === "ban" ? "bans" : "picks"].push([row.id, row.pixels]);
+    }
+  }
+  refreshUserReferences();
   const geminiAccess = $("iphone-turn-access");
   const geminiResult = $("scan-gemini-result");
   let geminiSlots = [];
   let geminiAttempt;
   let geminiTimer;
-  async function completeBansWithGemini() {
-    if (!imageUrl || !geminiSlots.length) return;
+  let lastGeminiRequest = -Infinity;
+  const geminiSuggestions = new Map();
+  const referenceImages = new Map();
+  function candidateHeroes(target) {
+    const type = target.kind === "ban" ? "bans" : "picks";
+    const scores = new Map();
+    for (const [id, pixels] of [...references[type], ...userReferences[type]]) {
+      const score = squaredDistance(target.pixels, pixels);
+      if (score < (scores.get(id) ?? Infinity)) scores.set(id, score);
+    }
+    const seen = new Set(latestLocalRows.map(row =>
+      window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)));
+    return [...scores].sort((a, b) => a[1] - b[1]).filter(([id]) => {
+      const key = window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, id);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 4).map(([id]) => heroes.find(hero => hero.id === id));
+  }
+  function supportedCandidate(target, id) {
+    const type = target.kind === "ban" ? "bans" : "picks";
+    const refs = [...references[type], ...userReferences[type]].filter(row => row[0] === id);
+    const evidence = target.patches;
+    return evidence.every(patch => refs.some(([, ref]) => squaredDistance(patch, ref) < 34 ** 2 * 192));
+  }
+  async function referencePortrait(hero, kind, target) {
+    const reviewed = window.DRAFT_SCAN_LIBRARY.list().filter(row =>
+      row.use === "reference" && row.id === hero.id && row.kind === kind).sort((a, b) =>
+        squaredDistance(a.pixels, target.pixels) - squaredDistance(b.pixels, target.pixels))[0];
+    if (reviewed) return reviewed.image.split(",")[1];
+    if (!referenceImages.has(hero.id)) {
+      const pending = (async () => {
+        const image = new Image();
+        image.src = hero.image;
+        await image.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 128;
+        const size = Math.min(image.width, image.height) * .65;
+        canvas.getContext("2d").drawImage(image, (image.width - size) / 2, (image.height - size) / 2,
+          size, size, 0, 0, 128, 128);
+        return canvas.toDataURL("image/jpeg", .8).split(",")[1];
+      })().catch(error => { referenceImages.delete(hero.id); throw error; });
+      referenceImages.set(hero.id, pending);
+    }
+    return referenceImages.get(hero.id);
+  }
+  function sameTarget(a, b) {
+    return a.side === b.side && a.kind === b.kind && a.index === b.index &&
+      a.confirmed === b.confirmed && squaredDistance(a.pixels, b.pixels) < 192 * 12 ** 2;
+  }
+  async function completeWithGemini() {
+    if (!crop || !geminiSlots.length) return;
     const access = geminiAccess.value.trim();
     if (!access) {
-      geminiResult.textContent = "Nhập mã truy cập TURN để dùng Gemini.";
+      if (imageUrl) geminiResult.textContent = "Nhập mã truy cập TURN để dùng Gemini.";
       return;
     }
     const currentCrop = crop;
-    if (geminiAttempt?.crop === currentCrop && geminiAttempt.access === access) return;
-    const attempt = { crop: currentCrop, access };
+    const targets = geminiSlots.slice(0, 4).map(target => ({
+      ...target, patches: [target.pixels, Array.from(sample(target.x + 3, target.y + 2, target.width))], portrait: patchImage(target).toDataURL("image/jpeg", .85).split(",")[1],
+      nameplate: target.kind === "pick" ? window.DRAFT_OCR.nameplate(frame, target) : undefined,
+      candidates: candidateHeroes(target),
+    })).filter(target => target.candidates.length >= 2);
+    if (!targets.length) return;
+    const key = JSON.stringify(targets.map(row => [row.side, row.kind, row.index, row.pixels]));
+    if (geminiAttempt?.crop === currentCrop && geminiAttempt.key === key && geminiAttempt.access === access) return;
+    if (!imageUrl && performance.now() - lastGeminiRequest < 15000) return;
+    const attempt = { crop: currentCrop, key, access };
     geminiAttempt = attempt;
-    const portraits = geminiSlots.slice(0, 4).map(({ side, index }) => {
-      const patch = document.createElement("canvas");
-      patch.width = patch.height = 128;
-      const x = ((side === "blue" ? 370 : 2161) + 84 * index - 261 - 28) * frame.width / 2346;
-      patch.getContext("2d").drawImage(frame, x, 21 * frame.height / 1086,
-        56 * frame.width / 2346, 60 * frame.height / 1086, 0, 0, 128, 128);
-      return { side, index, label: (side === "blue" ? "Trái " : "Phải ") + (index + 1),
-        portrait: patch.toDataURL("image/jpeg").split(",")[1] };
-    });
-    geminiResult.textContent = "Đang gửi ảnh các ô cấm chưa rõ đến Gemini…";
-    const results = await Promise.all(portraits.map(async ({ side, index, label, portrait }) => {
+    lastGeminiRequest = performance.now();
+    geminiResult.textContent = "Đang đối chiếu chân dung với ảnh tham chiếu qua Gemini…";
+    const results = await Promise.all(targets.map(async target => {
+      const label = (target.side === "blue" ? "Trái " : "Phải ") +
+        (target.kind === "ban" ? "cấm " : "chọn ") + (target.index + 1);
       try {
+        const candidates = await Promise.all(target.candidates.map(async hero => ({
+          id: hero.id, name: hero.name, portrait: await referencePortrait(hero, target.kind, target),
+        })));
         const response = await fetch("https://aov-ban-pick-turn.checkin-license-server.workers.dev/gemini", {
           method: "POST",
           headers: { Authorization: "Bearer " + access, "Content-Type": "application/json" },
-          body: JSON.stringify({ portrait }),
+          body: JSON.stringify({ portrait: target.portrait, nameplate: target.nameplate, candidates }),
           signal: AbortSignal.timeout(15000),
         });
         if (response.status === 401) return label + " · Mã truy cập sai";
         if (response.status === 429) return label + " · Gemini hết hạn mức";
         if (!response.ok) return label + " · Gemini chưa phản hồi";
-        const { hero } = await response.json();
-        const normalize = name => name.normalize("NFKC").replace(/[’‘]/g, "'").trim().toLowerCase();
-        const matches = typeof hero === "string" ? [...names].filter(([, name]) =>
-          normalize(name) === normalize(hero)) : [];
-        return matches.length === 1
-          ? { side, index, id: matches[0][0], kind: "ban", confirmed: true }
-          : label + " · Chưa rõ";
+        const { candidateId } = await response.json();
+        const selected = candidates.find(candidate => candidate.id === candidateId);
+        if (!selected) return label + " · Chưa có ứng viên phù hợp";
+        if (!supportedCandidate(target, selected.id)) {
+          if (crop === currentCrop && geminiAttempt === attempt && geminiSlots.some(slot => sameTarget(slot, target))) {
+            geminiSuggestions.set([target.side, target.kind, target.index].join("|"), { ...target, id: selected.id });
+          }
+          return label + " · Gemini gợi ý " + selected.name + ", cần bạn xác nhận trong kho mẫu";
+        }
+        return { ...target, id: selected.id };
       } catch {
         return label + " · Không kết nối được Gemini";
       }
     }));
-    if (geminiAttempt !== attempt || crop !== currentCrop || !imageUrl) return;
+    if (geminiAttempt !== attempt || crop !== currentCrop) return;
     const used = new Set(latestLocalRows.map(row =>
       window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)));
-    const suggestions = results.filter(row => typeof row !== "string");
-    const accepted = uniqueHeroes(suggestions).filter(row =>
-      !used.has(window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)) &&
-      geminiSlots.some(slot => slot.side === row.side && slot.index === row.index));
+    const suggestions = results.filter(row => typeof row !== "string" &&
+      geminiSlots.some(slot => sameTarget(slot, row)) &&
+      !used.has(window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)))
+      .map(row => ({ side: row.side, kind: row.kind, index: row.index, id: row.id,
+        confirmed: row.confirmed, pending: !row.confirmed, pixels: row.pixels, inferred: true }));
+    const accepted = uniqueHeroes(suggestions);
     geminiRows = accepted;
-    scanEvent([...latestLocalRows, ...accepted]);
+    scanEvent(uniqueHeroes([...latestLocalRows, ...accepted]));
     const errors = results.filter(row => typeof row === "string");
-    geminiResult.textContent = "Gemini đã điền " + accepted.length + "/" + portraits.length + " ô cấm." +
+    geminiResult.textContent = "Gemini đã đối chiếu được " + accepted.length + "/" + targets.length + " ô." +
       (errors.length ? " " + errors.join(" | ") : "");
   }
   let latestLocalRows = [];
   let geminiRows = [];
-  geminiAccess.addEventListener("change", () => completeBansWithGemini());
+  geminiAccess.addEventListener("change", () => completeWithGemini());
   let signature = "";
   const extraPortraits = { bans: [], picks: [] };
   const references = { bans: [...samples.bans], picks: [...samples.picks] };
@@ -123,6 +195,9 @@
   let readingText = false;
   const attemptedSlots = new Map();
   let loadingPortraits = false;
+  let finishedPortraits = 0;
+  let resolvePortraits;
+  const portraitsReady = new Promise(resolve => { resolvePortraits = resolve; });
   let imageUrl;
   let rotation = 0;
   let manualRotation = false;
@@ -233,7 +308,8 @@
       sample(x + dx + 4, 137 + dy - 4, 34),
       sample(x + dx, 137 + dy + 4, 34),
     ];
-    const id = identify([...aligned, ...anchored], samples.bans, 30, 4) ??
+    const id = identify([...aligned, ...anchored], userReferences.bans, 18, 6) ??
+      identify([...aligned, ...anchored], [...samples.bans, ...userReferences.bans], 30, 4) ??
       identify([aligned[0], anchored[0]], references.bans);
     return id ? { id } : { id: identify(anchored, extraPortraits.bans, 23, 7), simulated: true };
   }
@@ -311,6 +387,7 @@
     frameContext.drawImage(source(), crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
     const rows = [];
     slots = [];
+    slotObservations = [];
     let locks = 0;
     const lockedBans = [];
     const locksBySide = { blue: 0, red: 0 };
@@ -331,6 +408,9 @@
           lockOffsets.push(offset);
         }
         const ban = readBan(banX, offset);
+        slotObservations.push({ side, kind: "ban", index, id: ban.id,
+          x: banX + (offset?.dx ?? 0), y: 137 + (offset?.dy ?? 0), width: 34,
+          confirmed: Boolean(offset), pixels: Array.from(original) });
         if (ban.id) rows.push({ side, kind: "ban", index, ...ban, confirmed: Boolean(offset) });
       }
 
@@ -345,26 +425,30 @@
         const portrait = sample(pickX, y, 65);
         const emptyLimit = 18 ** 2 * 192;
         if (samples.emptyPicks.some(ref => squaredDistance(portrait, ref, emptyLimit) < emptyLimit)) continue;
+        slotObservations.push({ side, kind: "pick", index, x: pickX, y, width: 65,
+          pixels: Array.from(portrait), pending: glow });
         const slot = side + "|" + index;
         const fallback = textMatches.get(slot);
         const textId = fallback && squaredDistance(fallback.portrait, portrait) < 13 ** 2 * 192 ? fallback.id : null;
         const patches = [portrait, sample(pickX + 3, y + 2, 65)];
         const nearby = [sample(pickX - 6, y - 5, 65), sample(pickX + 6, y - 5, 65),
           sample(pickX - 6, y + 5, 65), sample(pickX + 6, y + 5, 65)];
-        let known = identify([...patches, ...nearby], samples.picks, 30, 5);
+        const reviewed = identify([...patches, ...nearby], userReferences.picks, 18, 6);
+        let known = reviewed ??
+          identify([...patches, ...nearby], [...samples.picks, ...userReferences.picks], 30, 5);
         if (!known && lockOffsets.length >= 3) {
           // Video cropping can shift the outer columns more than the ban row.
           const anchored = [offsetX, offsetX - 8, offsetX + 8].flatMap(dx =>
             [-6, 0, 6].map(dy => sample(pickX + dx, y + dy, 65)));
-          known = identify([...patches, ...nearby, ...anchored], samples.picks, 34, 7);
+          known = identify([...patches, ...nearby, ...anchored], [...samples.picks, ...userReferences.picks], 34, 7);
         }
         const a = identify([patches[0], patches[0]], references.picks, 27, 6);
         const b = identify([patches[1], patches[1]], references.picks, 27, 6);
         const extraA = !known && !a && !b ? identify([patches[0]], extraPortraits.picks, 23, 7) : null;
         const extraB = extraA && identify([patches[1]], extraPortraits.picks, 23, 7);
         const visual = known ?? (a === b ? a : null) ?? (extraA === extraB ? extraA : null);
-        const pick = textId && fallback.confidence >= 75 ? textId :
-          visual && textId && visual !== textId ? null : visual ?? textId;
+        const pick = reviewed ?? (textId && fallback.confidence >= 75 ? textId :
+          visual && textId && visual !== textId ? null : visual ?? textId);
         slots.push({ side, index, portrait, unresolved: !pick && !glow, pending: glow });
         if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known),
           nameRead: Boolean(textId), simulated: Boolean(extraA && extraA === extraB && !textId) });
@@ -386,19 +470,12 @@
     }
     const visible = uniqueHeroes(rows.filter(row => row.kind === "ban" || row.pending || pickPhase).map(row =>
       row.kind === "pick" ? { ...row, confirmed: pickPhase && !row.pending } : row));
-    const next = new Map();
-    let stable = [];
-    for (const row of visible) {
-      const key = [row.side, row.kind, row.index, row.id, row.confirmed].join("|");
-      next.set(key, Math.min(2, (previous.get(key) ?? 0) + 1));
-      if (imageUrl || next.get(key) === 2) stable.push(row);
-    }
-    previous = next;
+    let stable = imageUrl ? visible : consensus.observe(visible, video.currentTime, performance.now());
     if (!imageUrl) {
       const now = performance.now();
       const confirmed = stable.filter(row => row.confirmed);
       const slotKey = row => row.side + "|" + row.kind + "|" + row.index;
-      const occupied = new Set(visible.map(slotKey));
+      const occupied = new Set(stable.map(slotKey));
       const retained = [];
       for (const [slot, entry] of recentConfirmed) {
         if (now - entry.time >= 1100 || occupied.has(slot)) recentConfirmed.delete(slot);
@@ -424,7 +501,14 @@
     output.append(summary);
     const unreadBans = lockedBans.filter(({ side, index }) =>
       !stable.some(row => row.side === side && row.kind === "ban" && row.index === index && row.confirmed));
-    geminiSlots = unreadBans;
+    geminiSlots = [
+      ...unreadBans.map(slot => ({ ...slotObservations.find(row =>
+        row.side === slot.side && row.kind === "ban" && row.index === slot.index), confirmed: true })),
+      ...slots.filter(slot => slot.unresolved && window.DRAFT_OCR.hasLabel(frame, slot)).map(slot => ({
+        ...slotObservations.find(row => row.side === slot.side && row.kind === "pick" && row.index === slot.index),
+        confirmed: pickPhase && !slot.pending,
+      })),
+    ];
 
     if (unreadBans.length) {
       const line = document.createElement("p");
@@ -450,15 +534,16 @@
     const observed = new Set(stable.map(row => window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)));
     geminiRows = geminiRows.filter(row => !observed.has(
       window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)) &&
-      unreadBans.some(slot => slot.side === row.side && slot.index === row.index));
-    scanEvent([...stable, ...geminiRows]);
+      geminiSlots.some(slot => sameTarget(slot, row)));
+    scanEvent(uniqueHeroes([...stable, ...geminiRows]));
     clearTimeout(geminiTimer);
-    if (imageUrl && unreadBans.length) geminiTimer = setTimeout(completeBansWithGemini, 600);
+    if (geminiSlots.length) geminiTimer = setTimeout(completeWithGemini, 600);
   }
 
   function resetScan() {
     clearTimeout(geminiTimer);
     geminiAttempt = null;
+    geminiSuggestions.clear();
     latestLocalRows = [];
     geminiRows = [];
     geminiSlots = [];
@@ -467,7 +552,9 @@
     choosing = false;
     trackGame = false;
     lastRegionSearch = lastGameEvidence = 0;
-    previous.clear();
+    consensus.clear();
+    ocrGeneration++;
+    slotObservations = [];
     recentConfirmed.clear();
     slots = [];
     textMatches.clear();
@@ -529,7 +616,11 @@
           }
         }
         portraitCount++;
-      }).catch(() => {}).finally(loadNext);
+      }).catch(() => {}).finally(() => {
+        finishedPortraits++;
+        if (finishedPortraits === heroes.length) resolvePortraits();
+        loadNext();
+      });
     }
     for (let i = 0; i < 6; i++) loadNext();
   }
@@ -677,7 +768,7 @@
     rotation = bestAngle;
     updateVideoPreview();
     crop = region;
-    previous.clear();
+    consensus.clear();
     recentConfirmed.clear();
     textMatches.clear();
     attemptedSlots.clear();
@@ -726,6 +817,7 @@
     if (!imageUrl) return;
     URL.revokeObjectURL(imageUrl);
     imageUrl = null;
+    sourceHash = "";
     image.removeAttribute("src");
     image.hidden = clear.hidden = true;
     calibrate.disabled = !video.srcObject || !video.videoWidth;
@@ -744,10 +836,14 @@
     resetScan();
     const url = URL.createObjectURL(selected);
     imageUrl = url;
+    sourceHash = "";
     image.src = url;
     clear.hidden = false;
     try {
       await image.decode();
+      const digest = await crypto.subtle.digest("SHA-256", await selected.arrayBuffer());
+      if (imageUrl !== url) return;
+      sourceHash = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
       if (imageUrl !== url) return;
       video.style.display = "none";
       image.hidden = false;
@@ -789,15 +885,65 @@
   video.addEventListener("click", selectCorner);
   rotatedVideo.addEventListener("click", selectCorner);
   image.addEventListener("click", selectCorner);
+  function patchImage(row, size = 128) {
+    const patch = document.createElement("canvas");
+    patch.width = patch.height = size;
+    patch.getContext("2d").drawImage(frame,
+      (row.x - 261 - row.width / 2) * frame.width / 2346,
+      (row.y - 88 - row.width / 2) * frame.height / 1086,
+      row.width * frame.width / 2346, row.width * frame.height / 1086, 0, 0, size, size);
+    return patch;
+  }
+  document.addEventListener("scan-capture-request", async () => {
+    const rows = slotObservations.map(row => {
+      const known = latestLocalRows.find(other => other.side === row.side &&
+        other.kind === row.kind && other.index === row.index);
+      const suggested = geminiSuggestions.get([row.side, row.kind, row.index].join("|"));
+      return { ...row, id: known?.id ?? (suggested && sameTarget({ ...row, confirmed: suggested.confirmed }, suggested) ? suggested.id : row.id), image: patchImage(row).toDataURL("image/jpeg", .85),
+        pixels: Array.from(sample(row.x, row.y, row.width)) };
+    });
+    let hash = sourceHash;
+    if (!hash && rows.length) {
+      const digest = await crypto.subtle.digest("SHA-256",
+        new TextEncoder().encode(rows.map(row => row.image).join("")));
+      hash = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
+    }
+    document.dispatchEvent(new CustomEvent("scan-review-snapshot", { detail: { rows, sourceHash: hash } }));
+  });
+  document.addEventListener("scan-library-change", () => {
+    refreshUserReferences();
+    signature = "";
+    scannedPortraitCount = lastVideoTime = -1;
+    scanSafely();
+  });
+  document.addEventListener("scan-evaluate-request", async () => {
+    loadPortraits();
+    await portraitsReady;
+    const results = window.DRAFT_SCAN_LIBRARY.list().filter(row => row.use === "evaluation").map(row => {
+      const type = row.kind === "ban" ? "bans" : "picks";
+      const predicted = identify([row.pixels], [...references[type], ...userReferences[type]], 27, 6);
+      return { expected: row.id, predicted: predicted ?? null, kind: row.kind, matchId: row.matchId,
+        sourceHash: row.sourceHash, outcome: !predicted ? "unknown" : predicted === row.id ? "correct" : "wrong" };
+    });
+    document.dispatchEvent(new CustomEvent("scan-evaluation-result", { detail: {
+      evaluatedAt: new Date().toISOString(), method: "local-portrait-only", referenceSamples: userReferences.bans.length + userReferences.picks.length,
+      rosterPortraitsLoaded: portraitCount,
+      total: results.length, correct: results.filter(row => row.outcome === "correct").length,
+      wrong: results.filter(row => row.outcome === "wrong").length,
+      unknown: results.filter(row => row.outcome === "unknown").length, results,
+    } }));
+  });
+
   async function readNames(targets) {
     if (!crop || readingText || !targets.length) return;
     const region = crop;
+    const generation = ocrGeneration;
     readingText = true;
     ocr.disabled = true;
     ocrStatus.textContent = "Đang đọc chữ. Lần đầu có thể cần tải mô hình.";
     try {
       const matches = await window.DRAFT_OCR.read(frame, targets);
-      if (crop !== region) return;
+      if (crop !== region || generation !== ocrGeneration) return;
       for (const row of matches) textMatches.set(row.side + "|" + row.index, row);
       ocrStatus.textContent = matches.length
         ? "AI đọc được " + matches.length + " tên. Trạng thái cấm/chọn vẫn được kiểm tra riêng."
