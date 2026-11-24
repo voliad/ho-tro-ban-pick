@@ -888,6 +888,13 @@
           "index": 3,
           "id": "taara",
           "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "ban",
+          "index": 4,
+          "id": "omega",
+          "confirmed": true
         }
       ]
     }
