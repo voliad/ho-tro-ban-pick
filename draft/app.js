@@ -193,7 +193,7 @@
     const keyword = norm($("search").value.trim());
     const onlyAvailable = $("available").checked;
     const reasonFor = opponentOnly ? () => "" : rules.eligibility(state, turn, true);
-    const pool = lanePools[lane];
+    const pool = opponentOnly ? undefined : lanePools[lane];
     const rosterFiltered = roster.filter(hero => {
       return (!role || hero.roles.includes(Number(role))) && norm(heroLabel(hero)).includes(keyword)
         && (!pool || pool.main.has(hero.id) || pool.extra.has(hero.id))
@@ -338,7 +338,7 @@
     const current = $("counter-lineup");
     const focused = current.contains(document.activeElement) ? document.activeElement.dataset.suggestLane : undefined;
     if (opponentOnly) {
-      current.innerHTML = '<div class="lineup-head"><h4>Gợi ý theo đường</h4></div><div class="role-bar" role="group" aria-label="Đường gợi ý">' +
+      current.innerHTML = '<div class="lineup-head"><h4>Đường của bạn</h4></div><div class="role-bar" role="group" aria-label="Đường của bạn">' +
         positions.map(position => '<button type="button" data-suggest-lane="' + escapeHtml(position) +
           '" aria-pressed="' + (suggestedLane === position) + '">' + filterIcon("lane-" + laneIcons[position]) +
           escapeHtml(lanePools[position].label) + '</button>').join("") + '</div>';
