@@ -73,6 +73,7 @@
           state.settings.legacyRankBans = true;
         }
       }
+      if (state.settings.mode === "rank") state.games.forEach(rules.mergeLegacyRankPair);
       clock = saved.clock ?? initialClock();
     } catch {
       storageIssue = "Không thể đọc dữ liệu lưu trên trình duyệt. Bàn draft đã mở ở trạng thái mặc định.";
@@ -601,8 +602,10 @@
     $("score-blue").textContent = score[blue];
     $("score-red").textContent = score[red];
     $("game-label").textContent = "Ván " + number;
+    const turnAction = hidden ? "chọn ẩn" : turn && actionLabel[turn.kind] +
+      (turn.kind === "pick" && turn.count > 1 ? " " + turn.count : "") + " tướng";
     $("turn-label").textContent = live ? "Tự điền từ ảnh hoặc màn hình" : winner ? nameOf(winner) + " thắng series" :
-      turn ? sideLabel[turn.side] + (hidden ? " chọn ẩn" : " " + actionLabel[turn.kind] + " tướng") : "Draft đã hoàn tất";
+      turn ? sideLabel[turn.side] + " " + turnAction : "Draft đã hoàn tất";
     $("turn-label").dataset.side = turn?.side ?? "";
     $("games").innerHTML = Array.from({ length: settings.format }, (_, i) => {
       const row = state.games[i];
@@ -625,6 +628,7 @@
       ? selection.map(nameFor).join(", ")
       : turn ? "Chọn " + turn.count + " tướng từ kho" : winner ? "Series đã kết thúc" : "Chờ ghi kết quả ván";
     $("commit").textContent = live ? "Đang tự điền" : turn ? (hidden ? "Chốt đội hình" :
+      turn.kind === "pick" && turn.count > 1 ? "Chốt " + turn.count + " tướng" :
       isRank && turn.kind === "ban" && turn.count > 1 ? "Chốt " + turn.count + " tướng cấm" :
         "Xác nhận " + actionLabel[turn.kind]) : "Ghi kết quả";
     $("commit").disabled = Boolean(live) || winner !== null || Boolean(turn && selection.length !== turn.count);

@@ -9,7 +9,10 @@
     ["pick", "red", 1], ["pick", "blue", 2], ["pick", "red", 1],
   ];
   const blind = [["pick", "blue", 5], ["pick", "red", 5]];
-  const rankPicks = standard.filter(([kind]) => kind === "pick");
+  const rankPicks = [
+    ["pick", "blue", 1], ["pick", "red", 2], ["pick", "blue", 2],
+    ["pick", "red", 2], ["pick", "blue", 2], ["pick", "red", 1],
+  ];
   const legacyRanked = [
     ...Array.from({ length: 5 }, () => [["ban", "blue", 1], ["ban", "red", 1]]).flat(),
     ...rankPicks,
@@ -51,16 +54,40 @@
     return ["A", "B"].find(team => total[team] >= target) ?? null;
   }
 
+  function legacyRankPairIndex(game) {
+    const first = game.turns.findIndex(row => row.kind === "pick");
+    if (first === -1) return -1;
+    const index = first + 3;
+    const turn = game.turns[index];
+    return turn?.kind === "pick" && turn.side === "red" && turn.ids.length === 1 ? index : -1;
+  }
+
+  function mergeLegacyRankPair(game) {
+    const index = legacyRankPairIndex(game);
+    if (index < 0) return;
+    const follow = game.turns[index + 1];
+    if (follow?.kind !== "pick" || follow.side !== "red" || follow.ids.length !== 1) return;
+    const first = game.turns[index];
+    game.turns.splice(index, 2, { ...first, ids: [...first.ids, ...follow.ids] });
+  }
+
+  function partialRankPair(state, game) {
+    if (state.settings.mode !== "rank") return false;
+    const index = legacyRankPairIndex(game);
+    return index >= 0 && index === game.turns.length - 1;
+  }
+
   function activeTurn(state) {
     const game = state.games.at(-1);
     if (game.winner || game.draftSkipped) return null;
     const turns = sequence(state.settings, state.games.length);
     const remaining = turns.filter(([kind], index) =>
       game.skipBansFrom === undefined || index < game.skipBansFrom || kind !== "ban");
-    const row = remaining[game.turns.length];
+    const alreadyPicked = Number(partialRankPair(state, game));
+    const row = remaining[game.turns.length - alreadyPicked];
     if (!row) return null;
     const [kind, side, count] = row;
-    return { kind, side, count, team: onSide(game, side) };
+    return { kind, side, count: count - alreadyPicked, team: onSide(game, side) };
   }
 
   function usedBy(state, team) {
@@ -109,7 +136,9 @@
   function recordTurn(state, ids) {
     if (!validSelection(state, ids)) return false;
     const { kind, side } = activeTurn(state);
-    state.games.at(-1).turns.push({ kind, side, ids: [...ids] });
+    const game = state.games.at(-1);
+    if (partialRankPair(state, game)) game.turns.at(-1).ids.push(...ids);
+    else game.turns.push({ kind, side, ids: [...ids] });
     return true;
   }
 
@@ -147,6 +176,6 @@
     return "";
   }
 
-  root.DRAFT_RULES = { roles, defaults, opposite, onSide, isBlind, sequence, heroKey, nameOf, makeGame, start,
+  root.DRAFT_RULES = { roles, defaults, opposite, onSide, isBlind, sequence, heroKey, nameOf, makeGame, start, mergeLegacyRankPair,
     score, seriesWinner, activeTurn, usedBy, eligibility, validSelection, recordTurn, recordWinner, undo };
 })(globalThis);
