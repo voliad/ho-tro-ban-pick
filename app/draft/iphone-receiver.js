@@ -121,7 +121,7 @@
         return;
       }
       const url = new URL("./iphone/", location.href);
-      url.searchParams.set("v", "20-fps");
+      url.searchParams.set("v", "transport-retry");
       const inviteParams = new URLSearchParams({ to: receiver, from: sender });
       if (relay) {
         inviteParams.set("u", relay.username);
@@ -210,6 +210,7 @@
           let frameTime = frameProgress();
           let lastFrame = performance.now();
           let lastRequest = -Infinity;
+          let disconnectedSince;
           let checkingStats = false;
           let previousVideo;
           let lastStatsAt = -Infinity;
@@ -224,6 +225,9 @@
             }
             const linkState = connection.connectionState ?? connection.iceConnectionState;
             const linkLost = ["disconnected", "failed", "closed"].includes(linkState);
+            if (linkLost) disconnectedSince ??= now;
+            else disconnectedSince = undefined;
+            const persistentLoss = linkLost && (linkState !== "disconnected" || now - disconnectedSince >= 6000);
             const stalled = now - lastFrame > 6000;
             if (linkLost) health.textContent = "";
             let reason = linkLost ? "Đường truyền video bị gián đoạn." :
@@ -265,7 +269,7 @@
                 checkingStats = false;
               }
             }
-            if (stalled && frameProgress() === progress) {
+            if (persistentLoss || (stalled && frameProgress() === progress)) {
               const nextStatus = reason || "Đang chờ khung hình mới. Bạn có thể bấm Khôi phục hình nếu màn hình đã đứng.";
               if (status.textContent !== nextStatus) status.textContent = nextStatus;
               if (video.paused) video.play().catch(() => {});

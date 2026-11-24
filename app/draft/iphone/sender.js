@@ -91,8 +91,15 @@
     status.textContent = "Tín hiệu gián đoạn. Đang tự kết nối lại…";
     retry = setTimeout(() => {
       retry = null;
-      if (ended) return;
-      if (peer.disconnected) peer.reconnect();
+      if (ended || call) return;
+      if (peer.disconnected || !peer.open) {
+        try {
+          if (peer.disconnected && !peer.destroyed) peer.reconnect();
+        } finally {
+          retryCall(false);
+        }
+        return;
+      }
       connect();
     }, Math.min(1000 * 2 ** failures, 8000));
     previous?.close();
@@ -105,7 +112,7 @@
       finish("iPhone đã dừng phát màn hình.");
       return;
     }
-    if (!channel || channel.peerConnection?.connectionState === "failed") {
+    if (!channel?.open || ["closed", "failed", "disconnected"].includes(channel.peerConnection?.connectionState)) {
       channel?.close();
       channel = peer.connect(to, { reliable: true });
       const control = channel;
@@ -192,7 +199,11 @@
   peer.on("open", () => {
     clearTimeout(opening);
     if (ended) return;
-    if (capture) connect();
+    if (capture) {
+      clearTimeout(retry);
+      retry = null;
+      connect();
+    }
     else if (!requesting) {
       start.disabled = false;
       status.textContent = "Sẵn sàng phát màn hình.";
