@@ -19,7 +19,7 @@ const live = window.DRAFT_SCAN_CONSENSUS(id => id.startsWith("flowborn-") ? "flo
 const ban = { side: "red", kind: "ban", index: 0, id: "flowborn-mage", confirmed: true };
 assert.deepEqual(live.keep([ban, a]), [ban, a]);
 const duplicate = { ...a, index: 1, id: "flowborn-ad" };
-const pending = { ...a, index: 2, id: "zata", confirmed: false };
+const pending = { ...a, index: 1, id: "zata", confirmed: false };
 const replacementBan = { ...ban, id: "zip", known: true };
 assert.deepEqual(live.unlocked([duplicate, pending, b, replacementBan]), [pending]);
 assert.deepEqual(live.keep([duplicate, pending, b, replacementBan]), [ban, a, pending]);
@@ -29,6 +29,45 @@ assert.deepEqual(live.keep([]), [ban, a], "reacquiring the game region only clea
 live.reset();
 assert.deepEqual(live.keep([replacementBan, b, duplicate]), [replacementBan, b, duplicate]);
 console.log('Confirmed bans and picks survive conflicting frames and can be reset for a new draft');
+const sequence = window.DRAFT_SCAN_CONSENSUS();
+const next = { ...a, index: 1, id: "liliana" };
+const later = { ...a, index: 2, id: "vexana" };
+const opponent = { ...a, side: "red", id: "alice" };
+const skippedBan = { ...ban, index: 4 };
+assert.deepEqual(sequence.inOrder([next, later, opponent, skippedBan]), [opponent, skippedBan]);
+assert.deepEqual(sequence.keep([next, later, opponent, skippedBan]), [opponent, skippedBan]);
+assert.equal(sequence.isLocked(later), false, "a later pick cannot become permanent through a gap");
+assert.deepEqual(sequence.keep([a, later]), [opponent, skippedBan, a]);
+assert.deepEqual(sequence.inOrder([a, pending, later]), [a, pending], "a pending pick does not fill a gap");
+assert.deepEqual(sequence.keep([later, next]), [opponent, skippedBan, a, next, later]);
+assert.equal(sequence.nextPick(sequence.keep([]), "blue"), 3);
+assert.equal(sequence.nextPick(sequence.keep([]), "red"), 1);
+console.log('Live and image pick sequences are contiguous per side, with independent ban slots');
+require('../app/draft/rules.js');
+const rules = global.DRAFT_RULES;
+const rank = rules.start({ ...rules.defaults, mode: "rank", format: 1 });
+const game = rank.games[0];
+game.skipBansFrom = 0;
+for (const ids of [["arum"], ["baldum", "bijan"], ["bonnie", "bolt-baron"]]) {
+  assert.equal(rules.recordTurn(rank, ids), true);
+}
+assert.deepEqual(rules.activeTurn(rank), { kind: "pick", side: "red", count: 2, team: "B" });
+assert.equal(rules.recordTurn(rank, ["yue"]), false, "rank slots 3 and 4 must be confirmed together");
+assert.equal(rules.recordTurn(rank, ["yue", "hayate"]), true);
+assert.equal(rules.activeTurn(rank).side, "blue");
+const split = structuredClone(rank);
+split.games[0].turns.splice(-1, 1, { kind: "pick", side: "red", ids: ["yue"] });
+assert.equal(rules.activeTurn(split).count, 1, "an old draft preserves an already committed first pick");
+assert.equal(rules.recordTurn(split, ["hayate"]), true);
+assert.deepEqual(split, rank);
+const saved = structuredClone(rank);
+saved.games[0].turns.splice(-1, 1, { kind: "pick", side: "red", ids: ["yue"] },
+  { kind: "pick", side: "red", ids: ["hayate"] });
+rules.mergeLegacyRankPair(saved.games[0]);
+assert.deepEqual(saved, rank);
+assert.equal(rules.undo(rank), "turn");
+assert.equal(rules.activeTurn(rank).count, 2);
+console.log('Rank confirms red slots 3 and 4 together and preserves older drafts');
 (async()=>{
 const worker=(await import('../cloudflare/turn/worker.mjs')).default;
 const env={RELAY_ACCESS:'test-access',GEMINI_API_KEY:'test-key'};

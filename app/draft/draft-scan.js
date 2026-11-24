@@ -29,7 +29,9 @@
   const heroes = window.DRAFT_HEROES;
   const names = new Map(heroes.map(hero => [hero.id, hero.name]));
   const colors = ["blue", "red"];
-  const scanEvent = snapshot => document.dispatchEvent(new CustomEvent("draft-scan", { detail: snapshot }));
+  const scanEvent = snapshot => document.dispatchEvent(new CustomEvent("draft-scan", {
+    detail: snapshot ? consensus.inOrder(snapshot) : null,
+  }));
   function rgb() {
     const rgba = ctx.getImageData(0, 0, 8, 8).data;
     const result = new Uint8Array(192);
@@ -175,8 +177,10 @@
     const occupied = new Set(latestLocalRows.map(slotKey));
     const accepted = uniqueHeroes(suggestions.filter(row => !occupied.has(slotKey(row))));
     if (imageUrl) {
-      geminiRows = accepted;
-      scanEvent(uniqueHeroes([...latestLocalRows, ...accepted]));
+      const updatedSlots = new Set(accepted.map(slotKey));
+      geminiRows = uniqueHeroes([...accepted, ...geminiRows.filter(row =>
+        !updatedSlots.has(slotKey(row)) && geminiSlots.some(slot => sameTarget(slot, row)))]);
+      scanEvent(uniqueHeroes([...latestLocalRows, ...geminiRows]));
     } else {
       const merged = consensus.keep([...latestLocalRows, ...accepted]);
       latestLocalRows = merged;
@@ -471,22 +475,26 @@
     const namedPick = rows.some(row => row.kind === "pick" && row.nameRead && !row.pending);
     const pickPhase = locks === 10 || knownPicks.size >= 2 || namedPick ||
       (knownPicks.size > 0 && locksBySide.blue >= 3 && locksBySide.red >= 3);
+    const eligible = rows.filter(row => row.kind === "ban" || row.pending || pickPhase).map(row =>
+      row.kind === "pick" ? { ...row, confirmed: pickPhase && !row.pending } : row);
+    const visible = uniqueHeroes(imageUrl ? eligible : consensus.unlocked(eligible));
+    const observed = imageUrl ? visible : consensus.observe(visible, video.currentTime, performance.now());
+    const stable = imageUrl ? consensus.inOrder(observed) : consensus.keep(observed);
+    const nextPick = Object.fromEntries(colors.map(side => [side, consensus.nextPick(stable, side)]));
+    const gaps = colors.filter(side => observed.some(row =>
+      row.side === side && row.kind === "pick" && row.confirmed && row.index > nextPick[side]));
+    const isGap = slot => gaps.includes(slot.side) && slot.index === nextPick[slot.side];
     const hasLabel = slot => slot.hasLabel ??= window.DRAFT_OCR.hasLabel(frame, slot);
     const pendingOcr = readingText ? [] : slots.filter(slot => {
       if (!imageUrl && consensus.isLocked({ ...slot, kind: "pick" })) return false;
       const prior = attemptedSlots.get(slot.side + "|" + slot.index);
       return (!prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2) &&
         hasLabel(slot);
-    }).sort((a, b) => Number(b.unresolved) - Number(a.unresolved)).slice(0, 2);
+    }).sort((a, b) => Number(isGap(b)) - Number(isGap(a)) || Number(b.unresolved) - Number(a.unresolved)).slice(0, 2);
     if (pendingOcr.length && !readingText) {
       for (const slot of pendingOcr) attemptedSlots.set(slot.side + "|" + slot.index, slot.portrait);
       readNames(pendingOcr);
     }
-    const eligible = rows.filter(row => row.kind === "ban" || row.pending || pickPhase).map(row =>
-      row.kind === "pick" ? { ...row, confirmed: pickPhase && !row.pending } : row);
-    const visible = uniqueHeroes(imageUrl ? eligible : consensus.unlocked(eligible));
-    const observed = imageUrl ? visible : consensus.observe(visible, video.currentTime, performance.now());
-    const stable = imageUrl ? observed : consensus.keep(observed);
     if (locks >= 2 || eligible.some(row => row.kind === "pick" && row.confirmed && (row.known || row.nameRead))) {
       lastGameEvidence = performance.now();
     }
@@ -496,15 +504,18 @@
     const unreadPicks = slots.filter(slot => slot.unresolved &&
       !confirmedSlots.has(slotKey({ ...slot, kind: "pick" })));
     const unreadBans = lockedBans.filter(slot => !confirmedSlots.has(slotKey({ ...slot, kind: "ban" })));
+    const pickTargets = unreadPicks.filter(hasLabel).map(slot => ({
+      ...slotObservations.find(row => row.side === slot.side && row.kind === "pick" && row.index === slot.index),
+      confirmed: pickPhase && !slot.pending,
+    }));
     geminiSlots = [
+      ...pickTargets.filter(isGap),
       ...unreadBans.map(slot => ({ ...slotObservations.find(row =>
         row.side === slot.side && row.kind === "ban" && row.index === slot.index), confirmed: true })),
-      ...unreadPicks.filter(hasLabel).map(slot => ({
-        ...slotObservations.find(row => row.side === slot.side && row.kind === "pick" && row.index === slot.index),
-        confirmed: pickPhase && !slot.pending,
-      })),
+      ...pickTargets.filter(slot => !isGap(slot)),
     ];
-    const key = JSON.stringify([lockedBans, stable]);
+    latestLocalRows = imageUrl ? observed : stable;
+    const key = JSON.stringify([lockedBans, latestLocalRows, gaps.map(side => [side, nextPick[side]])]);
     if (key === signature) return;
     signature = key;
     output.replaceChildren();
@@ -522,6 +533,12 @@
         (side === "blue" ? "trái " : "phải ") + (index + 1)).join(", ") + ".";
       output.append(line);
     }
+    if (gaps.length) {
+      const line = document.createElement("p");
+      line.textContent = "Đang đối chiếu ô chọn " + gaps.map(side =>
+        (side === "blue" ? "trái " : "phải ") + (nextPick[side] + 1)).join(", ") + ".";
+      output.append(line);
+    }
     for (const side of colors) {
       const items = stable.filter(row => row.side === side);
       if (!items.length) continue;
@@ -536,11 +553,10 @@
       ? "Chưa đọc rõ ô tướng. Vùng game chỉ rộng " + Math.round(crop.width) +
         " px. Hãy phóng lớn game trước khi chụp hoặc chia sẻ."
       : "Chưa đọc rõ ô tướng. Hãy kiểm tra vùng game đã chọn.");
-    latestLocalRows = stable;
-    const observedHeroes = new Set(stable.map(row => heroKey(row.id)));
+    const observedHeroes = new Set(latestLocalRows.map(row => heroKey(row.id)));
     geminiRows = geminiRows.filter(row => !observedHeroes.has(heroKey(row.id)) &&
       geminiSlots.some(slot => sameTarget(slot, row)));
-    scanEvent(uniqueHeroes([...stable, ...geminiRows]));
+    scanEvent(uniqueHeroes([...latestLocalRows, ...geminiRows]));
     clearTimeout(geminiTimer);
     if (geminiSlots.length) geminiTimer = setTimeout(completeWithGemini, 600);
   }
