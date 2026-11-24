@@ -18,16 +18,35 @@ export default {
     if (!env.RELAY_ACCESS) return respond(503, {});
     if (request.headers.get("Authorization") !== "Bearer " + env.RELAY_ACCESS) return respond(401, {});
     if (route === "/gemini") {
-      if (!env.GEMINI_API_KEY) return respond(503, {});
+      if (!env.GEMINI_API_KEY?.trim()) return respond(503, { error: "missing_key" });
       const length = Number(request.headers.get("Content-Length"));
-      if (!length || length > 150000) return respond(413, {});
+      if (length > 150000) return respond(413, { error: "image_too_large" });
       try {
-        const { portrait } = await request.json();
+        const reader = request.body?.getReader();
+        if (!reader) return respond(400, { error: "invalid_image" });
+        const buffer = new Uint8Array(150000);
+        let size = 0;
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (size + value.length > buffer.length) {
+            await reader.cancel();
+            return respond(413, { error: "image_too_large" });
+          }
+          buffer.set(value, size);
+          size += value.length;
+        }
+        let portrait;
+        try {
+          ({ portrait } = JSON.parse(new TextDecoder().decode(buffer.subarray(0, size))));
+        } catch {
+          return respond(400, { error: "invalid_image" });
+        }
         if (typeof portrait !== "string" || portrait.length > 140000 ||
-          !/^[A-Za-z0-9+/]+={0,2}$/.test(portrait)) return respond(400, {});
+          !/^[A-Za-z0-9+/]+={0,2}$/.test(portrait)) return respond(400, { error: "invalid_image" });
         const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+          headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY.trim() },
           body: JSON.stringify({
             contents: [{ parts: [
               { text: 'Identify the Arena of Valor hero portrait. Return JSON {"hero":"hero name"} or {"hero":null} if uncertain.' },
@@ -37,12 +56,23 @@ export default {
           }),
           signal: AbortSignal.timeout(12000),
         });
-        if (!response.ok) return respond(response.status === 429 ? 429 : 502, {});
+        if (!response.ok) {
+          const failure = await response.json().catch(() => null);
+          const rawReason = failure?.error?.details?.find(detail => detail.reason)?.reason;
+          const reason = typeof rawReason === "string" && /^[A-Z][A-Z0-9_]{1,60}$/.test(rawReason)
+            ? rawReason : undefined;
+          return respond(response.status === 429 ? 429 : 502, {
+            error: "google_rejected", upstreamStatus: response.status, reason,
+          });
+        }
         const result = await response.json();
-        const answer = JSON.parse(result.candidates[0].content.parts.at(-1).text);
+        const content = result.candidates?.[0]?.content?.parts?.filter(part => !part.thought)
+          .map(part => part.text ?? "").join("").trim();
+        if (!content) return respond(502, { error: "empty_answer" });
+        const answer = JSON.parse(content.replace(/^```(?:json)?\s*|\s*```$/gi, ""));
         return respond(200, { hero: typeof answer.hero === "string" ? answer.hero.slice(0, 60) : null });
-      } catch {
-        return respond(502, {});
+      } catch (error) {
+        return respond(502, { error: error.name === "TimeoutError" ? "google_timeout" : "invalid_answer" });
       }
     }
     if (!env.TURN_KEY_ID || !env.TURN_KEY_TOKEN) return respond(503, {});
