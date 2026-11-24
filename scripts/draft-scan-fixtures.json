@@ -651,6 +651,245 @@
           "confirmed": true
         }
       ]
+    },
+    {
+      "file": "aov-fourth.jpg",
+      "matchId": "match-4",
+      "split": "calibration",
+      "note": "Promoted to calibration after 10 readable on-screen hero labels were used for new skin references. Red ban index 1 remains unlabeled.",
+      "expected": [
+        {
+          "side": "blue",
+          "kind": "ban",
+          "index": 0,
+          "id": "nakroth",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "ban",
+          "index": 1,
+          "id": "dolia",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "ban",
+          "index": 3,
+          "id": "11596",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 0,
+          "id": "annette",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 2,
+          "id": "tamyn",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 3,
+          "id": "rouie",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 4,
+          "id": "dyadia",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 0,
+          "id": "bolt-baron",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 1,
+          "id": "baldum",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 2,
+          "id": "zata",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 3,
+          "id": "billow",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 4,
+          "id": "preyta",
+          "confirmed": false
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 0,
+          "id": "alice",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 1,
+          "id": "fennik",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 2,
+          "id": "maloch",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 3,
+          "id": "murad",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 4,
+          "id": "marja",
+          "confirmed": true
+        }
+      ]
+    },
+    {
+      "file": "aov-second.jpg",
+      "matchId": "match-2",
+      "split": "calibration",
+      "expected": [
+        {
+          "side": "blue",
+          "kind": "ban",
+          "index": 1,
+          "id": "rouie",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "ban",
+          "index": 2,
+          "id": "ybneth",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "ban",
+          "index": 3,
+          "id": "dolia",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 1,
+          "id": "annette",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 2,
+          "id": "11596",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 3,
+          "id": "baldum",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "ban",
+          "index": 4,
+          "id": "valhein",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 0,
+          "id": "tamyn",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 1,
+          "id": "evita",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 2,
+          "id": "murad",
+          "confirmed": true
+        },
+        {
+          "side": "blue",
+          "kind": "pick",
+          "index": 3,
+          "id": "krizzix",
+          "confirmed": false
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 0,
+          "id": "flowborn",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 1,
+          "id": "dyadia",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 2,
+          "id": "billow",
+          "confirmed": true
+        },
+        {
+          "side": "red",
+          "kind": "pick",
+          "index": 3,
+          "id": "taara",
+          "confirmed": true
+        }
+      ]
     }
   ]
 }

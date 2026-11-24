@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const trainingSources = new Set(["02b12c7846cae6563748bc5f50c9b1c20f7be3bef2e1f8c010ae0108032dad88","bdc3c71427533b6a546bd44fe62c874f39d98d8d7e80f1881bd71907a88d493d","9ebc3cfa7f0b606770ddaeb4d29896014cbbbaf9a6b904be92687bddf2aa8227"]);
+  const trainingSources = new Set(["044707140aeb5f406c92c901f4b6b969b89dcd700b48858b9b85ebda528bcd72","02b12c7846cae6563748bc5f50c9b1c20f7be3bef2e1f8c010ae0108032dad88","bdc3c71427533b6a546bd44fe62c874f39d98d8d7e80f1881bd71907a88d493d","9ebc3cfa7f0b606770ddaeb4d29896014cbbbaf9a6b904be92687bddf2aa8227"]);
   const key = "aov-reviewed-portraits-v1";
   const heroes = new Set(window.DRAFT_HEROES.map(hero => hero.id));
   const valid = row => row && heroes.has(row.id) && ["ban", "pick"].includes(row.kind) &&
