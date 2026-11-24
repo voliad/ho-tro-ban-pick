@@ -483,9 +483,20 @@
     output.textContent = "";
   }
 
+  function addExtraPortrait(id, pixels) {
+    extraPortraits.picks.push([id, pixels]);
+    extraPortraits.bans.push([id, pixels.map((value, index) => {
+      const i = index - index % 3;
+      const gray = .299 * pixels[i] + .587 * pixels[i + 1] + .114 * pixels[i + 2];
+      return .8 * value + .2 * gray;
+    })]);
+  }
+
   function loadPortraits() {
     if (loadingPortraits) return;
     loadingPortraits = true;
+    const smallPortrait = document.createElement("canvas");
+    const smallContext = smallPortrait.getContext("2d");
     let index = 0;
     function loadNext() {
       const hero = heroes[index++];
@@ -510,13 +521,15 @@
           const size = Math.min(img.width, img.height) * scale;
           ctx.clearRect(0, 0, 8, 8);
           ctx.drawImage(img, (img.width - size) / 2, (img.height - size) * vertical, size, size, 0, 0, 8, 8);
-          const pixels = rgb();
-          extraPortraits.picks.push([hero.id, pixels]);
-          extraPortraits.bans.push([hero.id, pixels.map((value, index) => {
-            const i = index - index % 3;
-            const gray = .299 * pixels[i] + .587 * pixels[i + 1] + .114 * pixels[i + 2];
-            return .8 * value + .2 * gray;
-          })]);
+          addExtraPortrait(hero.id, rgb());
+          for (const resolution of [14, 22]) {
+            smallPortrait.width = smallPortrait.height = resolution;
+            smallContext.drawImage(img, (img.width - size) / 2, (img.height - size) * vertical,
+              size, size, 0, 0, resolution, resolution);
+            ctx.clearRect(0, 0, 8, 8);
+            ctx.drawImage(smallPortrait, 0, 0, 8, 8);
+            addExtraPortrait(hero.id, rgb());
+          }
         }
         portraitCount++;
       }).catch(() => {}).finally(loadNext);
