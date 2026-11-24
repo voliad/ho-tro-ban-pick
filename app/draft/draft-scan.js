@@ -391,6 +391,7 @@
     frameContext.drawImage(source(), crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
     const rows = [];
     slots = [];
+    const emptyPickSlots = new Set();
     slotObservations = [];
     let locks = 0;
     const lockedBans = [];
@@ -428,7 +429,10 @@
         const pickX = left ? (glow ? 530 : 500) : (glow ? 2338 : 2368);
         const portrait = sample(pickX, y, 65);
         const emptyLimit = 18 ** 2 * 192;
-        if (samples.emptyPicks.some(ref => squaredDistance(portrait, ref, emptyLimit) < emptyLimit)) continue;
+        if (samples.emptyPicks.some(ref => squaredDistance(portrait, ref, emptyLimit) < emptyLimit)) {
+          emptyPickSlots.add(side + "|pick|" + index);
+          continue;
+        }
         slotObservations.push({ side, kind: "pick", index, x: pickX, y, width: 65,
           pixels: Array.from(portrait), pending: glow });
         const slot = side + "|" + index;
@@ -482,7 +486,7 @@
       const occupied = new Set(stable.map(slotKey));
       const retained = [];
       for (const [slot, entry] of recentConfirmed) {
-        if (now - entry.time >= 1100 || occupied.has(slot)) recentConfirmed.delete(slot);
+        if (now - entry.time >= 3000 || occupied.has(slot) || emptyPickSlots.has(slot)) recentConfirmed.delete(slot);
         else retained.push(entry.row);
       }
       for (const row of confirmed) recentConfirmed.set(slotKey(row), { row, time: now });
