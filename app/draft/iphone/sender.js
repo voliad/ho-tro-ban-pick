@@ -47,8 +47,8 @@
   let poorReports = 0;
   let healthyReports = 0;
   const profiles = [
-    { fps: 12, bitrate: 1600000 },
-    { fps: 10, bitrate: 1050000 },
+    { fps: 20, bitrate: 1600000 },
+    { fps: 14, bitrate: 1050000 },
     { fps: 8, bitrate: 750000 },
   ];
   const opening = setTimeout(() => finish("Không ghép nối được. Hãy mở mã QR mới."), 20000);
@@ -233,7 +233,7 @@
     start.disabled = true;
     status.textContent = "Đang chờ cấp quyền chia sẻ màn hình…";
     try {
-      const selected = await devices.getDisplayMedia({ video: true, audio: false });
+      const selected = await devices.getDisplayMedia({ video: { frameRate: { ideal: 20 } }, audio: false });
       if (ended) {
         selected.getTracks().forEach(item => item.stop());
         return;

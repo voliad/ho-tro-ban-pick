@@ -91,7 +91,7 @@
         return;
       }
       const url = new URL("./iphone/", location.href);
-      url.searchParams.set("v", "turn-route");
+      url.searchParams.set("v", "20-fps");
       const inviteParams = new URLSearchParams({ to: receiver, from: sender });
       if (relay) {
         inviteParams.set("u", relay.username);
