@@ -308,10 +308,10 @@
       sample(x + dx + 4, 137 + dy - 4, 34),
       sample(x + dx, 137 + dy + 4, 34),
     ];
-    const id = identify([...aligned, ...anchored], userReferences.bans, 18, 6) ??
-      identify([...aligned, ...anchored], [...samples.bans, ...userReferences.bans], 30, 4) ??
-      identify([aligned[0], anchored[0]], references.bans);
-    return id ? { id } : { id: identify(anchored, extraPortraits.bans, 23, 7), simulated: true };
+    const known = identify([...aligned, ...anchored], userReferences.bans, 18, 6) ??
+      identify([...aligned, ...anchored], [...samples.bans, ...userReferences.bans], 30, 4);
+    const id = known ?? identify([aligned[0], anchored[0]], references.bans);
+    return id ? { id, known: Boolean(known) } : { id: identify(anchored, extraPortraits.bans, 23, 7), simulated: true };
   }
 
   function sample(x, y, width, height = width) {
@@ -327,6 +327,8 @@
     const patch = sample(side === "blue" ? 365 : 2500, y, 170, 46);
     let hits = 0;
     for (let i = 0; i < patch.length; i += 3) {
+      const column = (i / 3) % 8;
+      if (side === "red" && column < 4) continue;
       const r = patch[i], g = patch[i + 1], b = patch[i + 2];
       if (side === "blue" ? b > 145 && b - r > 78 && g - r > 28 : r > 155 && r - g > 70 && r - b > 38) hits++;
     }
@@ -338,9 +340,11 @@
       window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id));
     const accepted = new Set();
     for (const matches of groups.values()) {
-      const locked = matches.filter(row => row.kind === "ban" && row.confirmed);
-      const confirmed = matches.filter(row => row.confirmed);
-      const preferred = locked.length ? locked : confirmed.length ? confirmed : matches;
+      const reliable = matches.filter(row => row.known || row.nameRead);
+      const pool = reliable.length ? reliable : matches;
+      const locked = pool.filter(row => row.kind === "ban" && row.confirmed);
+      const confirmed = pool.filter(row => row.confirmed);
+      const preferred = locked.length ? locked : confirmed.length ? confirmed : pool;
       const primary = preferred.filter(row => !row.simulated);
       const candidates = primary.length ? primary : preferred;
       if (candidates.length === 1) accepted.add(candidates[0]);
@@ -459,7 +463,7 @@
     const pickPhase = locks === 10 || knownPicks.size >= 2 || namedPick ||
       (knownPicks.size > 0 && locksBySide.blue >= 3 && locksBySide.red >= 3);
     const pendingOcr = readingText ? [] : slots.filter(slot => {
-      if (slot.pending) return false;
+
       const prior = attemptedSlots.get(slot.side + "|" + slot.index);
       return (!prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2) &&
         window.DRAFT_OCR.hasLabel(frame, slot);
@@ -636,6 +640,8 @@
   function findGameRegion(drawable = source()) {
     const [width, height] = dimensions(drawable);
     if (width < 320 || height < 140) return null;
+    const full = { x: 0, y: 0, width, height };
+    if (Math.abs(width / height - 2346 / 1086) < .08 && lockEvidence(drawable, full) >= 3) return full;
     const finder = document.createElement("canvas");
     finder.width = Math.min(width, 900);
     finder.height = Math.round(height * finder.width / width);

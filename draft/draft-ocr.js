@@ -70,7 +70,7 @@
     const band = bands.filter(row => row.end - row.start >= 4).sort((a, b) =>
       Math.abs(top + (a.start + a.end) / 2 - y - (right ? -5 : 8)) -
       Math.abs(top + (b.start + b.end) / 2 - y - (right ? -5 : 8)))[0];
-    return band ? { y: top + band.start - 3, height: band.end - band.start + 7 } :
+    return band ? { y: top + band.start - 3, height: band.end - band.start + 7, found: true } :
       { y: y + (right ? -24 : 2), height: right ? 28 : 24 };
   }
 
@@ -81,17 +81,18 @@
     canvas.width = 480;
     canvas.height = 94;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const line = variant === 3 ? { y: 320 + index * 144.5 + (right ? -24 : 2),
+    const line = variant >= 4 ? { y: 320 + index * 144.5 - (right ? 35 : 12), height: 38 } : variant === 3 ? { y: 320 + index * 144.5 + (right ? -24 : 2),
       height: right ? 28 : 24 } : nameLine(frame, side, index);
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, 480, 94);
-    ctx.drawImage(frame, ((right ? 2035 : 551) - 261) * sx, (line.y - 88) * sy,
-      (right ? 277 : 275) * sx, line.height * sy, 12, 10, 456, 74);
+    ctx.drawImage(frame, ((right ? (variant >= 6 ? 2110 : 2035) : 551) - 261) * sx, (line.y - 88) * sy,
+      (right ? (variant >= 6 ? 230 : 277) : 275) * sx, line.height * sy, 12, 10, 456, 74);
+    if (variant === 8) return canvas;
     const image = ctx.getImageData(12, 10, 456, 74);
     for (let i = 0; i < image.data.length; i += 4) {
       const r = image.data[i], g = image.data[i + 1], b = image.data[i + 2];
       const cyan = Math.min(g, b);
-      const ink = variant === 3 ? (right ? (r - g - 36) * 8 : cyan * 1.5) : right ? (r > 110 ? (r - g - [25, 15, 35][variant]) * 10 : 0) :
+      const ink = variant === 6 ? (right ? r : Math.max(g, b)) : variant === 7 ? (right ? (r - g) * 5 : Math.max(0, (Math.min(g, b) - 90) * 2)) : variant >= 4 ? (variant === 4 ? Math.max(r, g, b) : Math.min(255, Math.max(0, (Math.max(r, g, b) - 75) * 2))) : variant === 3 ? (right ? (r - g - 36) * 8 : cyan * 1.5) : right ? (r > 110 ? (r - g - [25, 15, 35][variant]) * 10 : 0) :
         variant === 2 ? (cyan > 155 ? 255 : 0) :
         cyan > 110 ? (cyan - r - [3, 7][variant]) * 14 : 0;
       image.data[i] = image.data[i + 1] = image.data[i + 2] = 255 - Math.max(0, ink);
@@ -102,23 +103,36 @@
 
   window.DRAFT_OCR = {
     hasLabel(frame, slot) {
-      const patch = labelImage(frame, slot.side, slot.index);
-      const pixels = patch.getContext("2d").getImageData(0, 0, patch.width, patch.height).data;
-      let ink = 0;
-      for (let i = 0; i < pixels.length; i += 4) if (pixels[i] < 190) ink++;
-      return ink >= 90 && ink < patch.width * patch.height * .45;
+      return Boolean(nameLine(frame, slot.side, slot.index).found);
     },
     nameplate(frame, slot) { return labelImage(frame, slot.side, slot.index, 2).toDataURL("image/jpeg", .85).split(",")[1]; },
     async read(frame, slots) {
-      const crops = slots.map(slot => [0, 1, 2, 3].map(variant => labelImage(frame, slot.side, slot.index, variant)));
+      const crops = slots.map(slot => [0, 1, 2, 3, 4, 5, 6, 7, 8].map(variant => labelImage(frame, slot.side, slot.index, variant)));
       const worker = await loadWorker();
       const found = [];
       for (const [index, variants] of crops.entries()) {
         const candidates = [];
+        const agreements = new Map();
         for (const crop of variants) {
-          const { data } = await worker.recognize(crop);
+          const before = candidates.length;
+          const { data } = await worker.recognize(crop, {}, { blocks: true });
           const id = names.get(normalize(data.text));
           if (id && data.confidence >= 50) candidates.push({ id, confidence: data.confidence });
+          const words = (data.blocks ?? []).flatMap(block => block.paragraphs ?? [])
+            .flatMap(paragraph => paragraph.lines ?? []).flatMap(line => line.words ?? []);
+          for (let start = 0; start < words.length; start++) {
+            for (const length of [1, 2, 3]) {
+              const phrase = words.slice(start, start + length);
+              if (phrase.length !== length) continue;
+              const wordId = names.get(normalize(phrase.map(word => word.text).join(" ")));
+              const confidence = Math.min(...phrase.map(word => word.confidence));
+              if (wordId && confidence >= 75) candidates.push({ id: wordId, confidence });
+            }
+          }
+          for (const id of new Set(candidates.slice(before).filter(row => row.confidence >= 85).map(row => row.id))) {
+            agreements.set(id, (agreements.get(id) ?? 0) + 1);
+          }
+          if ([...agreements.values()].some(count => count >= 2)) break;
         }
         const ids = new Set(candidates.map(row => row.id));
         if (ids.size === 1) {
