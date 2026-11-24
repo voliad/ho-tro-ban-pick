@@ -621,7 +621,7 @@
       ? (hidden ? "Chọn đủ 5 tướng. Đội hình được mở khi hai bên đã chốt." :
         "Tướng đã cấm hoặc đã chọn trong ván được khóa trong kho.")
       : "Xem lại các lượt trong Lịch sử.";
-    $("selection").textContent = live ? "Dừng chia sẻ hoặc bỏ ảnh để quay lại bàn thủ công." : selection.length
+    $("selection").textContent = live ? "Sang ván mới, bấm Làm mới từ đầu để xóa lượt đã ghi." : selection.length
       ? selection.map(nameFor).join(", ")
       : turn ? "Chọn " + turn.count + " tướng từ kho" : winner ? "Series đã kết thúc" : "Chờ ghi kết quả ván";
     $("commit").textContent = live ? "Đang tự điền" : turn ? (hidden ? "Chốt đội hình" :
@@ -886,6 +886,7 @@
     delete state.settings.legacyRankBans;
     selection = [];
     clock = initialClock();
+    document.dispatchEvent(new Event("draft-reset"));
     save();
     $("settings-dialog").close();
     location.hash = "draft";
