@@ -77,6 +77,13 @@ input[type="checkbox"] { accent-color: var(--color-accent); width: 1rem; height:
 .airplay-content ol { padding-inline-start: 1.45rem; }
 .airplay-content a { text-decoration: underline; }
 .airplay-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.turn-settings-fields { display: grid; gap: .55rem; max-width: 24rem; padding-block: .65rem .25rem; }
+.turn-access-field { display: grid; gap: .3rem; }
+.turn-access-field input { width: 100%; min-height: 2.5rem; }
+.turn-settings-fields p { margin: 0; }
+.turn-options { display: grid; }
+.turn-options label { display: flex; align-items: center; gap: .55rem; min-height: 2.75rem; }
+.turn-options input { flex: 0 0 auto; }
 .iphone-room { padding: .7rem; border: 1px solid var(--color-rule); }
 .iphone-room p { margin-block: .35rem; }
 .iphone-invite:not([hidden]) { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; }
