@@ -3,6 +3,8 @@
 
   const $ = id => document.getElementById(id);
   const start = $("iphone-receive");
+  const turnEndpoint = "https://aov-ban-pick-turn.checkin-license-server.workers.dev/ice";
+  const turnAccess = $("iphone-turn-access");
   const panel = $("iphone-room");
   const invite = $("iphone-invite");
   const qr = $("iphone-qr");
@@ -22,7 +24,7 @@
       clearTimeout(previous.timer);
       clearTimeout(previous.reconnect);
       clearInterval(previous.watch);
-      previous.peer.destroy();
+      previous.peer?.destroy();
       if (previous.stream) window.DRAFT_SCREEN.clear(previous.stream);
     }
     start.disabled = false;
@@ -34,8 +36,8 @@
     health.textContent = "";
   }
 
-  start.addEventListener("click", () => {
-    if (room) return;
+  start.addEventListener("click", async () => {
+    if (room || start.disabled) return;
     panel.hidden = false;
     lastIssue.textContent = "";
     if (!window.Peer || !window.QRCode || !window.RTCPeerConnection || !crypto.randomUUID) {
@@ -44,9 +46,33 @@
     }
     start.disabled = true;
     status.textContent = "Đang tạo kết nối riêng…";
+    const attempt = {};
+    room = attempt;
+    let relay;
+    if (turnAccess.value.trim()) {
+      try {
+        const response = await fetch(turnEndpoint, {
+          method: "POST", redirect: "error", cache: "no-store",
+          headers: { Authorization: "Bearer " + turnAccess.value.trim() },
+          signal: AbortSignal.timeout(6000),
+        });
+        if (!response.ok) {
+          const message = response.status === 401 ? "Mã truy cập TURN chưa đúng." :
+            "Cloudflare chưa cấp được thông tin TURN.";
+          if (room === attempt) close(message + " Xóa mã để kết nối trực tiếp.");
+          return;
+        }
+        relay = await response.json();
+        if (!window.DRAFT_TURN.options(relay.username, relay.credential)) throw Error();
+      } catch {
+        if (room === attempt) close("Chưa lấy được mã TURN. Bạn có thể xóa mã để kết nối trực tiếp.");
+        return;
+      }
+    }
+    if (room !== attempt) return;
     const receiver = crypto.randomUUID();
     const sender = crypto.randomUUID();
-    const peer = new window.Peer(receiver);
+    const peer = new window.Peer(receiver, relay ? window.DRAFT_TURN.options(relay.username, relay.credential) : undefined);
     const current = { peer, timer: setTimeout(() => close("Kết nối đã hết hạn. Hãy tạo mã mới."), 180000) };
     room = current;
 
@@ -58,9 +84,14 @@
       }
       const url = new URL("./iphone/", location.href);
       url.searchParams.set("v", "adaptive-video");
-      url.hash = new URLSearchParams({ to: receiver, from: sender }).toString();
+      const inviteParams = new URLSearchParams({ to: receiver, from: sender });
+      if (relay) {
+        inviteParams.set("u", relay.username);
+        inviteParams.set("p", relay.credential);
+      }
+      url.hash = inviteParams.toString();
       current.link = url.href;
-      new window.QRCode(qr, { text: url.href, width: 176, height: 176, correctLevel: window.QRCode.CorrectLevel.M });
+      new window.QRCode(qr, { text: url.href, width: relay ? 240 : 176, height: relay ? 240 : 176, correctLevel: window.QRCode.CorrectLevel.M });
       invite.hidden = false;
       if (!current.call) status.textContent = "Đang chờ iPhone phát màn hình.";
     });

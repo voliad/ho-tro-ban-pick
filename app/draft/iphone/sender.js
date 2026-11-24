@@ -19,7 +19,7 @@
   }
 
   status.textContent = "Đang chuẩn bị ghép nối…";
-  const peer = new window.Peer(from);
+  const peer = new window.Peer(from, window.DRAFT_TURN?.options(invite.get("u"), invite.get("p")));
   let capture;
   let track;
   let call;
