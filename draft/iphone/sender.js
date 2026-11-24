@@ -19,7 +19,19 @@
   }
 
   status.textContent = "Đang chuẩn bị ghép nối…";
-  const peer = new window.Peer(from, window.DRAFT_TURN?.options(invite.get("u"), invite.get("p")));
+  const relayOnly = invite.get("relay") === "1";
+  const turnOptions = window.DRAFT_TURN?.options(invite.get("u"), invite.get("p"), relayOnly);
+  const peer = new window.Peer(from, turnOptions);
+  let triedRelay = false;
+
+  function recoverTransport() {
+    if (ended || retry || !call) return;
+    if (turnOptions && !relayOnly) {
+      peer.options.config.iceTransportPolicy = triedRelay ? "all" : "relay";
+      triedRelay = true;
+    }
+    retryCall();
+  }
   let capture;
   let track;
   let call;
@@ -99,7 +111,10 @@
       const control = channel;
       control?.on("data", message => {
         if (channel !== control || !message) return;
-        if (message.type === "restart-video") retryCall(message.manual !== true);
+        if (message.type === "restart-video") {
+          if (message.network) recoverTransport();
+          else retryCall(message.manual !== true);
+        }
         if (message.type !== "video-health" || !call) return;
         if (message.grade === "poor") {
           poorReports++;
@@ -163,12 +178,12 @@
       } else if (state === "disconnected") {
         clearTimeout(connecting);
         status.textContent = "Tín hiệu gián đoạn. Đang chờ mạng phục hồi…";
-        connecting = setTimeout(retryCall, 5000);
+        connecting = setTimeout(recoverTransport, 5000);
       } else if (state === "failed" || state === "closed") {
-        retryCall();
+        recoverTransport();
       }
     };
-    connecting = setTimeout(retryCall, 25000);
+    connecting = setTimeout(recoverTransport, 25000);
     connection.addEventListener("connectionstatechange", updateConnection);
     connection.addEventListener("iceconnectionstatechange", updateConnection);
     updateConnection();
