@@ -43,7 +43,9 @@
   let crop;
   let corner;
   let choosing = false;
-  const consensus = window.DRAFT_SCAN_CONSENSUS();
+  const heroKey = id => window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, id);
+  const slotKey = row => [row.side, row.kind, row.index].join("|");
+  const consensus = window.DRAFT_SCAN_CONSENSUS(heroKey);
   const userReferences = { bans: [], picks: [] };
   let sourceHash = "";
   let slotObservations = [];
@@ -170,9 +172,17 @@
       !used.has(window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)))
       .map(row => ({ side: row.side, kind: row.kind, index: row.index, id: row.id,
         confirmed: row.confirmed, pending: !row.confirmed, pixels: row.pixels, inferred: true }));
-    const accepted = uniqueHeroes(suggestions);
-    geminiRows = accepted;
-    scanEvent(uniqueHeroes([...latestLocalRows, ...accepted]));
+    const occupied = new Set(latestLocalRows.map(slotKey));
+    const accepted = uniqueHeroes(suggestions.filter(row => !occupied.has(slotKey(row))));
+    if (imageUrl) {
+      geminiRows = accepted;
+      scanEvent(uniqueHeroes([...latestLocalRows, ...accepted]));
+    } else {
+      const merged = consensus.keep([...latestLocalRows, ...accepted]);
+      latestLocalRows = merged;
+      scanEvent(merged);
+      signature = "";
+    }
     const errors = results.filter(row => typeof row === "string");
     geminiResult.textContent = "Gemini đã đối chiếu được " + accepted.length + "/" + targets.length + " ô." +
       (errors.length ? " " + errors.join(" | ") : "");
@@ -203,7 +213,7 @@
   let manualRotation = false;
   let lastFrame;
   let lastFrameChange = 0;
-  const recentConfirmed = new Map();
+  let shareSession;
   const source = () => imageUrl ? image : rotation ? rotatedVideo : video;
   const dimensions = element => element === image ? [image.naturalWidth, image.naturalHeight] :
     element === video ? [video.videoWidth, video.videoHeight] : [element.width, element.height];
@@ -336,8 +346,7 @@
   }
 
   function uniqueHeroes(rows) {
-    const groups = Map.groupBy(rows, row =>
-      window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id));
+    const groups = Map.groupBy(rows, row => heroKey(row.id));
     const accepted = new Set();
     for (const matches of groups.values()) {
       const reliable = matches.filter(row => row.known || row.nameRead);
@@ -391,7 +400,6 @@
     frameContext.drawImage(source(), crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
     const rows = [];
     slots = [];
-    const emptyPickSlots = new Set();
     slotObservations = [];
     let locks = 0;
     const lockedBans = [];
@@ -429,12 +437,7 @@
         const pickX = left ? (glow ? 530 : 500) : (glow ? 2338 : 2368);
         const portrait = sample(pickX, y, 65);
         const emptyLimit = 18 ** 2 * 192;
-        if (samples.emptyPicks.some(ref => squaredDistance(portrait, ref, emptyLimit) < emptyLimit)) {
-          emptyPickSlots.add(side + "|pick|" + index);
-          continue;
-        }
-        slotObservations.push({ side, kind: "pick", index, x: pickX, y, width: 65,
-          pixels: Array.from(portrait), pending: glow });
+        if (samples.emptyPicks.some(ref => squaredDistance(portrait, ref, emptyLimit) < emptyLimit)) continue;
         const slot = side + "|" + index;
         const fallback = textMatches.get(slot);
         const textId = fallback && squaredDistance(fallback.portrait, portrait) < 13 ** 2 * 192 ? fallback.id : null;
@@ -457,6 +460,8 @@
         const visual = known ?? (a === b ? a : null) ?? (extraA === extraB ? extraA : null);
         const pick = reviewed ?? (textId && fallback.confidence >= 75 ? textId :
           visual && textId && visual !== textId ? null : visual ?? textId);
+        slotObservations.push({ side, kind: "pick", index, id: pick, x: pickX, y, width: 65,
+          pixels: Array.from(portrait), pending: glow });
         slots.push({ side, index, portrait, unresolved: !pick && !glow, pending: glow });
         if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known),
           nameRead: Boolean(textId), simulated: Boolean(extraA && extraA === extraB && !textId) });
@@ -466,58 +471,51 @@
     const namedPick = rows.some(row => row.kind === "pick" && row.nameRead && !row.pending);
     const pickPhase = locks === 10 || knownPicks.size >= 2 || namedPick ||
       (knownPicks.size > 0 && locksBySide.blue >= 3 && locksBySide.red >= 3);
+    const hasLabel = slot => slot.hasLabel ??= window.DRAFT_OCR.hasLabel(frame, slot);
     const pendingOcr = readingText ? [] : slots.filter(slot => {
-
+      if (!imageUrl && consensus.isLocked({ ...slot, kind: "pick" })) return false;
       const prior = attemptedSlots.get(slot.side + "|" + slot.index);
       return (!prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2) &&
-        window.DRAFT_OCR.hasLabel(frame, slot);
+        hasLabel(slot);
     }).sort((a, b) => Number(b.unresolved) - Number(a.unresolved)).slice(0, 2);
     if (pendingOcr.length && !readingText) {
       for (const slot of pendingOcr) attemptedSlots.set(slot.side + "|" + slot.index, slot.portrait);
       readNames(pendingOcr);
     }
-    const visible = uniqueHeroes(rows.filter(row => row.kind === "ban" || row.pending || pickPhase).map(row =>
-      row.kind === "pick" ? { ...row, confirmed: pickPhase && !row.pending } : row));
-    let stable = imageUrl ? visible : consensus.observe(visible, video.currentTime, performance.now());
-    if (!imageUrl) {
-      const now = performance.now();
-      const confirmed = stable.filter(row => row.confirmed);
-      const slotKey = row => row.side + "|" + row.kind + "|" + row.index;
-      const occupied = new Set(stable.map(slotKey));
-      const retained = [];
-      for (const [slot, entry] of recentConfirmed) {
-        if (now - entry.time >= 3000 || occupied.has(slot) || emptyPickSlots.has(slot)) recentConfirmed.delete(slot);
-        else retained.push(entry.row);
-      }
-      for (const row of confirmed) recentConfirmed.set(slotKey(row), { row, time: now });
-      stable = uniqueHeroes([...stable, ...retained]);
+    const eligible = rows.filter(row => row.kind === "ban" || row.pending || pickPhase).map(row =>
+      row.kind === "pick" ? { ...row, confirmed: pickPhase && !row.pending } : row);
+    const visible = uniqueHeroes(imageUrl ? eligible : consensus.unlocked(eligible));
+    const observed = imageUrl ? visible : consensus.observe(visible, video.currentTime, performance.now());
+    const stable = imageUrl ? observed : consensus.keep(observed);
+    if (locks >= 2 || eligible.some(row => row.kind === "pick" && row.confirmed && (row.known || row.nameRead))) {
+      lastGameEvidence = performance.now();
     }
-    if (locks >= 2 || stable.some(row => row.kind === "pick")) lastGameEvidence = performance.now();
     elapsed = Math.round(performance.now() - started);
     ocr.disabled = readingText;
+    const confirmedSlots = new Set(stable.filter(row => row.confirmed).map(slotKey));
+    const unreadPicks = slots.filter(slot => slot.unresolved &&
+      !confirmedSlots.has(slotKey({ ...slot, kind: "pick" })));
+    const unreadBans = lockedBans.filter(slot => !confirmedSlots.has(slotKey({ ...slot, kind: "ban" })));
+    geminiSlots = [
+      ...unreadBans.map(slot => ({ ...slotObservations.find(row =>
+        row.side === slot.side && row.kind === "ban" && row.index === slot.index), confirmed: true })),
+      ...unreadPicks.filter(hasLabel).map(slot => ({
+        ...slotObservations.find(row => row.side === slot.side && row.kind === "pick" && row.index === slot.index),
+        confirmed: pickPhase && !slot.pending,
+      })),
+    ];
     const key = JSON.stringify([lockedBans, stable]);
     if (key === signature) return;
     signature = key;
     output.replaceChildren();
     const summary = document.createElement("p");
     const namedBans = stable.filter(row => row.kind === "ban" && row.confirmed).length;
-    const unreadSlots = pickPhase ? slots.filter(slot => slot.unresolved).length : 0;
+    const unreadSlots = pickPhase ? unreadPicks.length : 0;
     summary.textContent = "Quét " + elapsed + " ms · Biểu tượng khóa: " + locks + "/10." +
       " Nhận diện tên tướng đã cấm: " + namedBans + "/" + Math.max(locks, namedBans) + " ô có khóa." +
       (!pickPhase ? " Chưa đủ dấu hiệu để xác nhận các lượt chọn." : "") +
       (unreadSlots ? " Có " + unreadSlots + " ô chọn cần đối chiếu thêm." : "");
     output.append(summary);
-    const unreadBans = lockedBans.filter(({ side, index }) =>
-      !stable.some(row => row.side === side && row.kind === "ban" && row.index === index && row.confirmed));
-    geminiSlots = [
-      ...unreadBans.map(slot => ({ ...slotObservations.find(row =>
-        row.side === slot.side && row.kind === "ban" && row.index === slot.index), confirmed: true })),
-      ...slots.filter(slot => slot.unresolved && window.DRAFT_OCR.hasLabel(frame, slot)).map(slot => ({
-        ...slotObservations.find(row => row.side === slot.side && row.kind === "pick" && row.index === slot.index),
-        confirmed: pickPhase && !slot.pending,
-      })),
-    ];
-
     if (unreadBans.length) {
       const line = document.createElement("p");
       line.textContent = "Ô đã khóa chưa rõ tướng: " + unreadBans.map(({ side, index }) =>
@@ -539,20 +537,21 @@
         " px. Hãy phóng lớn game trước khi chụp hoặc chia sẻ."
       : "Chưa đọc rõ ô tướng. Hãy kiểm tra vùng game đã chọn.");
     latestLocalRows = stable;
-    const observed = new Set(stable.map(row => window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)));
-    geminiRows = geminiRows.filter(row => !observed.has(
-      window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)) &&
+    const observedHeroes = new Set(stable.map(row => heroKey(row.id)));
+    geminiRows = geminiRows.filter(row => !observedHeroes.has(heroKey(row.id)) &&
       geminiSlots.some(slot => sameTarget(slot, row)));
     scanEvent(uniqueHeroes([...stable, ...geminiRows]));
     clearTimeout(geminiTimer);
     if (geminiSlots.length) geminiTimer = setTimeout(completeWithGemini, 600);
   }
 
-  function resetScan() {
+  function resetScan(keepConfirmed = false) {
     clearTimeout(geminiTimer);
     geminiAttempt = null;
     geminiSuggestions.clear();
-    latestLocalRows = [];
+    if (keepConfirmed) consensus.clear();
+    else consensus.reset();
+    latestLocalRows = consensus.keep([]);
     geminiRows = [];
     geminiSlots = [];
     geminiResult.textContent = "";
@@ -560,10 +559,8 @@
     choosing = false;
     trackGame = false;
     lastRegionSearch = lastGameEvidence = 0;
-    consensus.clear();
     ocrGeneration++;
     slotObservations = [];
-    recentConfirmed.clear();
     slots = [];
     textMatches.clear();
     attemptedSlots.clear();
@@ -571,7 +568,7 @@
     ocrStatus.textContent = "";
     signature = "";
     scannedPortraitCount = lastVideoTime = -1;
-    scanEvent(null);
+    scanEvent(latestLocalRows.length ? latestLocalRows : null);
     output.textContent = "";
   }
 
@@ -635,7 +632,7 @@
 
   function beginCalibration() {
     if (!dimensions(source())[0]) return;
-    resetScan();
+    resetScan(!imageUrl);
     choosing = true;
     output.textContent = "Bấm góc trên bên trái của vùng game.";
     loadPortraits();
@@ -779,16 +776,17 @@
     updateVideoPreview();
     crop = region;
     consensus.clear();
-    recentConfirmed.clear();
     textMatches.clear();
     attemptedSlots.clear();
     lastVideoTime = -1;
   }
 
-  video.addEventListener("draft-share-ready", () => {
+  video.addEventListener("draft-share-ready", event => {
     if (imageUrl) clearImage();
     file.value = "";
-    resetScan();
+    const session = event.detail ?? video.srcObject;
+    resetScan(shareSession === session);
+    shareSession = session;
     lastFrame = null;
     lastFrameChange = performance.now();
     rotation = 0;
@@ -801,16 +799,20 @@
     followSharedGame();
     scanSafely();
   });
+  video.addEventListener("draft-share-ended", () => {
+    shareSession = undefined;
+    if (!imageUrl) resetScan();
+  });
   video.addEventListener("resize", () => {
-    if (!trackGame || imageUrl) return;
-    resetScan();
+    if ((!trackGame && !crop) || imageUrl || !video.srcObject) return;
+    resetScan(true);
     trackGame = true;
     lastRegionSearch = -Infinity;
   });
 
   function changeRotation(angle, manual) {
     if (!video.srcObject || imageUrl || video.readyState < 2) return;
-    resetScan();
+    resetScan(true);
     rotation = angle;
     manualRotation = manual;
     updateVideoPreview();
@@ -906,10 +908,9 @@
   }
   document.addEventListener("scan-capture-request", async () => {
     const rows = slotObservations.map(row => {
-      const known = latestLocalRows.find(other => other.side === row.side &&
-        other.kind === row.kind && other.index === row.index);
       const suggested = geminiSuggestions.get([row.side, row.kind, row.index].join("|"));
-      return { ...row, id: known?.id ?? (suggested && sameTarget({ ...row, confirmed: suggested.confirmed }, suggested) ? suggested.id : row.id), image: patchImage(row).toDataURL("image/jpeg", .85),
+      return { ...row, id: row.id ?? (suggested && sameTarget({ ...row, confirmed: suggested.confirmed }, suggested) ? suggested.id : undefined),
+        image: patchImage(row).toDataURL("image/jpeg", .85),
         pixels: Array.from(sample(row.x, row.y, row.width)) };
     });
     let hash = sourceHash;
@@ -980,7 +981,10 @@
       scan();
     } catch (error) {
       console.warn("Draft frame scan:", error);
-      resetScan();
+      const live = Boolean(video.srcObject && !imageUrl);
+      resetScan(live);
+      trackGame = live;
+      lastRegionSearch = -Infinity;
       output.textContent = "Không đọc được khung hình. Hãy chọn lại vùng game.";
     }
   }
@@ -994,7 +998,24 @@
       scanSafely();
     } else if (!calibrate.disabled) {
       calibrate.disabled = true;
-      resetScan();
+      resetScan(Boolean(shareSession));
     }
   }, 160);
+  document.addEventListener("draft-reset", () => {
+    if (imageUrl) {
+      clearImage();
+      file.value = "";
+      if (video.srcObject) {
+        trackGame = true;
+        lastRegionSearch = -Infinity;
+      }
+      return;
+    }
+    const region = crop;
+    const auto = trackGame;
+    resetScan();
+    crop = region;
+    trackGame = auto;
+    lastRegionSearch = -Infinity;
+  });
 })();

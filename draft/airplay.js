@@ -10,6 +10,7 @@
   let stopSource;
   let requesting = false;
   let localStream;
+  let shareSession;
 
   function updateStart() {
     const canCapture = Boolean(devices?.getDisplayMedia);
@@ -17,7 +18,7 @@
     start.textContent = stream && stream === localStream ? "Chọn lại nguồn" : "Chọn nguồn trên máy tính";
   }
 
-  function reset(message, manual = false) {
+  function reset(message, manual = false, reconnecting = false) {
     const cleanup = stopSource;
     stream = null;
     localStream = null;
@@ -27,17 +28,22 @@
     stop.hidden = true;
     updateStart();
     status.textContent = message;
+    if (!reconnecting && shareSession) {
+      shareSession = undefined;
+      preview.dispatchEvent(new Event("draft-share-ended"));
+    }
     cleanup?.(manual);
   }
 
-  async function show(capture, cleanup, message) {
+  async function show(capture, cleanup, message, session = capture) {
     const [track] = capture.getVideoTracks();
     if (!track || track.readyState === "ended") throw Error("No live video track");
-    if (stream) reset("");
+    if (stream) reset("", false, shareSession === session);
+    shareSession = session;
     stream = capture;
     stopSource = cleanup;
     track.addEventListener("ended", () => {
-      if (stream === capture) reset("Đã dừng chia sẻ màn hình.");
+      if (stream === capture) reset("Đã dừng chia sẻ màn hình.", false, session !== capture);
     }, { once: true });
     track.addEventListener("mute", () => {
       if (stream === capture) status.textContent = "Nguồn chia sẻ tạm ngừng gửi hình.";
@@ -54,14 +60,17 @@
     await preview.play();
     if (stream === capture) {
       status.textContent = message;
-      preview.dispatchEvent(new Event("draft-share-ready"));
+      preview.dispatchEvent(new CustomEvent("draft-share-ready", { detail: session }));
     }
   }
 
   window.DRAFT_SCREEN = {
     show,
     clear(capture) {
-      if (stream === capture) reset("");
+      if (stream === capture) reset("", false, true);
+    },
+    end(session) {
+      if (shareSession === session) reset("Đã dừng chia sẻ màn hình.");
     },
   };
 

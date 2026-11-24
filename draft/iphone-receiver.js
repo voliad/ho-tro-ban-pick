@@ -57,7 +57,7 @@
       clearTimeout(previous.reconnect);
       clearInterval(previous.watch);
       previous.peer?.destroy();
-      if (previous.stream) window.DRAFT_SCREEN.clear(previous.stream);
+      window.DRAFT_SCREEN.end(previous);
     }
     start.disabled = false;
     invite.hidden = true;
@@ -199,7 +199,8 @@
         if (room !== current || current.call !== call || current.stream || !stream.getVideoTracks().length) return;
         current.stream = stream;
         try {
-          await window.DRAFT_SCREEN.show(stream, manual => manual ? close() : waitForReconnect(), "Đang hiển thị màn hình iPhone.");
+          await window.DRAFT_SCREEN.show(stream, manual => manual ? close() : waitForReconnect(),
+            "Đang hiển thị màn hình iPhone.", current);
           if (room !== current || current.call !== call) return;
           clearTimeout(current.timer);
           status.textContent = "Đã nhận màn hình iPhone.";
