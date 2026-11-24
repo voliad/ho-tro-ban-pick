@@ -191,22 +191,16 @@
   }
 
   function identify(patches, refs, threshold = 31, margin = 5) {
-    let bestId;
-    let best = (threshold + margin) ** 2 * 192;
-    let second = best;
+    const scores = new Map();
+    const limit = (threshold + margin) ** 2 * 192;
     for (const [id, ref] of refs) {
-      let score = second;
+      let score = scores.get(id) ?? limit;
       for (const patch of patches) score = squaredDistance(patch, ref, score);
-      if (id === bestId) {
-        best = Math.min(best, score);
-      } else if (score < best) {
-        second = best;
-        best = score;
-        bestId = id;
-      } else if (score < second) {
-        second = score;
-      }
+      scores.set(id, score);
     }
+    const ranked = [...scores].sort((a, b) => a[1] - b[1]);
+    const [bestId, best] = ranked[0] ?? [null, limit];
+    const second = ranked[1]?.[1] ?? limit;
     return best < threshold ** 2 * 192 && Math.sqrt(second / 192) - Math.sqrt(best / 192) >= margin
       ? bestId : null;
   }
