@@ -44,6 +44,51 @@
   let corner;
   let choosing = false;
   let previous = new Map();
+  const gemini = $("scan-gemini");
+  const geminiResult = $("scan-gemini-result");
+  let geminiSlots = [];
+  gemini.addEventListener("click", async () => {
+    const access = $("iphone-turn-access").value.trim();
+    if (!access) {
+      geminiResult.textContent = "Nhập mã truy cập TURN để dùng Gemini.";
+      return;
+    }
+    const currentCrop = crop;
+    const portraits = geminiSlots.slice(0, 4).map(({ side, index }) => {
+      const patch = document.createElement("canvas");
+      patch.width = patch.height = 128;
+      const x = ((side === "blue" ? 370 : 2161) + 84 * index - 261 - 28) * frame.width / 2346;
+      patch.getContext("2d").drawImage(frame, x, 21 * frame.height / 1086,
+        56 * frame.width / 2346, 60 * frame.height / 1086, 0, 0, 128, 128);
+      return { label: (side === "blue" ? "Trái " : "Phải ") + (index + 1),
+        portrait: patch.toDataURL("image/jpeg").split(",")[1] };
+    });
+    gemini.disabled = true;
+    geminiResult.textContent = "Đang gửi ảnh các ô cấm chưa rõ đến Gemini…";
+    const results = await Promise.all(portraits.map(async ({ label, portrait }) => {
+      try {
+        const response = await fetch("https://aov-ban-pick-turn.checkin-license-server.workers.dev/gemini", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + access, "Content-Type": "application/json" },
+          body: JSON.stringify({ portrait }),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (response.status === 401) return label + " · Mã truy cập sai";
+        if (response.status === 429) return label + " · Gemini hết hạn mức";
+        if (!response.ok) return label + " · Gemini chưa phản hồi";
+        const { hero } = await response.json();
+        const name = typeof hero === "string" && [...names.values()].find(entry =>
+          entry.toLowerCase() === hero.trim().toLowerCase());
+        return label + " · " + (name || "Chưa rõ");
+      } catch {
+        return label + " · Không kết nối được Gemini";
+      }
+    }));
+    gemini.disabled = false;
+    if (crop === currentCrop) {
+      geminiResult.textContent = "Gợi ý Gemini (đối chiếu trước khi điền) · " + results.join(" | ");
+    }
+  });
   let signature = "";
   const references = { bans: [...samples.bans], picks: [...samples.picks] };
   let portraitCount = 0;
@@ -359,6 +404,8 @@
     output.append(summary);
     const unreadBans = lockedBans.filter(({ side, index }) =>
       !stable.some(row => row.side === side && row.kind === "ban" && row.index === index && row.confirmed));
+    geminiSlots = unreadBans;
+    gemini.hidden = !imageUrl || !unreadBans.length;
     if (unreadBans.length) {
       const line = document.createElement("p");
       line.textContent = "Ô đã khóa chưa rõ tướng: " + unreadBans.map(({ side, index }) =>
@@ -383,6 +430,9 @@
   }
 
   function resetScan() {
+    gemini.hidden = true;
+    geminiSlots = [];
+    geminiResult.textContent = "";
     crop = corner = null;
     choosing = false;
     trackGame = false;
