@@ -31,6 +31,9 @@
   let recoveryDeadline = 0;
   let quality = 0;
   let lastRecovery = 0;
+  let applyQuality;
+  let poorReports = 0;
+  let healthyReports = 0;
   const profiles = [
     { fps: 12, bitrate: 1600000 },
     { fps: 10, bitrate: 1050000 },
@@ -95,7 +98,25 @@
       channel = peer.connect(to, { reliable: true });
       const control = channel;
       control?.on("data", message => {
-        if (channel === control && message?.type === "restart-video") retryCall(message.manual !== true);
+        if (channel !== control || !message) return;
+        if (message.type === "restart-video") retryCall(message.manual !== true);
+        if (message.type !== "video-health" || !call) return;
+        if (message.grade === "poor") {
+          poorReports++;
+          healthyReports = 0;
+        } else if (message.grade === "healthy") {
+          healthyReports++;
+          poorReports = 0;
+        } else {
+          poorReports = healthyReports = 0;
+        }
+        const next = poorReports >= 2 ? Math.min(quality + 1, profiles.length - 1) :
+          healthyReports >= 5 ? Math.max(quality - 1, 0) : quality;
+        if (next !== quality) {
+          quality = next;
+          poorReports = healthyReports = 0;
+          applyQuality?.();
+        }
       });
       control?.on("close", () => { if (channel === control) channel = null; });
     }
@@ -107,15 +128,27 @@
     call = current;
     const connection = current.peerConnection;
     const videoSender = connection.getSenders().find(sender => sender.track === track);
-    if (videoSender) {
+    poorReports = healthyReports = 0;
+    let applying = false;
+    applyQuality = async () => {
+      if (!videoSender || call !== current || applying) return;
       const parameters = videoSender.getParameters();
-      if (parameters.encodings?.length) {
-        parameters.degradationPreference = "balanced";
-        parameters.encodings[0].maxFramerate = profiles[quality].fps;
-        parameters.encodings[0].maxBitrate = profiles[quality].bitrate;
-        videoSender.setParameters(parameters).catch(() => {});
+      if (!parameters.encodings?.length) return;
+      const level = quality;
+      parameters.degradationPreference = "maintain-resolution";
+      parameters.encodings[0].maxFramerate = profiles[level].fps;
+      parameters.encodings[0].maxBitrate = profiles[level].bitrate;
+      applying = true;
+      try {
+        await videoSender.setParameters(parameters);
+      } catch {
+        // Some browsers restrict changes to the encoder while sending.
+      } finally {
+        applying = false;
+        if (call === current && quality !== level) applyQuality();
       }
-    }
+    };
+    applyQuality();
     current.on("close", () => { if (call === current) retryCall(); });
     current.on("error", () => { if (call === current) retryCall(); });
     const updateConnection = () => {
@@ -123,6 +156,7 @@
       const state = connection.connectionState ?? connection.iceConnectionState;
       if (state === "connected" || state === "completed") {
         clearTimeout(connecting);
+        applyQuality();
         failures = 0;
         recoveryDeadline = 0;
         status.textContent = "Đã kết nối với máy tính. Bạn có thể mở Liên Quân.";
