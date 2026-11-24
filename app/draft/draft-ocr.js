@@ -38,7 +38,7 @@
     return pendingWorker;
   }
 
-  function labelImage(frame, side, index) {
+  function labelImage(frame, side, index, variant = 0) {
     const right = side === "red";
     const sx = frame.width / 2346, sy = frame.height / 1086;
     const canvas = document.createElement("canvas");
@@ -53,7 +53,9 @@
     const image = ctx.getImageData(12, 10, 456, 74);
     for (let i = 0; i < image.data.length; i += 4) {
       const r = image.data[i], g = image.data[i + 1], b = image.data[i + 2];
-      const ink = right ? (r - g - 36) * 8 : Math.max(g, b);
+      const ink = variant === 1 ? Math.max(r, g, b) :
+        variant === 2 ? (right ? r - Math.min(g, b) : Math.min(g, b)) * 1.5 :
+        right ? (r - g - 36) * 8 : Math.max(g, b);
       image.data[i] = image.data[i + 1] = image.data[i + 2] = 255 - Math.max(0, ink);
     }
     ctx.putImageData(image, 12, 10);
@@ -69,13 +71,21 @@
       return ink >= 90 && ink < patch.width * patch.height * .45;
     },
     async read(frame, slots) {
-      const crops = slots.map(slot => labelImage(frame, slot.side, slot.index));
+      const crops = slots.map(slot => [0, 1, 2].map(variant => labelImage(frame, slot.side, slot.index, variant)));
       const worker = await loadWorker();
       const found = [];
-      for (const [index, crop] of crops.entries()) {
-        const { data } = await worker.recognize(crop);
-        const id = names.get(normalize(data.text));
-        if (id && data.confidence >= 50) found.push({ ...slots[index], id, confidence: data.confidence });
+      for (const [index, variants] of crops.entries()) {
+        const candidates = [];
+        for (const crop of variants) {
+          const { data } = await worker.recognize(crop);
+          const id = names.get(normalize(data.text));
+          if (id && data.confidence >= 50) candidates.push({ id, confidence: data.confidence });
+        }
+        const ids = new Set(candidates.map(row => row.id));
+        if (ids.size === 1) {
+          const best = candidates.sort((a, b) => b.confidence - a.confidence)[0];
+          found.push({ ...slots[index], ...best });
+        }
       }
       return found;
     },
