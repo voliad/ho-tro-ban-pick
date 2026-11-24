@@ -83,6 +83,14 @@ assert.equal(rules.activeTurn(legacyTournament).kind, "ban");
 assert.equal(rules.recordTurn(tournament, ["yue", "hayate"]), true);
 assert.equal(rules.activeTurn(tournament).kind, "ban");
 assert.equal(tournamentGame.turns.at(-1).ids.length, 2);
+require('../app/draft/ban-portrait-model.js');
+const shortlist = global.DRAFT_BAN_PORTRAITS.shortlist;
+const ranked = [["a", 1], ["b", 2], ["c", 3], ["d", 4], ["e", 5]];
+const pixels = new Array(192).fill(127);
+const model = { version: 1, classes: ranked.map(([id]) =>
+  [id, id === "e" ? 100 : 0, new Array(304).fill(0)]) };
+assert.deepEqual(shortlist(ranked, pixels, model), [ranked[0], ranked[1], ranked[2], ranked[4]]);
+assert.deepEqual(shortlist(ranked, pixels, null), ranked.slice(0, 4));
 (async()=>{
 const worker=(await import('../cloudflare/turn/worker.mjs')).default;
 const env={RELAY_ACCESS:'test-access',GEMINI_API_KEY:'test-key'};

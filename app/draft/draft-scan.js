@@ -68,7 +68,16 @@
   let lastGeminiRequest = -Infinity;
   const geminiSuggestions = new Map();
   const referenceImages = new Map();
-  function candidateHeroes(target) {
+  let banPortraitModel;
+  function loadBanPortraitModel() {
+    banPortraitModel ??= fetch("./ban-portrait-model.json?v=1", { signal: AbortSignal.timeout(3000) })
+      .then(response => response.ok ? response.json() : null)
+      .then(model => Array.isArray(model?.classes) && model.classes.every(row =>
+        Array.isArray(row) && Number.isFinite(row[1]) && row[2]?.length === 304) ? model : null)
+      .catch(() => null);
+    return banPortraitModel;
+  }
+  function candidateHeroes(target, model) {
     const type = target.kind === "ban" ? "bans" : "picks";
     const scores = new Map();
     for (const [id, pixels] of [...references[type], ...userReferences[type]]) {
@@ -77,12 +86,15 @@
     }
     const seen = new Set(latestLocalRows.map(row =>
       window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, row.id)));
-    return [...scores].sort((a, b) => a[1] - b[1]).filter(([id]) => {
+    const ranked = [...scores].sort((a, b) => a[1] - b[1]).filter(([id]) => {
       const key = window.DRAFT_RULES.heroKey(window.DRAFT_RULES.defaults, id);
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
-    }).slice(0, 4).map(([id]) => heroes.find(hero => hero.id === id));
+    });
+    const entries = target.kind === "ban" && target.confirmed && model
+      ? window.DRAFT_BAN_PORTRAITS.shortlist(ranked, target.pixels, model) : ranked.slice(0, 4);
+    return entries.map(([id]) => heroes.find(hero => hero.id === id));
   }
   function supportedCandidate(target, id) {
     const type = target.kind === "ban" ? "bans" : "picks";
@@ -123,10 +135,13 @@
       return;
     }
     const currentCrop = crop;
+    const model = currentCrop.width <= 700 && geminiSlots.slice(0, 4).some(row => row.kind === "ban" && row.confirmed)
+      ? await loadBanPortraitModel() : null;
+    if (crop !== currentCrop || geminiAccess.value.trim() !== access) return;
     const targets = geminiSlots.slice(0, 4).map(target => ({
       ...target, patches: [target.pixels, Array.from(sample(target.x + 3, target.y + 2, target.width))], portrait: patchImage(target).toDataURL("image/jpeg", .85).split(",")[1],
       nameplate: target.kind === "pick" ? window.DRAFT_OCR.nameplate(frame, target) : undefined,
-      candidates: candidateHeroes(target),
+      candidates: candidateHeroes(target, model),
     })).filter(target => target.candidates.length >= 2);
     if (!targets.length) return;
     const key = JSON.stringify(targets.map(row => [row.side, row.kind, row.index, row.pixels]));
