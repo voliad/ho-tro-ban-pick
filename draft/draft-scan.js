@@ -231,7 +231,7 @@
 
   function readBan(x, offset) {
     const aligned = [sample(x, 137, 34), sample(x + 3, 140, 34)];
-    if (!offset) return identify(aligned, references.bans);
+    if (!offset) return { id: identify(aligned, references.bans) };
     const { dx, dy } = offset;
     const anchored = [
       sample(x + dx, 137 + dy, 34),
@@ -239,9 +239,9 @@
       sample(x + dx + 4, 137 + dy - 4, 34),
       sample(x + dx, 137 + dy + 4, 34),
     ];
-    return identify([...aligned, ...anchored], samples.bans, 30, 4) ??
-      identify([aligned[0], anchored[0]], references.bans) ??
-      identify(anchored, extraPortraits.bans, 23, 7);
+    const id = identify([...aligned, ...anchored], samples.bans, 30, 4) ??
+      identify([aligned[0], anchored[0]], references.bans);
+    return id ? { id } : { id: identify(anchored, extraPortraits.bans, 23, 7), simulated: true };
   }
 
   function sample(x, y, width, height = width) {
@@ -271,7 +271,9 @@
       const locked = matches.filter(row => row.kind === "ban" && row.confirmed);
       const confirmed = matches.filter(row => row.confirmed);
       const preferred = locked.length ? locked : confirmed.length ? confirmed : matches;
-      if (preferred.length === 1) accepted.add(preferred[0]);
+      const primary = preferred.filter(row => !row.simulated);
+      const candidates = primary.length ? primary : preferred;
+      if (candidates.length === 1) accepted.add(candidates[0]);
     }
     return rows.filter(row => accepted.has(row));
   }
@@ -335,7 +337,7 @@
           lockOffsets.push(offset);
         }
         const ban = readBan(banX, offset);
-        if (ban) rows.push({ side, kind: "ban", index, id: ban, confirmed: Boolean(offset) });
+        if (ban.id) rows.push({ side, kind: "ban", index, ...ban, confirmed: Boolean(offset) });
       }
 
       locks += lockOffsets.length;
@@ -370,7 +372,7 @@
         const pick = visual && textId && visual !== textId ? null : visual ?? textId;
         slots.push({ side, index, portrait, unresolved: !pick && !glow });
         if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known),
-          nameRead: Boolean(textId) });
+          nameRead: Boolean(textId), simulated: Boolean(extraA && extraA === extraB && !textId) });
       }
     }
     const knownPicks = new Set(rows.filter(row => row.kind === "pick" && row.known && !row.pending).map(row => row.id));
