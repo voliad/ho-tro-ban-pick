@@ -9,6 +9,7 @@
   const status = $("iphone-room-status");
   const recover = $("iphone-recover");
   const lastIssue = $("iphone-last-issue");
+  const health = $("iphone-video-health");
   function reportIssue(message) {
     lastIssue.textContent = "Lần gián đoạn gần nhất · " + message;
   }
@@ -30,6 +31,7 @@
     qr.replaceChildren();
     panel.hidden = !message;
     status.textContent = message;
+    health.textContent = "";
   }
 
   start.addEventListener("click", () => {
@@ -55,7 +57,7 @@
         return;
       }
       const url = new URL("./iphone/", location.href);
-      url.searchParams.set("v", "video-health-2");
+      url.searchParams.set("v", "adaptive-video");
       url.hash = new URLSearchParams({ to: receiver, from: sender }).toString();
       current.link = url.href;
       new window.QRCode(qr, { text: url.href, width: 176, height: 176, correctLevel: window.QRCode.CorrectLevel.M });
@@ -91,6 +93,7 @@
         return;
       }
       clearInterval(current.watch);
+      health.textContent = "";
       const previousCall = current.call;
       current.call = call;
       current.captureEnded = false;
@@ -107,6 +110,7 @@
         if (!current.captureEnded) reportIssue(reason ?? "Luồng video đã đóng.");
         current.call = null;
         clearInterval(current.watch);
+        health.textContent = "";
         clearTimeout(current.timer);
         const stream = current.stream;
         current.stream = null;
@@ -136,7 +140,8 @@
           let lastFrame = performance.now();
           let lastRequest = -Infinity;
           let checkingStats = false;
-          let inboundBytes;
+          let previousVideo;
+          let lastStatsAt = -Infinity;
           current.watch = setInterval(async () => {
             if (room !== current || current.call !== call || document.hidden || !video || video.srcObject !== stream) return;
             const now = performance.now();
@@ -144,33 +149,49 @@
             if (progress !== frameTime) {
               frameTime = progress;
               lastFrame = now;
-              inboundBytes = undefined;
               if (status.textContent !== "Đã nhận màn hình iPhone.") status.textContent = "Đã nhận màn hình iPhone.";
-            } else if (now - lastFrame > 6000) {
-              const linkState = connection.connectionState ?? connection.iceConnectionState;
-              const linkLost = ["disconnected", "failed", "closed"].includes(linkState);
-              let reason = linkLost ? "Đường truyền video bị gián đoạn." :
-                track.muted ? "Luồng iPhone tạm ngừng gửi video." : "";
-              if (!reason && !checkingStats && connection.getStats) {
-                checkingStats = true;
-                const checkedFrame = frameTime;
-                try {
-                  const stats = await connection.getStats();
-                  if (room !== current || current.call !== call || frameProgress() !== checkedFrame) return;
-                  let bytes = 0;
-                  for (const row of stats.values()) {
-                    if (row.type === "inbound-rtp" && (row.kind ?? row.mediaType) === "video") bytes += row.bytesReceived ?? 0;
-                  }
-                  if (inboundBytes !== undefined && bytes - inboundBytes > 10000) {
+            }
+            const linkState = connection.connectionState ?? connection.iceConnectionState;
+            const linkLost = ["disconnected", "failed", "closed"].includes(linkState);
+            const stalled = now - lastFrame > 6000;
+            let reason = linkLost ? "Đường truyền video bị gián đoạn." :
+              track.muted ? "Luồng iPhone tạm ngừng gửi video." : "";
+            if (!reason && !checkingStats && connection.getStats && now - lastStatsAt >= 2000) {
+              lastStatsAt = now;
+              checkingStats = true;
+              try {
+                const stats = await connection.getStats();
+                if (room !== current || current.call !== call) return;
+                const inbound = [...stats.values()].find(row =>
+                  row.type === "inbound-rtp" && (row.kind ?? row.mediaType) === "video");
+                if (inbound && previousVideo && previousVideo.id === inbound.id) {
+                  if (stalled && frameProgress() === progress &&
+                      inbound.bytesReceived - previousVideo.bytesReceived > 10000 &&
+                      inbound.framesDecoded === previousVideo.framesDecoded) {
                     reason = "Máy tính vẫn nhận dữ liệu video nhưng chưa giải mã được khung hình mới.";
                   }
-                  inboundBytes = bytes;
-                } catch {
-                  // The browser can stop reporting stats while a connection is closing.
-                } finally {
-                  checkingStats = false;
+                  const received = inbound.packetsReceived - previousVideo.packetsReceived;
+                  const lost = Math.max(0, inbound.packetsLost - previousVideo.packetsLost);
+                  const total = received + lost;
+                  const jitter = inbound.jitter ?? 0;
+                  if (!stalled && received >= 0 && total >= 20) {
+                    const loss = lost / total;
+                    const grade = loss >= .06 || jitter >= .08 ? "poor" :
+                      loss <= .02 && jitter <= .04 ? "healthy" : "fair";
+                    if (current.channel?.open) current.channel.send({ type: "video-health", grade });
+                    const resolution = video.videoWidth ? video.videoWidth + " × " + video.videoHeight + " · " : "";
+                    health.textContent = resolution + "Mất gói " + (loss * 100).toFixed(1) +
+                      "% · Dao động " + Math.round(jitter * 1000) + " ms";
+                  }
                 }
+                previousVideo = inbound;
+              } catch {
+                // Statistics may be unavailable on a closed transport.
+              } finally {
+                checkingStats = false;
               }
+            }
+            if (stalled && frameProgress() === progress) {
               const nextStatus = reason || "Đang chờ khung hình mới. Bạn có thể bấm Khôi phục hình nếu màn hình đã đứng.";
               if (status.textContent !== nextStatus) status.textContent = nextStatus;
               if (video.paused) video.play().catch(() => {});
