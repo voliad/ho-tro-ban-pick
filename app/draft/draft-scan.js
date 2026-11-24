@@ -369,8 +369,9 @@
         const extraA = !known && !a && !b ? identify([patches[0]], extraPortraits.picks, 23, 7) : null;
         const extraB = extraA && identify([patches[1]], extraPortraits.picks, 23, 7);
         const visual = known ?? (a === b ? a : null) ?? (extraA === extraB ? extraA : null);
-        const pick = visual && textId && visual !== textId ? null : visual ?? textId;
-        slots.push({ side, index, portrait, unresolved: !pick && !glow });
+        const pick = textId && fallback.confidence >= 75 ? textId :
+          visual && textId && visual !== textId ? null : visual ?? textId;
+        slots.push({ side, index, portrait, unresolved: !pick && !glow, pending: glow });
         if (pick) rows.push({ side, kind: "pick", index, id: pick, pending: glow, known: Boolean(known),
           nameRead: Boolean(textId), simulated: Boolean(extraA && extraA === extraB && !textId) });
       }
@@ -380,11 +381,11 @@
     const pickPhase = locks === 10 || knownPicks.size >= 2 || namedPick ||
       (knownPicks.size > 0 && locksBySide.blue >= 3 && locksBySide.red >= 3);
     const pendingOcr = readingText ? [] : slots.filter(slot => {
-      if (!slot.unresolved) return false;
+      if (slot.pending) return false;
       const prior = attemptedSlots.get(slot.side + "|" + slot.index);
       return (!prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2) &&
         window.DRAFT_OCR.hasLabel(frame, slot);
-    }).slice(0, 2);
+    }).sort((a, b) => Number(b.unresolved) - Number(a.unresolved)).slice(0, 2);
     if (pendingOcr.length && !readingText) {
       for (const slot of pendingOcr) attemptedSlots.set(slot.side + "|" + slot.index, slot.portrait);
       readNames(pendingOcr);

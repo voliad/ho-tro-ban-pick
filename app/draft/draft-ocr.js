@@ -45,7 +45,7 @@
     canvas.width = 480;
     canvas.height = 94;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const y = 320 + index * 144.5 + (right ? -49 : index === 0 ? 0 : -17);
+    const y = 320 + index * 144.5 + (right ? -49 : index === 0 ? 0 : 2);
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, 480, 94);
     ctx.drawImage(frame, ((right ? 2035 : 551) - 261) * sx, (y - 88) * sy,
@@ -53,7 +53,7 @@
     const image = ctx.getImageData(12, 10, 456, 74);
     for (let i = 0; i < image.data.length; i += 4) {
       const r = image.data[i], g = image.data[i + 1], b = image.data[i + 2];
-      const ink = right ? (r - g - 36) * 8 : (Math.min(g, b) - 135) * 4;
+      const ink = right ? (r - g - 36) * 8 : Math.max(g, b);
       image.data[i] = image.data[i + 1] = image.data[i + 2] = 255 - Math.max(0, ink);
     }
     ctx.putImageData(image, 12, 10);
@@ -75,7 +75,7 @@
       for (const [index, crop] of crops.entries()) {
         const { data } = await worker.recognize(crop);
         const id = names.get(normalize(data.text));
-        if (id && data.confidence >= 50) found.push({ ...slots[index], id });
+        if (id && data.confidence >= 50) found.push({ ...slots[index], id, confidence: data.confidence });
       }
       return found;
     },
