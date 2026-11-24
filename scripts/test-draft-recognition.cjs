@@ -68,6 +68,21 @@ assert.deepEqual(saved, rank);
 assert.equal(rules.undo(rank), "turn");
 assert.equal(rules.activeTurn(rank).count, 2);
 console.log('Rank confirms red slots 3 and 4 together and preserves older drafts');
+const tournament = rules.start();
+const tournamentTurns = rules.sequence(tournament.settings, 1);
+assert.deepEqual(tournamentTurns.filter(([kind]) => kind === "pick"),
+  rules.sequence(rank.settings, 1).filter(([kind]) => kind === "pick"));
+const tournamentGame = tournament.games[0];
+for (const [index, [, , count]] of tournamentTurns.slice(0, 7).entries()) {
+  assert.equal(rules.recordTurn(tournament, Array.from({ length: count }, (_, slot) => index + "-" + slot)), true);
+}
+assert.equal(rules.activeTurn(tournament).count, 2);
+const legacyTournament = structuredClone(tournament);
+legacyTournament.games[0].turns.push({ kind: "pick", side: "red", ids: ["old-pick"] });
+assert.equal(rules.activeTurn(legacyTournament).kind, "ban");
+assert.equal(rules.recordTurn(tournament, ["yue", "hayate"]), true);
+assert.equal(rules.activeTurn(tournament).kind, "ban");
+assert.equal(tournamentGame.turns.at(-1).ids.length, 2);
 (async()=>{
 const worker=(await import('../cloudflare/turn/worker.mjs')).default;
 const env={RELAY_ACCESS:'test-access',GEMINI_API_KEY:'test-key'};

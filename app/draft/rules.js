@@ -2,7 +2,7 @@
   "use strict";
 
   const roles = new Map([[28, "Đấu sĩ"], [32, "Sát thủ"], [29, "Pháp sư"], [33, "Xạ thủ"], [30, "Trợ thủ"], [31, "Đỡ đòn"]]);
-  const standard = [
+  const legacyStandard = [
     ["ban", "blue", 1], ["ban", "red", 1], ["ban", "blue", 1], ["ban", "red", 1],
     ["pick", "blue", 1], ["pick", "red", 2], ["pick", "blue", 2], ["pick", "red", 1],
     ["ban", "red", 1], ["ban", "blue", 1], ["ban", "red", 1], ["ban", "blue", 1],
@@ -12,6 +12,12 @@
   const rankPicks = [
     ["pick", "blue", 1], ["pick", "red", 2], ["pick", "blue", 2],
     ["pick", "red", 2], ["pick", "blue", 2], ["pick", "red", 1],
+  ];
+  const standard = [
+    ...legacyStandard.slice(0, 4),
+    ...rankPicks.slice(0, 4),
+    ...legacyStandard.slice(8, 12),
+    ...rankPicks.slice(4),
   ];
   const legacyRanked = [
     ...Array.from({ length: 5 }, () => [["ban", "blue", 1], ["ban", "red", 1]]).flat(),
@@ -26,8 +32,9 @@
   const opposite = (team) => team === "A" ? "B" : "A";
   const onSide = (game, side) => side === "blue" ? game.blue : opposite(game.blue);
   const isBlind = (settings, number) => settings.format === 7 && number === 7 && settings.final === "blind";
-  const sequence = (settings, number) => settings.mode === "rank"
-    ? (settings.legacyRankBans ? legacyRanked : ranked) : isBlind(settings, number) ? blind : standard;
+  const sequence = (settings, number, game) => settings.mode === "rank"
+    ? (settings.legacyRankBans ? legacyRanked : ranked) : isBlind(settings, number) ? blind :
+      game && legacyRankPairIndex(game) >= 0 ? legacyStandard : standard;
   const heroKey = (settings, id) => settings.groupFlowborn && id === "flowborn-2" ? "flowborn" : id;
   const nameOf = (settings, team) => team === "A" ? settings.teamA : settings.teamB;
 
@@ -80,7 +87,7 @@
   function activeTurn(state) {
     const game = state.games.at(-1);
     if (game.winner || game.draftSkipped) return null;
-    const turns = sequence(state.settings, state.games.length);
+    const turns = sequence(state.settings, state.games.length, game);
     const remaining = turns.filter(([kind], index) =>
       game.skipBansFrom === undefined || index < game.skipBansFrom || kind !== "ban");
     const alreadyPicked = Number(partialRankPair(state, game));
