@@ -126,25 +126,56 @@
   }
 
   function identify(patches, refs, threshold = 31, margin = 5) {
-    let bestId, secondId;
-    let best = 36 ** 2 * 192;
+    let bestId;
+    let best = (threshold + margin) ** 2 * 192;
     let second = best;
     for (const [id, ref] of refs) {
-      const score = Math.min(squaredDistance(patches[0], ref, second), squaredDistance(patches[1], ref, second));
+      let score = second;
+      for (const patch of patches) score = squaredDistance(patch, ref, score);
       if (id === bestId) {
         best = Math.min(best, score);
       } else if (score < best) {
         second = best;
-        secondId = bestId;
         best = score;
         bestId = id;
       } else if (score < second) {
         second = score;
-        secondId = id;
       }
     }
-    return best < threshold ** 2 * 192 && (!secondId || Math.sqrt(second / 192) - Math.sqrt(best / 192) >= margin)
+    return best < threshold ** 2 * 192 && Math.sqrt(second / 192) - Math.sqrt(best / 192) >= margin
       ? bestId : null;
+  }
+
+  function banLock(x) {
+    let match = null;
+    let best = 30 ** 2 * 192;
+    for (const dx of [0, -4, 4, -8, 8, -12, 12, -16, 16, -20, 20, -24, 24]) {
+      for (const dy of [0, -4, 4, -8, 8, -12, 12]) {
+        const pixels = sample(x + dx, 167 + dy, 28);
+        for (const ref of samples.locks) {
+          const score = squaredDistance(pixels, ref, best);
+          if (score >= best) continue;
+          best = score;
+          match = { dx, dy };
+        }
+        if (best < 13 ** 2 * 192) return match;
+      }
+    }
+    return match;
+  }
+
+  function readBan(x, offset) {
+    const aligned = [sample(x, 137, 34), sample(x + 3, 140, 34)];
+    if (!offset) return identify(aligned, references.bans);
+    const { dx, dy } = offset;
+    const anchored = [
+      sample(x + dx, 137 + dy, 34),
+      sample(x + dx - 4, 137 + dy - 4, 34),
+      sample(x + dx + 4, 137 + dy - 4, 34),
+      sample(x + dx, 137 + dy + 4, 34),
+    ];
+    return identify([...aligned, ...anchored], samples.bans, 30, 4) ??
+      identify([aligned[0], anchored[0]], references.bans);
   }
 
   function sample(x, y, width, height = width) {
@@ -223,6 +254,7 @@
     const locksBySide = { blue: 0, red: 0 };
     for (const side of colors) {
       const left = side === "blue";
+      const lockOffsets = [];
       for (let index = 0; index < 5; index++) {
         const banX = (left ? 370 : 2161) + 84 * index;
         const original = sample(banX, 137, 34);
@@ -231,30 +263,20 @@
         if (samples.emptyBans.some(ref =>
           squaredDistance(original, ref, emptyBanLimit) < emptyBanLimit ||
           squaredDistance(shifted, ref, emptyBanLimit) < emptyBanLimit)) continue;
-        let offset;
-        const limit = 30 ** 2 * 192;
-        for (const dx of [0, -4, 4, -8, 8, -12, 12, -16, 16]) {
-          for (const dy of [0, -4, 4, -8, 8]) {
-            const lock = sample(banX + dx, 167 + dy, 28);
-            if (samples.locks.some(ref => squaredDistance(lock, ref, limit) < limit)) {
-              offset = { dx, dy };
-              break;
-            }
-          }
-          if (offset) break;
+        const offset = banLock(banX);
+        if (offset) {
+          lockedBans.push({ side, index });
+          lockOffsets.push(offset);
         }
-        if (offset) lockedBans.push({ side, index });
-        locks += Number(Boolean(offset));
-        locksBySide[side] += Number(Boolean(offset));
-        const adjusted = offset
-          ? sample(banX + offset.dx, 137 + offset.dy, 34) : sample(banX + 3, 140, 34);
-        const aligned = [original, shifted];
-        const ban = (offset ? identify(aligned, samples.bans, 25, 4) : null) ??
-          identify(aligned, references.bans) ??
-          (offset ? identify([original, adjusted], samples.bans, 30, 4) : null) ??
-          identify([original, adjusted], references.bans);
+        const ban = readBan(banX, offset);
         if (ban) rows.push({ side, kind: "ban", index, id: ban, confirmed: Boolean(offset) });
+      }
 
+      locks += lockOffsets.length;
+      locksBySide[side] = lockOffsets.length;
+      const offsetX = lockOffsets.map(offset => offset.dx).sort((a, b) => a - b)
+        [Math.floor(lockOffsets.length / 2)] ?? 0;
+      for (let index = 0; index < 5; index++) {
         const y = 320 + index * 144.5;
         const glow = shining(side, y);
         const pickX = left ? (glow ? 530 : 500) : (glow ? 2338 : 2368);
@@ -265,8 +287,15 @@
         const fallback = textMatches.get(slot);
         const textId = fallback && squaredDistance(fallback.portrait, portrait) < 13 ** 2 * 192 ? fallback.id : null;
         const patches = [portrait, sample(pickX + 3, y + 2, 65)];
-        const known = identify(patches, samples.picks) ??
-          (rotation ? identify([sample(pickX - 4, y - 3, 65), sample(pickX + 4, y - 3, 65)], samples.picks) : null);
+        const nearby = [sample(pickX - 6, y - 5, 65), sample(pickX + 6, y - 5, 65),
+          sample(pickX - 6, y + 5, 65), sample(pickX + 6, y + 5, 65)];
+        let known = identify([...patches, ...nearby], samples.picks, 30, 5);
+        if (!known && lockOffsets.length >= 3) {
+          // Video cropping can shift the outer columns more than the ban row.
+          const anchored = [offsetX, offsetX - 8, offsetX + 8].flatMap(dx =>
+            [-6, 0, 6].map(dy => sample(pickX + dx, y + dy, 65)));
+          known = identify([...patches, ...nearby, ...anchored], samples.picks, 34, 7);
+        }
         const a = identify([patches[0], patches[0]], references.picks, 27, 6);
         const b = identify([patches[1], patches[1]], references.picks, 27, 6);
         const visual = known ?? (a === b ? a : null);
@@ -284,7 +313,7 @@
       if (!slot.unresolved) return false;
       const prior = attemptedSlots.get(slot.side + "|" + slot.index);
       return (!prior || squaredDistance(prior, slot.portrait) > 192 * 16 ** 2) &&
-        (pickPhase || window.DRAFT_OCR.hasLabel(frame, slot));
+        window.DRAFT_OCR.hasLabel(frame, slot);
     }).slice(0, 2);
     if (pendingOcr.length && !readingText) {
       for (const slot of pendingOcr) attemptedSlots.set(slot.side + "|" + slot.index, slot.portrait);
@@ -411,8 +440,8 @@
     const [width, height] = dimensions(drawable);
     if (width < 320 || height < 140) return null;
     const finder = document.createElement("canvas");
-    finder.width = 360;
-    finder.height = Math.round(height * 360 / width);
+    finder.width = Math.min(width, 900);
+    finder.height = Math.round(height * finder.width / width);
     const context = finder.getContext("2d", { willReadFrequently: true });
     context.drawImage(drawable, 0, 0, finder.width, finder.height);
     const pixels = context.getImageData(0, 0, finder.width, finder.height).data;
@@ -430,7 +459,7 @@
             !gameColor(x, y - 2, brightness, saturation)) continue;
           const span = x - start;
           const gameHeight = span * 1086 / 2346;
-          if (span >= 95 && y + gameHeight <= finder.height + 2 && (!best || span > best.span)) {
+          if (span >= finder.width * .26 && y + gameHeight <= finder.height + 2 && (!best || span > best.span)) {
             best = { x: start, y: y + topOffset, span, gameHeight };
           }
           start = x + 1;
@@ -438,8 +467,26 @@
       }
       if (best) {
         const scale = width / finder.width;
+        const expectedBottom = best.y + best.gameHeight;
+        // A dark strip below the game often gives a more precise height than the aspect ratio of a resized video.
+        const edgeSpan = Math.round(best.span * .6);
+        const edgeStart = Math.round(best.x + best.span * .2);
+        const edgeColor = y => {
+          let count = 0;
+          for (let x = edgeStart; x < edgeStart + edgeSpan; x += 4) {
+            if (gameColor(x, y, brightness, saturation)) count++;
+          }
+          return count * 4 / edgeSpan;
+        };
+        let bottom = expectedBottom;
+        for (let y = Math.max(2, Math.round(expectedBottom - best.gameHeight * .035));
+          y < Math.min(finder.height - 2, expectedBottom + best.gameHeight * .035); y++) {
+          if (edgeColor(y - 1) < .7 || edgeColor(y) > .12 || edgeColor(y + 1) > .12) continue;
+          bottom = y;
+          break;
+        }
         return { x: best.x * scale, y: best.y * scale, width: best.span * scale,
-          height: Math.min(best.gameHeight * scale, height - best.y * scale) };
+          height: Math.min((bottom - best.y) * scale, height - best.y * scale) };
       }
     }
     return Math.abs(width / height - 2346 / 1086) < .08 ? { x: 0, y: 0, width, height } : null;
@@ -646,8 +693,6 @@
       const matches = await window.DRAFT_OCR.read(frame, targets);
       if (crop !== region) return;
       for (const row of matches) textMatches.set(row.side + "|" + row.index, row);
-      scannedPortraitCount = lastVideoTime = -1;
-      scanSafely();
       ocrStatus.textContent = matches.length
         ? "AI đọc được " + matches.length + " tên. Trạng thái cấm/chọn vẫn được kiểm tra riêng."
         : "AI chưa đọc rõ tên tướng trong các ô đội hình.";
@@ -657,9 +702,16 @@
     } finally {
       readingText = false;
       ocr.disabled = !crop || !slots.length;
+      if (crop === region) {
+        scannedPortraitCount = lastVideoTime = -1;
+        scanSafely();
+      }
     }
   }
-  ocr.addEventListener("click", () => readNames(slots));
+  ocr.addEventListener("click", () => {
+    for (const slot of slots) attemptedSlots.set(slot.side + "|" + slot.index, slot.portrait);
+    readNames(slots);
+  });
 
   function scanSafely() {
     try {
