@@ -19,7 +19,8 @@
   <script src="./airplay.js?v=local-airplay" defer></script>
   <script src="./vendor/peerjs-1.5.5.min.js" defer></script>
   <script src="./vendor/qrcodejs-1.0.0.min.js" defer></script>
-  <script src="./iphone-receiver.js?v=adaptive-video" defer></script>
+  <script src="./turn.js?v=1" defer></script>
+  <script src="./iphone-receiver.js?v=turn-fallback" defer></script>
   <script src="./scan-samples.js?v=ban-portraits" defer></script>
   <script src="./draft-ocr.js?v=pick-label" defer></script>
   <script src="./draft-scan.js?v=ban-portraits" defer></script>
@@ -75,6 +76,11 @@
             <button type="button" class="quiet" id="scan-calibrate" disabled>Chọn lại vùng game</button>
             <button type="button" class="quiet" id="scan-ocr" disabled>AI đọc tên tướng</button>
           </div>
+          <details>
+            <summary>Đường truyền dự phòng TURN</summary>
+            <p>Nhập mã truy cập để bật Cloudflare TURN. Để trống để kết nối trực tiếp.</p>
+            <label>Mã truy cập <input id="iphone-turn-access" type="password" autocomplete="off"></label>
+          </details>
           <details>
             <summary>Dùng AirPlay</summary>
             <p>Mở bộ nhận AirPlay trên máy tính. Trên iPhone, vào Trung tâm điều khiển, chọn <strong>Phản chiếu màn hình</strong> và chọn máy tính cùng mạng.</p>
