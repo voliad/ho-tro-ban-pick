@@ -249,7 +249,8 @@
         const adjusted = offset
           ? sample(banX + offset.dx, 137 + offset.dy, 34) : sample(banX + 3, 140, 34);
         const aligned = [original, shifted];
-        const ban = identify(aligned, references.bans) ??
+        const ban = (offset ? identify(aligned, samples.bans, 25, 4) : null) ??
+          identify(aligned, references.bans) ??
           (offset ? identify([original, adjusted], samples.bans, 30, 4) : null) ??
           identify([original, adjusted], references.bans);
         if (ban) rows.push({ side, kind: "ban", index, id: ban, confirmed: Boolean(offset) });
